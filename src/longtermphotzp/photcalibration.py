@@ -350,7 +350,7 @@ class PS1IPP:
         _logger.debug("Using catalog found in %s" % (self.basedir))
         skytable_filename = "%s/SkyTable.fits" % (self.basedir)
         if (not os.path.isfile(skytable_filename)):
-            _logger.fatal("Unable to find catalog index file in %s!" % (self.basedir))
+            _logger.fatal("Unable to find catalog index file  %s!" % (skytable_filename))
             return None
 
         # Read in the master index hdu
