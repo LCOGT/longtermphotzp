@@ -10,19 +10,15 @@ COPY . /lco/lco-throughput
 
 WORKDIR /lco/lco-throughput
 
-RUN pwd
-
-
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt --upgrade
 
+RUN pip install -r requirements.txt --upgrade
 
 COPY . /lco/lco-throughput
 
 USER archive
 
 ENV HOME /lco/lco-throughput
-
 
 # TODO: launch a web server for config data
 # TODO: launch cron like instance for regular updates of photdb database
