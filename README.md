@@ -7,12 +7,13 @@ This repository hosts the tools to provide a long term telescope throughput moni
  * python code to analyze the content of the zeropoint data base and create a number of plots .
  
  Dependencies:
- * read access to LCO archive mount at /archive
- * read access to a local copy of the PANSTARRS catalog
- * write access to a directory that will contain 
+ * read-only access to LCO archive mount at /archive
+ * read-only access to a local copy of the PANSTARRS catalog
+   * This is accessible on chanunpa at /net/fsfs.lco.gtn/data/AstroCatalogs/PS1/
+ * read/write access to a directory that will contain 
    * The database file itself
    * mirror throughput model files, trend plots (pngs), and a html file gluing it all together. 
-   
+   * ideally, this directory is the only one mounted with write permission. goal is to contain write access
    
    
 An example way to run a photometric calibration is provided in the deploy/runphotzp.sh script. 
