@@ -97,7 +97,9 @@ To interpret the resulting database:
 
 
 Building the container:
-docker build -t docker.lcogt.net/lco-throughputreport .
+docker build -t docker.lco.global/photzp .
+docker push  docker.lco.global/photzp
+
 
 Running an example in container:
 ```
