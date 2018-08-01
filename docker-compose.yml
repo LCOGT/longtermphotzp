@@ -6,4 +6,6 @@ services:
     - /archive:/archive:ro
     - /home/dharbeck/Catalogs/ps1odi/panstarrs/:/panstarrs:ro
     - /home/dharbeck/lcozpplotsdocker:/database
+    ports:
+    - 8000:8000
 
