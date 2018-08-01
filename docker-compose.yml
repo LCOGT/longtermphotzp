@@ -4,5 +4,6 @@ services:
     build: .
     volumes:
     - /archive:/archive:ro
-    - /home/dharbeck/lcozpplotsdocker:/database
     - /home/dharbeck/Catalogs/ps1odi/panstarrs/:/panstarrs:ro
+    - /home/dharbeck/lcozpplotsdocker:/database
+
