@@ -26,9 +26,8 @@ _logger = logging.getLogger(__name__)
 
 airmasscorrection = {'gp': 0.17, 'rp': 0.09, 'ip': 0.06, 'zp': 0.05, }
 
+# TODO: make this a parameter.
 starttime = datetime.datetime(2016, 1, 1)
-
-#starttime = datetime.datetime(2018,3,1)
 
 endtime   = datetime.datetime.utcnow().replace(day=28) + datetime.timedelta(days=31+4)
 endtime.replace(day =1)
@@ -36,6 +35,8 @@ endtime.replace(day =1)
 
 
 colorterms = {}
+
+# List of all telescopes to evaluate.
 telescopedict = {
     'lsc': ['doma-1m0a', 'domb-1m0a', 'domc-1m0a', 'aqwa-0m4a', 'aqwb-0m4a'],
     'coj': ['clma-2m0a', 'doma-1m0a', 'domb-1m0a', 'clma-0m4a', 'clma-0m4b'],
@@ -47,6 +48,7 @@ telescopedict = {
     'bpl': ['doma-1m0a']
 }
 
+# TODO: either migrate into separate file or find a better source, e.g., store in db, or query maintenace data base.
 
 telescopecleaning = {
     'lsc-doma-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),] ,
@@ -251,6 +253,7 @@ def getCombineddataByTelescope(site, telescope, context, instrument=None, cached
         db.close()
     return results
 
+    # warning: dead code below
 
     inputfiles = glob.glob("%s/%s-%s.db" % (context.imagedbPrefix, site, '*' if instrument is None else instrument))
     alldata = None
