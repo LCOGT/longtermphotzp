@@ -1,7 +1,7 @@
 #from __future__ import absolute_import, division, print_function, unicode_literals
 import matplotlib
 
-from longtermphotzp import photdbinterface
+from photdbinterface import photdbinterface
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
