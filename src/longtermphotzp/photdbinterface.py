@@ -3,7 +3,6 @@ import sys
 import sqlite3
 import datetime
 import numpy as np
-from astropy.io import ascii
 from astropy.table import Table
 import astropy.time as astt
 import math
