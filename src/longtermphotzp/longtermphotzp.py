@@ -87,49 +87,13 @@ def getCombineddataByTelescope(site, telescope, context, instrument=None, cached
         db = photdbinterface(context.database)
     else:
         db=cacheddb
-
-    print (site,telescope,instrument)
+    _logger.debug ("Getting all photometry data for %s %s %s" % (site,telescope,instrument))
     dome, tel = telescope.split ("-")
 
     results =  db.readRecords(site,dome,tel,instrument)
     if cacheddb is None:
         db.close()
     return results
-
-    # warning: dead code below
-
-    inputfiles = glob.glob("%s/%s-%s.db" % (context.imagedbPrefix, site, '*' if instrument is None else instrument))
-    alldata = None
-
-    for inputfile in inputfiles:
-        # print ('Reading in %s' % inputfile)
-        data = readDataFile(inputfile)
-        if data is None:
-            continue
-        if alldata is None:
-            alldata = data
-        else:
-            try:
-                alldata = np.append(alldata, data)
-            except Exception as e:
-                print("Failed to append data for file %s" % inputfile, e)
-                print (site, telescope, instrument, data)
-
-    if alldata is None:
-        return None
-
-    # Helpful diagnostic tool to see what data are pulled in.
-    # domedict = np.unique (alldata['dome'])
-    # for dome in domedict:
-    #     teldict = np.unique(alldata [ alldata['dome'] == dome] ['telescope'])
-    #     print (site, dome, teldict)
-
-    dome, tel = telescope.split('-')
-    selection = (alldata['dome'] == dome) & (alldata['telescope'] == tel)
-    alldata = alldata[selection]
-    return alldata
-
-
 
 def dateformat (starttime,endtime):
     plt.xlim([starttime, endtime])
@@ -192,10 +156,6 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     # find the overall trend of zeropoint variations, save to output file.
     _x, _y = findUpperEnvelope(dateselect[zpsigselect < photzpmaxnoise], zp_air[zpsigselect < photzpmaxnoise],
                                ymax=ymax)
-    outmodelfname = "%s/mirrormodel-%s-%s-%s.dat" % (
-        context.imagedbPrefix, select_site, select_telescope, select_filter)
-    np.savetxt(outmodelfname, np.c_[_x, _y], header="DATE-OBS zp envelope",
-               fmt="%s %f ")
 
     if cacheddb is None:
         db = photdbinterface(context.database)
@@ -438,11 +398,10 @@ def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cached
     myfilter = context.filter
     modellist = []
 
-    #modellist = glob.glob("%s/mirrormodel*%s[abc]-%s.dat" % (context.imagedbPrefix, type, myfilter))
     for t in type:
         modellist.extend (db.findmirrormodels(t, myfilter))
     modellist.sort(key = lambda x: x[0:3] + x[-1:-5].replace('2','0') + x[4:8])
-    _logger.info ("These are the models returned from search: %s" % modellist)
+    _logger.info ("Plotting several models in a single plot. These are the models returned from search %s: %s" % (type,modellist))
 
     plt.rc('lines', linewidth=1)
     prop_cycle=  cycle( ['-', '-.'])
@@ -520,6 +479,7 @@ def parseCommandLine():
 
 import webbrowser
 def renderHTMLPage (args):
+    _logger.info ("Now rendering output html page")
 
     outputfile = "%s/index.html" % (args.imagedbPrefix)
 
@@ -544,12 +504,11 @@ def renderHTMLPage (args):
 
         zptrendimages.sort(key = lambda x: x[-16: -4])
 
-        print (zptrendimages)
+        _logger.debug ("Found individual telescopes zp trend plots for site %s to include:\n\t %s " % (site,zptrendimages))
         for zptrend in zptrendimages:
             zptrend = zptrend.replace("%s/" % args.imagedbPrefix, "")
             line = '<a href="%s"><img src="%s" width="600"/></a>  <img src="%s" width="600"/>  <img src="%s" width="600"/><p/>' % (zptrend, zptrend, zptrend.replace('photzptrend', 'colortermtrend'), zptrend.replace('photzptrend', 'airmasstrend'))
             message = message + line
-
 
 
     message = message + "</body></html>"
@@ -605,8 +564,7 @@ if __name__ == '__main__':
                 crawlScopes = [args.telescope, ]
 
             for telescope in crawlScopes:
-                print(site, telescope)
-
+                _logger.info ("Now plotting and fitting mirror model for %s %s" % (site, telescope))
                 plotlongtermtrend(site, telescope, args.filter, args, cacheddb=db )
 
 

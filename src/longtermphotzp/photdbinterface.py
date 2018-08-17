@@ -48,7 +48,7 @@ class photdbinterface:
 
 
     def __init__(self, fname):
-        _logger.info ("Open data base file %s" % (fname))
+        _logger.debug ("Open data base file %s" % (fname))
         self.sqlite_file = fname
         self.conn = sqlite3.connect(self.sqlite_file)
         self.conn.execute(self.createstatement)
@@ -58,7 +58,7 @@ class photdbinterface:
 
     def addphotzp (self, datablob, commit = True) :
 
-        _logger.info ("About to insert: %s" % str(datablob))
+        _logger.debug ("About to insert: %s" % str(datablob))
 
         with self.conn:
             self.conn.execute ("insert or replace into lcophot values (?,?,?,?,?,?,?,?,?,?,?)", datablob)
@@ -90,7 +90,7 @@ class photdbinterface:
     def close(self):
         """ Clode the database safely"""
 
-        _logger.info ("Closing data base file %s " % (self.sqlite_file))
+        _logger.debug ("Closing data base file %s " % (self.sqlite_file))
         self.conn.commit()
         self.conn.close()
 
