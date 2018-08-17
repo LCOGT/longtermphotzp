@@ -526,7 +526,9 @@ def renderHTMLPage (args):
     message = """<html>
 <head></head>
 <body><title>LCO Zeropoint Plots</title>
-
+"""
+    message += "<p/>Figures updated %s UTC <p/>\n"  % (datetime.datetime.utcnow())
+    message += """
 <h1> Overview </h1>
      <a href="allmodels_2m01m0_rp.png"> <img src="allmodels_2m01m0_rp.png"/ width="800"> </a>
      <a href="allmodels_0m4_rp.png"><img src="allmodels_0m4_rp.png" width="800"/></a>
@@ -549,7 +551,7 @@ def renderHTMLPage (args):
             message = message + line
 
 
-    message = message + "<p/>Figures updated %s UTC <p/>\n"  % (datetime.datetime.utcnow())
+
     message = message + "</body></html>"
 
     with open (outputfile, 'w+') as f:
