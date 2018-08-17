@@ -95,6 +95,8 @@ To interpret the resulting database:
 ```
 
 
+Deploying at LCO
+===
 
 Building the container:
 docker build -t docker.lco.global/photzp .

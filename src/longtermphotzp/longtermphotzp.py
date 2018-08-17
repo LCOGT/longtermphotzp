@@ -564,7 +564,7 @@ if __name__ == '__main__':
                 crawlScopes = [args.telescope, ]
 
             for telescope in crawlScopes:
-                _logger.info ("Now plotting and fitting mirror model for %s %s" % (site, telescope))
+                _logger.info ("Now plotting and fitting mirror model for %s %s in filter %s" % (site, telescope, args.filter))
                 plotlongtermtrend(site, telescope, args.filter, args, cacheddb=db )
 
 
