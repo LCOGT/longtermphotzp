@@ -102,7 +102,7 @@ class photdbinterface:
 
 
         query = "select name,dateobs,site,dome,telescope,camera,filter,airmass,zp,colorterm,zpsig from lcophot " \
-                "where (site like ? AND dome like ? AND telescope like ? AND camera like ?)"
+                "where (site like ? AND dome like ? AND telescope like ? AND camera like ?) ORDER BY dateobs"
 
         args = (site if site is not None else '%',
                 dome if dome is not None else '%',
@@ -165,7 +165,7 @@ class photdbinterface:
         t = None
         _logger.debug ("reading data for mirror model [%s] [%s]" % (telescopeid, filter))
         with self.conn:
-            cursor = self.conn.execute("select dateobs,modelzp from telescopemodel where (telescopeid like ?) and (filter like ?)",
+            cursor = self.conn.execute("select dateobs,modelzp from telescopemodel where (telescopeid like ?) and (filter like ?) ORDER BY dateobs",
                               (telescopeid,filter))
             allrows = np.asarray(cursor.fetchall())
             t = Table (allrows, names = ['dateobs','zp'])
