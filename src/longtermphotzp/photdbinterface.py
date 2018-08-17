@@ -15,6 +15,14 @@ _logger = logging.getLogger(__name__)
 
 
 class photdbinterface:
+    ''' Storage model for data:
+
+    individual photometric zeropoints per exposure
+
+
+    long term mirror model: upper envelope fit for a telescope's trendline
+
+    '''
 
     createstatement = "CREATE TABLE IF NOT EXISTS lcophot (" \
                       "name TEXT PRIMARY KEY, " \
@@ -30,12 +38,21 @@ class photdbinterface:
                       " zpsig real)"
 
 
+    createmodeldb  = "CREATE TABLE IF NOT EXISTS telescopemodel (" \
+                      "telescopeid TEXT, " \
+                      " filter text," \
+                      " dateobs text," \
+                      " modelzp real" \
+                      " )"
+
+
 
     def __init__(self, fname):
         _logger.info ("Open data base file %s" % (fname))
         self.sqlite_file = fname
         self.conn = sqlite3.connect(self.sqlite_file)
         self.conn.execute(self.createstatement)
+        self.conn.execute(self.createmodeldb)
         self.conn.execute("PRAGMA journal_mode=WAL;")
         self.conn.commit()
 
@@ -64,9 +81,9 @@ class photdbinterface:
 
 
 
-    def readoldfile (self, oldname):
-        """ Ingest a legacy ascii photomerty zeropoint file."""
-        _logger.error ("DEPRECATED, existing procedure with no action")
+    # def readoldfile (self, oldname):
+    #     """ Ingest a legacy ascii photomerty zeropoint file."""
+    #     _logger.error ("DEPRECATED, existing procedure with no action")
 
 
 
@@ -138,3 +155,51 @@ class photdbinterface:
         #    t['zp'][dateselect] = t['zp'][dateselect] +0.75
 
         return t
+
+
+    def readmirrormodel(self, telescopeid, filter):
+        """ read a mirrormodel by telesope identifer and filter .
+         Returns:
+             (date-obs, modelzp) : tupel of two arrays containg model date, and model photoemtric zeropoint.
+         """
+        t = None
+        _logger.debug ("reading data for mirror model [%s] [%s]" % (telescopeid, filter))
+        with self.conn:
+            cursor = self.conn.execute("select dateobs,modelzp from telescopemodel where (telescopeid like ?) and (filter like ?)",
+                              (telescopeid,filter))
+            allrows = np.asarray(cursor.fetchall())
+            t = Table (allrows, names = ['dateobs','zp'])
+            t['dateobs'] = t['dateobs'].astype (str)
+            t['dateobs'] = astt.Time(t['dateobs'], scale='utc', format=None).to_datetime()
+            t['zp'] = t['zp'].astype(float)
+        return t
+
+    def storemirrormodel(self, telescopeid, filter, dates, zps, commit=True):
+
+        _logger.debug ("Store mirror model for: [%s] filter [%s], %d records" % (telescopeid,filter,len(dates)))
+
+        with self.conn:
+            self.conn.execute("delete from telescopemodel where telescopeid like ? AND filter like ?", (telescopeid,filter))
+            for ii in range (len(dates)):
+                # TODO: nuke the old model
+
+                self.conn.execute ("insert or replace into telescopemodel values (?,?,?,?)", (telescopeid,filter,dates[ii],zps[ii]))
+
+        if (commit):
+            self.conn.commit()
+
+        pass
+
+
+
+    def findmirrormodels (self, telescopeclass, filter):
+        _logger.debug ("Searching for mirror models with contraint %s %s" % (telescopeclass,filter))
+
+        with self.conn:
+            cursor = self.conn.execute ("select DISTINCT telescopeid from telescopemodel where (filter like ?) and (telescopeid like ?)",
+                                         (filter,  "%%%s%%" % telescopeclass))
+            allrows = np.asarray(cursor.fetchall()).flatten().astype(str)
+
+            _logger.debug ("Uniqe identifiers: %s" % allrows)
+
+        return allrows

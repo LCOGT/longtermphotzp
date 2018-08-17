@@ -197,6 +197,18 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     np.savetxt(outmodelfname, np.c_[_x, _y], header="DATE-OBS zp envelope",
                fmt="%s %f ")
 
+    if cacheddb is None:
+        db = photdbinterface(context.database)
+    else:
+        db=cacheddb
+    db.storemirrormodel("%s-%s" % (select_site,select_telescope), select_filter, _x,_y)
+
+    if cacheddb is None:
+        db.close()
+
+
+
+
     plt.figure()
 
     for telid in telescopecleaning:
@@ -225,7 +237,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
         plt.plot(_x, _y, "-", c='red', label='upper envelope')
 
     else:
-        print("Mirror model failed to compute. not plotting !")
+        _logger.warn("Mirror model failed to compute. not plotting !")
 
 
 
@@ -281,7 +293,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     plt.plot(dateselect, colortermselect, 'o', markersize=2, c="blue",
              label="color term [low sigma] %s " % select_filter)
     plt.axhline(y=meancolorterm, color='r', linestyle='-')
-    print("Color term filter %s : % 5.3f" % (select_filter, meancolorterm))
+    _logger.info("Color term in filter %s : % 5.3f" % (select_filter, meancolorterm))
 
     if select_filter not in colorterms:
         colorterms[select_filter] = {}
@@ -415,32 +427,42 @@ def trendcorrectthroughput(datadate, datazp, modeldate, modelzp):
     return corrected, day_x, day_y
 
 
-def plotallmirrormodels(context, type='[2m0a|1m0a]', range=[22.5,25.5]):
+def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cacheddb = None):
     import glob
 
-    myfilter = context.filter
-    modellist = glob.glob("%s/mirrormodel*%s[abc]-%s.dat" % (context.imagedbPrefix, type, myfilter))
-    print (modellist[0][16:-12])
+    if cacheddb is None:
+        db = photdbinterface(context.database)
+    else:
+        db=cacheddb
 
-    modellist.sort(key = lambda x: x[-20:-17] + x[-11:-7].replace("2","0")+x[-16:-12])
-    print (modellist)
+    myfilter = context.filter
+    modellist = []
+
+    #modellist = glob.glob("%s/mirrormodel*%s[abc]-%s.dat" % (context.imagedbPrefix, type, myfilter))
+    for t in type:
+        modellist.extend (db.findmirrormodels(t, myfilter))
+    modellist.sort(key = lambda x: x[0:3] + x[-1:-5].replace('2','0') + x[4:8])
+    _logger.info ("These are the models returned from search: %s" % modellist)
 
     plt.rc('lines', linewidth=1)
     prop_cycle=  cycle( ['-', '-.'])
 
     for model in modellist:
-        print(model)
-        try:
-            data = ascii.read(model, names=("date", "time", "zp"))
-            datestring = np.core.defchararray.add(data['date'], "T")
-            datestring = np.core.defchararray.add(datestring, data['time'])
+        _logger.debug ("Plotting mirror model %s" % model)
 
-            date = astt.Time(datestring, scale='utc', format='isot').to_datetime()
-        except:
-            continue
+        data = db.readmirrormodel(model,myfilter)
+
+        # try:
+        #     data = ascii.read(model, names=("date", "time", "zp"))
+        #     datestring = np.core.defchararray.add(data['date'], "T")
+        #     datestring = np.core.defchararray.add(datestring, data['time'])
+        #
+        #     date = astt.Time(datestring, scale='utc', format='isot').to_datetime()
+        # except:
+        #     continue
 
         plt.gcf().autofmt_xdate()
-        plt.plot(date, data['zp'],next(prop_cycle),  label=model[-20:-7].replace('-', ':'), )
+        plt.plot(data['dateobs'], data['zp'],next(prop_cycle),  label=model.replace('-', ':'), )
 
     plt.legend(bbox_to_anchor=(1.01, 1), loc='upper left', ncol=1)
     plt.xlabel('DATE-OBS')
@@ -449,8 +471,17 @@ def plotallmirrormodels(context, type='[2m0a|1m0a]', range=[22.5,25.5]):
     plt.ylim(range)
     plt.title("Photometric zeropoint model in filter %s" % myfilter)
     plt.grid(True, which='both')
-    plt.savefig("%s/allmodels_%s_%s.png" % (context.imagedbPrefix, type, context.filter), bbox_inches='tight')
+
+    name=""
+    for ii in type:
+        name += str(ii)
+
+    plt.savefig("%s/allmodels_%s_%s.png" % (context.imagedbPrefix, name, context.filter), bbox_inches='tight')
     plt.close()
+
+
+    if cacheddb is None:
+        db.close()
 
 
 def parseCommandLine():
@@ -497,7 +528,7 @@ def renderHTMLPage (args):
 <body><title>LCO Zeropoint Plots</title>
 
 <h1> Overview </h1>
-     <a href="allmodels_[2m0a|1m0a]_rp.png"> <img src="allmodels_[2m0a|1m0a]_rp.png"/ width="800"> </a>
+     <a href="allmodels_2m01m0_rp.png"> <img src="allmodels_2m01m0_rp.png"/ width="800"> </a>
      <a href="allmodels_0m4_rp.png"><img src="allmodels_0m4_rp.png" width="800"/></a>
     <p/>
     
@@ -518,7 +549,8 @@ def renderHTMLPage (args):
             message = message + line
 
 
-    message = message + "<p/>Figures updated %s UTC <p/></body></html>" % (datetime.datetime.utcnow())
+    message = message + "<p/>Figures updated %s UTC <p/>\n"  % (datetime.datetime.utcnow())
+    message = message + "</body></html>"
 
     with open (outputfile, 'w+') as f:
         f.write (message)
@@ -578,8 +610,8 @@ if __name__ == '__main__':
 
     db.close()
 
-    plotallmirrormodels(args)
-    plotallmirrormodels(args, type='0m4', range=[20,23])
+    plotallmirrormodels(args,type=['2m0','1m0'])
+    plotallmirrormodels(args, type=['0m4'], range=[20,23])
 
 
     # Make a fancy HTML page
