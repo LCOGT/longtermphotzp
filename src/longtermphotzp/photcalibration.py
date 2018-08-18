@@ -499,7 +499,7 @@ def crawlDirectory(directory, db, args):
             inputlist.remove (r)
 
 
-    print ("Found %d files intially, but cleaned %d already measured images. Starting analysis of %d files" % (initialsize, len(rejects), len(inputlist)))
+    _logger.info ("Found %d files intially, but cleaned %d already measured images. Starting analysis of %d files" % (initialsize, len(rejects), len(inputlist)))
 
     photzpStage = PhotCalib(args.ps1dir)
     for image in inputlist:
@@ -529,8 +529,6 @@ def crawlSiteCameraArchive(site, camera, args, date=None):
 
     searchdir = "%s/%s/%s/%s/%s" % (args.rootdir, site, camera, date, args.processstatus)
 
-
-    # search = "%s/%s/%s/%s/preview/*-[es]11.fits.fz" % (args.rootdir, site, camera, date)
     _logger.info("Searching in directories: %s" % (searchdir))
 
     crawlDirectory(searchdir, imagedb, args)

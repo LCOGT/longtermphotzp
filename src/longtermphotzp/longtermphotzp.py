@@ -3,34 +3,28 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-import math
 import datetime
 import sys
 import calendar
-import astropy.time as astt
 import scipy.signal
 import argparse
 import logging
 import glob
 import os
-from astropy.io import ascii
 from itertools import cycle
 import matplotlib.dates as mdates
 from photdbinterface import photdbinterface
+
 assert sys.version_info >= (3,5)
 _logger = logging.getLogger(__name__)
-
-
 
 airmasscorrection = {'gp': 0.17, 'rp': 0.09, 'ip': 0.06, 'zp': 0.05, }
 
 # TODO: make this a parameter.
 starttime = datetime.datetime(2016, 1, 1)
 
-endtime   = datetime.datetime.utcnow().replace(day=28) + datetime.timedelta(days=31+4)
+endtime = datetime.datetime.utcnow().replace(day=28) + datetime.timedelta(days=31+4)
 endtime.replace(day =1)
-
-
 
 colorterms = {}
 
@@ -42,8 +36,8 @@ telescopedict = {
     'elp': ['doma-1m0a', 'aqwa-0m4a'],
     'cpt': ['doma-1m0a', 'domb-1m0a', 'domc-1m0a', 'aqwa-0m4a'],
     'tfn': ['aqwa-0m4a', 'aqwa-0m4b'],
-    'sqa': ['doma-0m8a'],
-    'bpl': ['doma-1m0a']
+    #  'sqa': ['doma-0m8a'],
+    #  'bpl': ['doma-1m0a']
 }
 
 # TODO: either migrate into separate file or find a better source, e.g., store in db, or query maintenace data base.
@@ -65,12 +59,6 @@ telescopecleaning = {
     'cpt-domb-1m0a' : [datetime.datetime(2017, 11, 15),] ,
     'cpt-domc-1m0a' : [datetime.datetime(2017, 11, 15),] ,
 }
-
-
-
-
-
-
 
 
 def getCombineddataByTelescope(site, telescope, context, instrument=None, cacheddb=None):
@@ -96,6 +84,9 @@ def getCombineddataByTelescope(site, telescope, context, instrument=None, cached
     return results
 
 def dateformat (starttime,endtime):
+    """ Utility to prettify a plot with dates.
+    """
+
     plt.xlim([starttime, endtime])
     plt.gcf().autofmt_xdate()
     years = mdates.YearLocator()   # every year
@@ -110,13 +101,14 @@ def dateformat (starttime,endtime):
     plt.setp(plt.gca().xaxis.get_majorticklabels(), rotation=45)
     plt.gca().grid(which='minor')
 
+
 def plotlongtermtrend(select_site, select_telescope, select_filter, context, instrument=None, cacheddb = None):
 
     data = getCombineddataByTelescope(select_site, select_telescope, context, instrument, cacheddb=cacheddb)
 
     mystarttime = starttime
-    if (select_site == 'elp') and (select_telescope=='doma-1m0a'):
-        mystarttime = datetime.datetime(2014, 1, 1)
+    #if (select_site == 'elp') and (select_telescope=='doma-1m0a'):
+    #    mystarttime = datetime.datetime(2014, 1, 1)
 
     if data is None:
         return
@@ -130,10 +122,10 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
 
     # weed out bad data
     selection = selection & np.logical_not(np.isnan(data['zp']))
-
     selection = selection & np.logical_not(np.isnan(data['airmass']))
 
     if len(selection) == 0:
+        _logger.warning ("No data points left after down selection. Not wasting time on empty plots.")
         return
 
     zpselect = data['zp'][selection]
@@ -150,7 +142,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
             ymax = 22.5
             photzpmaxnoise = 0.5
 
-    # Calculate air-mass corrected photometric zeropoint
+    # Calculate air-mass corrected photometric zeropoint; corrected to airmass of 1
     zp_air = zpselect + airmasscorrection[select_filter] * airmasselect - airmasscorrection[select_filter]
 
     # find the overall trend of zeropoint variations, save to output file.
@@ -166,11 +158,11 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     if cacheddb is None:
         db.close()
 
-
-
+    # now we are starting to plot stuff
 
     plt.figure()
 
+    # mark mirror cleaning events.
     for telid in telescopecleaning:
         _site,_enc,_tel = telid.split ("-")
 
@@ -178,15 +170,10 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
             for event in telescopecleaning[telid]:
                 plt.axvline (x=event, color='grey', linestyle='--')
 
-
-
+    #  plot all the zeropoint measurements, but label different cameras differently.
     uniquecameras = np.unique(cameraselect)
 
-
-
     for uc in uniquecameras:
-        # plot zeropoint with differnt markers per camera
-
         plt.plot(dateselect[(zpsigselect <= photzpmaxnoise) & (cameraselect == uc)],
                  zp_air[(zpsigselect <= photzpmaxnoise) & (cameraselect == uc)],
                  'o', markersize=2, label=uc)
@@ -197,43 +184,40 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
         plt.plot(_x, _y, "-", c='red', label='upper envelope')
 
     else:
-        _logger.warn("Mirror model failed to compute. not plotting !")
+        _logger.warning("Mirror model failed to compute. not plotting !")
 
-
-
-
+    # prettify, decorations, etc
     plt.legend()
-
     plt.ylim([ymax - 3.5, ymax])
-
     dateformat(mystarttime,endtime)
     plt.xlabel("DATE-OBS")
     plt.ylabel("Photometric Zeropoint %s" % select_filter)
     plt.title("Long term throughput  %s:%s in %s" % (select_site, select_telescope, select_filter))
 
-
+    # and finally safe the plot.
     outfigname = "%s/photzptrend-%s-%s-%s.png" % (
         context.imagedbPrefix, select_site, select_telescope, select_filter)
     plt.savefig(outfigname, dpi=600)
     plt.close()
 
-    plt.figure()
-    plt.hist(zpsigselect, 50, range=[0, 1], normed=True)
-    outerrorhistfname = "%s/errorhist-%s-%s-%s.png" % (
-        context.imagedbPrefix, select_site, select_telescope, select_filter)
-    plt.savefig(outerrorhistfname)
-    plt.close()
+    # for internal use: generate error plots.
+    if context.errorhistogram:
+        plt.figure()
+        plt.hist(zpsigselect, 50, range=[0, 1], normed=True)
+        outerrorhistfname = "%s/errorhist-%s-%s-%s.png" % (
+            context.imagedbPrefix, select_site, select_telescope, select_filter)
+        plt.savefig(outerrorhistfname)
+        plt.close()
 
+    # plot airmass vs zeropoint as a sanity check tool
     plt.figure()
     plt.plot(airmasselect, zpselect, ".", c="grey")
     plt.plot(airmasselect, zp_air, ".", c="blue")
     plt.xlabel("Airmass")
     plt.ylabel("Photomertic Zeropoint %s" % select_filter)
     plt.title ("Global airmass trend and correction check")
-
     meanzp = np.nanmedian(zpselect)
     plt.ylim([meanzp - 0.5, meanzp + 0.5])
-
     plt.savefig("%s/airmasstrend-%s-%s-%s.png" % (context.imagedbPrefix, select_site, select_telescope, select_filter))
     plt.close()
 
@@ -255,6 +239,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     plt.axhline(y=meancolorterm, color='r', linestyle='-')
     _logger.info("Color term in filter %s : % 5.3f" % (select_filter, meancolorterm))
 
+    # store the color terms
     if select_filter not in colorterms:
         colorterms[select_filter] = {}
     colorterms[select_filter][instrument] = meancolorterm
@@ -268,6 +253,8 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     plt.savefig(
         "%s/colortermtrend-%s-%s-%s.png" % (context.imagedbPrefix, select_site, select_telescope, select_filter))
     plt.close()
+
+    # thats it, some day please refactor this into smaller chunks.
 
 
 def findUpperEnvelope(dateobs, datum, ymax=24.2):
@@ -345,7 +332,6 @@ def trendcorrectthroughput(datadate, datazp, modeldate, modelzp):
 
     # estimate if photometric
 
-
     photomerticthres = 0.25
     day_x = []
     day_y = []
@@ -388,7 +374,7 @@ def trendcorrectthroughput(datadate, datazp, modeldate, modelzp):
 
 
 def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cacheddb = None):
-    import glob
+    """ fetch mirror model from database for a selected class of telescopes and put them all into one single plot. """
 
     if cacheddb is None:
         db = photdbinterface(context.database)
@@ -408,18 +394,7 @@ def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cached
 
     for model in modellist:
         _logger.debug ("Plotting mirror model %s" % model)
-
         data = db.readmirrormodel(model,myfilter)
-
-        # try:
-        #     data = ascii.read(model, names=("date", "time", "zp"))
-        #     datestring = np.core.defchararray.add(data['date'], "T")
-        #     datestring = np.core.defchararray.add(datestring, data['time'])
-        #
-        #     date = astt.Time(datestring, scale='utc', format='isot').to_datetime()
-        # except:
-        #     continue
-
         plt.gcf().autofmt_xdate()
         plt.plot(data['dateobs'], data['zp'],next(prop_cycle),  label=model.replace('-', ':'), )
 
@@ -434,50 +409,13 @@ def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cached
     name=""
     for ii in type:
         name += str(ii)
-
     plt.savefig("%s/allmodels_%s_%s.png" % (context.imagedbPrefix, name, context.filter), bbox_inches='tight')
     plt.close()
-
 
     if cacheddb is None:
         db.close()
 
 
-def parseCommandLine():
-    """ Read command line parameters
-    """
-
-    parser = argparse.ArgumentParser(
-        description='Calculate long-term trends in photometric database.')
-
-    parser.add_argument('--log_level', dest='log_level', default='INFO', choices=['DEBUG', 'INFO'],
-                        help='Set the debug level')
-
-    parser.add_argument('--outputdirectory', dest='imagedbPrefix', default='~/lcozpplots',
-                        help='Directory containing photometryc databases')
-    parser.add_argument('--database', default = '~/lcozpplots/lcophotzp.db')
-    parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
-    parser.add_argument('--telescope', default=None,
-                        help='Telescope id. written inform enclosure-telescope, e.g., "domb-1m0a"')
-    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['gp', 'rp', 'ip', 'zp'])
-
-    parser.add_argument('--testdb',  action='store_true')
-    parser.add_argument('--importold',  action='store_true')
-
-
-    args = parser.parse_args()
-
-    logging.basicConfig(level=getattr(logging, args.log_level.upper()),
-                        format='%(asctime)s.%(msecs).03d %(levelname)7s: %(module)20s: %(message)s')
-
-    args.imagedbPrefix = os.path.expanduser(args.imagedbPrefix)
-    args.database = os.path.expanduser(args.database)
-
-
-    return args
-
-
-import webbrowser
 def renderHTMLPage (args):
     _logger.info ("Now rendering output html page")
 
@@ -505,19 +443,51 @@ def renderHTMLPage (args):
         zptrendimages.sort(key = lambda x: x[-16: -4])
 
         _logger.debug ("Found individual telescopes zp trend plots for site %s to include:\n\t %s " % (site,zptrendimages))
+
         for zptrend in zptrendimages:
             zptrend = zptrend.replace("%s/" % args.imagedbPrefix, "")
             line = '<a href="%s"><img src="%s" width="600"/></a>  <img src="%s" width="600"/>  <img src="%s" width="600"/><p/>' % (zptrend, zptrend, zptrend.replace('photzptrend', 'colortermtrend'), zptrend.replace('photzptrend', 'airmasstrend'))
             message = message + line
-
 
     message = message + "</body></html>"
 
     with open (outputfile, 'w+') as f:
         f.write (message)
         f.close()
-        #webbrowser.open('file://%s' % outputfile, new=False)
 
+
+
+def parseCommandLine():
+    """ Read command line parameters
+    """
+
+    parser = argparse.ArgumentParser(
+        description='Calculate long-term trends in photometric database.')
+
+    parser.add_argument('--log_level', dest='log_level', default='INFO', choices=['DEBUG', 'INFO'],
+                        help='Set the debug level')
+
+    parser.add_argument('--outputdirectory', dest='imagedbPrefix', default='~/lcozpplots',
+                        help='Directory containing photometryc databases')
+    parser.add_argument('--database', default = '~/lcozpplots/lcophotzp.db')
+    parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
+    parser.add_argument('--telescope', default=None,
+                        help='Telescope id. written inform enclosure-telescope, e.g., "domb-1m0a"')
+    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['gp', 'rp', 'ip', 'zp'])
+    parser.add_argument('--pertelescopeplots', type=bool, default=True)
+    parser.add_argument('--createsummaryplots', type=bool, default=True)
+    parser.add_argument('--renderhtml', type=bool, default=True)
+    parser.add_argument('--errorhistogram', type=bool, default=False)
+
+    args = parser.parse_args()
+
+    logging.basicConfig(level=getattr(logging, args.log_level.upper()),
+                        format='%(asctime)s.%(msecs).03d %(levelname)7s: %(module)20s: %(message)s')
+
+    args.imagedbPrefix = os.path.expanduser(args.imagedbPrefix)
+    args.database = os.path.expanduser(args.database)
+
+    return args
 
 
 if __name__ == '__main__':
@@ -526,38 +496,15 @@ if __name__ == '__main__':
 
     args = parseCommandLine()
 
-
-    if (args.testdb):
-        db = photdbinterface(args.database)
-        db.readRecords()
-        db.close()
-        exit()
-
-
-    if (args.importold):
-        print ("testing db interface")
-        db = photdbinterface(args.database)
-        dbfiles = glob.glob ("/home/dharbeck/lcozpplots/???-*.db")
-        for dbfile in dbfiles:
-
-            print ("Importing  " + dbfile)
-            db.readoldfile(dbfile)
-
-        db.close()
-        exit(0)
-
     if args.site is not None:
         crawlsites = [args.site, ]
     else:
         crawlsites = telescopedict
 
+    if args.pertelescopeplots:
+        db = photdbinterface(args.database)
 
-
-    db = photdbinterface(args.database)
-
-
-    if True:
-       for site in crawlsites:
+        for site in crawlsites:
             if args.telescope is None:
                 crawlScopes = telescopedict[site]
             else:
@@ -567,15 +514,16 @@ if __name__ == '__main__':
                 _logger.info ("Now plotting and fitting mirror model for %s %s in filter %s" % (site, telescope, args.filter))
                 plotlongtermtrend(site, telescope, args.filter, args, cacheddb=db )
 
+        db.close()
 
-    db.close()
-
-    plotallmirrormodels(args,type=['2m0','1m0'])
-    plotallmirrormodels(args, type=['0m4'], range=[20,23])
-
+    # Generate mirror model plots for all telscopes in a single plot
+    if args.createsummaryplots:
+        plotallmirrormodels(args,type=['2m0','1m0'])
+        plotallmirrormodels(args, type=['0m4'], range=[20,23])
 
     # Make a fancy HTML page
-    renderHTMLPage(args)
+    if args.renderhtml:
+        renderHTMLPage(args)
 
     sys.exit(0)
 
