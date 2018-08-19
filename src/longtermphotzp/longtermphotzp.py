@@ -1,4 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -13,6 +12,8 @@ import glob
 import os
 from itertools import cycle
 import matplotlib.dates as mdates
+from matplotlib.patches import Rectangle
+
 from photdbinterface import photdbinterface
 
 assert sys.version_info >= (3,5)
@@ -59,6 +60,9 @@ telescopecleaning = {
     'cpt-domb-1m0a' : [datetime.datetime(2017, 11, 15),] ,
     'cpt-domc-1m0a' : [datetime.datetime(2017, 11, 15),] ,
 }
+
+
+telescopereferencethroughput = {'rp': {"1m0": 23.8, "2m0" : 25.35}}
 
 
 def getCombineddataByTelescope(site, telescope, context, instrument=None, cacheddb=None):
@@ -162,6 +166,8 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
 
     plt.figure()
 
+
+    plot_referencethoughput(mystarttime, endtime, select_filter, select_telescope[-4:-1])
     # mark mirror cleaning events.
     for telid in telescopecleaning:
         _site,_enc,_tel = telid.split ("-")
@@ -185,6 +191,8 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
 
     else:
         _logger.warning("Mirror model failed to compute. not plotting !")
+
+
 
     # prettify, decorations, etc
     plt.legend()
@@ -255,6 +263,24 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     plt.close()
 
     # thats it, some day please refactor this into smaller chunks.
+
+
+def plot_referencethoughput(start, end,select_filter, select_telescope):
+
+    _logger.info ("filter %s  in referenceflux table %s" % (select_filter,select_filter in telescopereferencethroughput))
+    _logger.info ("telescope %s in reference flux table: %s" % (select_telescope,select_telescope in telescopereferencethroughput[
+        select_filter] ))
+
+
+    if select_filter in telescopereferencethroughput and select_telescope in telescopereferencethroughput[
+        select_filter]:
+
+        goodvalue = telescopereferencethroughput[select_filter][select_telescope]
+        rect = Rectangle((start, goodvalue), end - start, -0.2, color='#A0FFA0A0')
+        plt.axes().add_patch(rect)
+
+
+        # plt.axhline(telescopereferencethroughput[select_filter][select_telescope])
 
 
 def findUpperEnvelope(dateobs, datum, ymax=24.2):
@@ -386,11 +412,15 @@ def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cached
 
     for t in type:
         modellist.extend (db.findmirrormodels(t, myfilter))
+        plot_referencethoughput(starttime, endtime, myfilter, t[0:3])
+
     modellist.sort(key = lambda x: x[0:3] + x[-1:-5].replace('2','0') + x[4:8])
     _logger.info ("Plotting several models in a single plot. These are the models returned from search %s: %s" % (type,modellist))
 
     plt.rc('lines', linewidth=1)
     prop_cycle=  cycle( ['-', '-.'])
+
+
 
     for model in modellist:
         _logger.debug ("Plotting mirror model %s" % model)
