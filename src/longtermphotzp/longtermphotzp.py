@@ -13,6 +13,8 @@ import os
 from itertools import cycle
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle
+import matplotlib.dates as mdates
+
 
 from photdbinterface import photdbinterface
 
@@ -59,6 +61,19 @@ telescopecleaning = {
     'cpt-doma-1m0a' : [datetime.datetime(2017, 11, 15),] ,
     'cpt-domb-1m0a' : [datetime.datetime(2017, 11, 15),] ,
     'cpt-domc-1m0a' : [datetime.datetime(2017, 11, 15),] ,
+}
+
+# List of events when the telesocope mirro rwas changed.
+# in practice, program will attempt to do a fit between dates listed here. so it does not matter what triggered
+# the new slope calculation
+mirrorreplacmenet = {
+    'ogg-clma-2m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2017, 10,20),],
+    'elp-doma-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2018, 4, 5) ],
+    'coj-clma-2m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2018, 6, 20),],
+    'lsc-domc-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2017, 8, 31),],
+    'coj-doma-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 18),] ,
+    'coj-domb-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 10),] ,
+
 }
 
 
@@ -188,6 +203,18 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
 
     if _x is not None:
         plt.plot(_x, _y, "-", c='red', label='upper envelope')
+
+        for telid in mirrorreplacmenet:
+            _site,_enc,_tel = telid.split ("-")
+            if (_site == select_site) and (select_telescope == '%s-%s' % (_enc,_tel)):
+
+                events =  mirrorreplacmenet[telid]
+                events.append(datetime.datetime.utcnow())
+                print (events)
+                for ii in range (len(events)-1):
+                    start = mirrorreplacmenet[telid][ii]
+                    end = mirrorreplacmenet[telid][ii+1]
+                    fittrendtomirrormodel(_x,_y, start, end, plot=True)
 
     else:
         _logger.warning("Mirror model failed to compute. not plotting !")
@@ -398,6 +425,25 @@ def trendcorrectthroughput(datadate, datazp, modeldate, modelzp):
 
     return corrected, day_x, day_y
 
+
+def fittrendtomirrormodel (dates,zps, start,end, order=1, plot=False):
+
+
+    _logger.info ("Calculating trend line between %s and %s " % (start,end))
+    select = (dates > start)
+    select = select & (dates < end)
+    _x = dates[select]
+    _xx = mdates.date2num(_x)
+    _y = zps[select]
+    poly = np.poly1d(np.polyfit (_xx, _y, order))
+    _logger.info("Slope calculated to % 5.3f mag / month" % (poly.c[0] * 30))
+
+    if plot:
+
+        _y = poly (_xx)
+        plt.plot (_x,_y,"--", label="trend= % 5.3f mag / month" % (poly.c[0] * 30))
+
+    return poly
 
 def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cacheddb = None):
     """ fetch mirror model from database for a selected class of telescopes and put them all into one single plot. """
