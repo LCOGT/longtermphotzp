@@ -46,9 +46,10 @@ telescopedict = {
 # TODO: either migrate into separate file or find a better source, e.g., store in db, or query maintenace data base.
 
 telescopecleaning = {
-    'lsc-doma-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),] ,
-    'lsc-domb-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),] ,
-    'lsc-domc-1m0a' : [datetime.datetime(2017, 8, 31), datetime.datetime(2018, 4, 5),datetime.datetime(2018, 5, 30),] ,
+    'lsc-doma-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),] ,
+    'lsc-domb-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),] ,
+    'lsc-domc-1m0a' : [datetime.datetime(2017, 8, 31), datetime.datetime(2018, 4, 5),datetime.datetime(2018, 5, 30),
+                    datetime.datetime(2018, 7, 24),] ,
     'lsc-aqwa-0m4a' : [datetime.datetime(2018, 4, 17),] ,
     'lsc-aqwb-0m4a' : [datetime.datetime(2018, 4, 17),] ,
     'coj-clma-0m4a' : [datetime.datetime(2017, 6, 30),] ,
@@ -70,9 +71,12 @@ mirrorreplacmenet = {
     'ogg-clma-2m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2017, 10,20),],
     'elp-doma-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2018, 4, 5) ],
     'coj-clma-2m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2018, 6, 20),],
+    'lsc-doma-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2016, 11, 1),],
     'lsc-domc-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2017, 8, 31),],
     'coj-doma-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 18),] ,
     'coj-domb-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 10),] ,
+    'cpt-doma-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2016, 11, 1),] ,
+    'cpt-domc-1m0a' : [datetime.datetime(2016, 10,1),] ,
 
 }
 
@@ -199,7 +203,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
                  zp_air[(zpsigselect <= photzpmaxnoise) & (cameraselect == uc)],
                  'o', markersize=2, label=uc)
         plt.plot(dateselect[zpsigselect > photzpmaxnoise], zp_air[zpsigselect > photzpmaxnoise], '.',
-                 markersize=1, c="grey", label='rejected' )
+                 markersize=1, c="grey", label='reject' )
 
     if _x is not None:
         plt.plot(_x, _y, "-", c='red', label='upper envelope')
