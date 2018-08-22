@@ -293,18 +293,20 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
         "%s/colortermtrend-%s-%s-%s.png" % (context.imagedbPrefix, select_site, select_telescope, select_filter))
     plt.close()
 
-    # thats it, some day please refactor this into smaller chunks.
+    # thats it, some day please refactor(select_filter, this into smaller chunks.
 
 
 def plot_referencethoughput(start, end,select_filter, select_telescope):
 
-    _logger.info ("filter %s  in referenceflux table %s" % (select_filter,select_filter in telescopereferencethroughput))
-    _logger.info ("telescope %s in reference flux table: %s" % (select_telescope,select_telescope in telescopereferencethroughput[
-        select_filter] ))
+    filterinreflux = select_filter in telescopereferencethroughput
+    _logger.info ("filter %s  in referenceflux table %s" % (select_filter,filterinreflux))
+    if not filterinreflux:
+        return
 
+    telescopeinreflux = select_telescope in telescopereferencethroughput[select_filter]
+    _logger.info ("telescope %s in reference flux table: %s" % (select_telescope, telescopeinreflux))
 
-    if select_filter in telescopereferencethroughput and select_telescope in telescopereferencethroughput[
-        select_filter]:
+    if filterinreflux and telescopeinreflux:
 
         goodvalue = telescopereferencethroughput[select_filter][select_telescope]
         rect = Rectangle((start, goodvalue), end - start, -0.2, color='#A0FFA0A0')
