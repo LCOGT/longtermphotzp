@@ -1,3 +1,10 @@
+Version 3 August 27 2018 
+---
+* indicate region of good throughput 
+* Fit a slope to zp decay for time between mirror swaps.
+* updated CO2 cleaning
+
+
 Version 2 August 17 2018
 ---
 Store mirror models in a seperate database table; no more need for ascii files.

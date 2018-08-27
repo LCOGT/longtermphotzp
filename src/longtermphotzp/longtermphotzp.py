@@ -46,8 +46,8 @@ telescopedict = {
 # TODO: either migrate into separate file or find a better source, e.g., store in db, or query maintenace data base.
 
 telescopecleaning = {
-    'lsc-doma-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),] ,
-    'lsc-domb-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),] ,
+    'lsc-doma-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),datetime.datetime(2018, 8, 27),] ,
+    'lsc-domb-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),datetime.datetime(2018, 8, 27),] ,
     'lsc-domc-1m0a' : [datetime.datetime(2017, 8, 31), datetime.datetime(2018, 4, 5),datetime.datetime(2018, 5, 30),
                     datetime.datetime(2018, 7, 24),] ,
     'lsc-aqwa-0m4a' : [datetime.datetime(2018, 4, 17),] ,
@@ -71,7 +71,7 @@ mirrorreplacmenet = {
     'ogg-clma-2m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2017, 10,20),],
     'elp-doma-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2018, 4, 5) ],
     'coj-clma-2m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2018, 6, 20),],
-    'lsc-doma-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2016, 11, 1),],
+    'lsc-doma-1m0a' : [datetime.datetime(2016,  6,1), datetime.datetime(2016, 10, 15),],
     'lsc-domc-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2017, 8, 31),],
     'coj-doma-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 18),] ,
     'coj-domb-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 10),] ,
