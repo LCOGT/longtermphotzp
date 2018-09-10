@@ -1,3 +1,8 @@
+Version 4 Sept 10 2018
+---
+* Also crawl for fa cameras (Archon-modified fl cameras)
+
+
 Version 3 August 27 2018 
 ---
 * indicate region of good throughput 
