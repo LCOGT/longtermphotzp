@@ -46,37 +46,41 @@ telescopedict = {
 # TODO: either migrate into separate file or find a better source, e.g., store in db, or query maintenace data base.
 
 telescopecleaning = {
-    'lsc-doma-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),datetime.datetime(2018, 8, 27),] ,
-    'lsc-domb-1m0a' : [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),datetime.datetime(2018, 8, 27),] ,
-    'lsc-domc-1m0a' : [datetime.datetime(2017, 8, 31), datetime.datetime(2018, 4, 5),datetime.datetime(2018, 5, 30),
-                    datetime.datetime(2018, 7, 24),] ,
-    'lsc-aqwa-0m4a' : [datetime.datetime(2018, 4, 17),] ,
-    'lsc-aqwb-0m4a' : [datetime.datetime(2018, 4, 17),] ,
-    'coj-clma-0m4a' : [datetime.datetime(2017, 6, 30),] ,
-    'coj-clma-0m4b' : [datetime.datetime(2017, 6, 30),] ,
-    'coj-clma-2m0a' : [datetime.datetime(2018, 6, 20),] ,
-    'coj-doma-1m0a' : [datetime.datetime(2018, 6, 18),] ,
-    'coj-domb-1m0a' : [datetime.datetime(2018, 6, 10),] ,
-    'elp-doma-1m0a' : [datetime.datetime(2017, 9, 20), datetime.datetime(2018, 4, 5),datetime.datetime(2018, 5, 6), ] ,
-    'ogg-clma-2m0a' : [datetime.datetime(2017, 10,20),],
-    'cpt-doma-1m0a' : [datetime.datetime(2017, 11, 15),] ,
-    'cpt-domb-1m0a' : [datetime.datetime(2017, 11, 15),] ,
-    'cpt-domc-1m0a' : [datetime.datetime(2017, 11, 15),] ,
+    'lsc-doma-1m0a': [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),
+                      datetime.datetime(2018, 8, 27),],
+    'lsc-domb-1m0a': [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30),datetime.datetime(2018, 7, 24),
+                      datetime.datetime(2018, 8, 27),],
+    'lsc-domc-1m0a': [datetime.datetime(2017, 8, 31), datetime.datetime(2018, 4, 5),datetime.datetime(2018, 5, 30),
+                      datetime.datetime(2018, 7, 24),],
+    'lsc-aqwa-0m4a': [datetime.datetime(2018, 4, 17),],
+    'lsc-aqwb-0m4a': [datetime.datetime(2018, 4, 17),],
+    'coj-clma-0m4a': [datetime.datetime(2017, 6, 30),],
+    'coj-clma-0m4b': [datetime.datetime(2017, 6, 30),],
+    'coj-clma-2m0a': [datetime.datetime(2018, 6, 20),],
+    'coj-doma-1m0a': [datetime.datetime(2018, 6, 18),],
+    'coj-domb-1m0a': [datetime.datetime(2018, 6, 10),],
+    'elp-doma-1m0a': [datetime.datetime(2017, 9, 20), datetime.datetime(2018, 4, 5),datetime.datetime(2018, 5, 6), ],
+    'ogg-clma-2m0a': [datetime.datetime(2017, 10,20),],
+    'cpt-doma-1m0a': [datetime.datetime(2017, 11, 15),],
+    'cpt-domb-1m0a': [datetime.datetime(2017, 11, 15),],
+    'cpt-domc-1m0a': [datetime.datetime(2017, 11, 15),],
 }
 
 # List of events when the telesocope mirro rwas changed.
 # in practice, program will attempt to do a fit between dates listed here. so it does not matter what triggered
 # the new slope calculation
 mirrorreplacmenet = {
-    'ogg-clma-2m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2017, 10,20),],
-    'elp-doma-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2018, 4, 5) ],
-    'coj-clma-2m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2018, 6, 20),],
-    'lsc-doma-1m0a' : [datetime.datetime(2016,  6,1), datetime.datetime(2016, 10, 15),],
-    'lsc-domc-1m0a' : [datetime.datetime(2016,  4,1), datetime.datetime(2017, 8, 31),],
-    'coj-doma-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 18),] ,
-    'coj-domb-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 10),] ,
-    'cpt-doma-1m0a' : [datetime.datetime(2016, 10,1), datetime.datetime(2016, 11, 1),] ,
-    'cpt-domc-1m0a' : [datetime.datetime(2016, 10,1),] ,
+    'ogg-clma-2m0a': [datetime.datetime(2016,  4,1), datetime.datetime(2017, 10,20),],
+    'elp-doma-1m0a': [datetime.datetime(2016,  4,1), datetime.datetime(2018, 4, 5) ],
+    'coj-clma-2m0a': [datetime.datetime(2016,  4,1), datetime.datetime(2018, 6, 20),],
+    'lsc-doma-1m0a': [datetime.datetime(2016,  6,1), datetime.datetime(2016, 10, 15),
+                      datetime.datetime(2018, 9, 14)],
+    'lsc-domb-1m0a': [datetime.datetime(2016,  4,1), datetime.datetime(2018, 9, 14),],
+    'lsc-domc-1m0a': [datetime.datetime(2016,  4,1), datetime.datetime(2017, 8, 31),],
+    'coj-doma-1m0a': [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 18),] ,
+    'coj-domb-1m0a': [datetime.datetime(2016, 10,1), datetime.datetime(2018, 6, 10),] ,
+    'cpt-doma-1m0a': [datetime.datetime(2016, 10,1), datetime.datetime(2016, 11, 1),] ,
+    'cpt-domc-1m0a': [datetime.datetime(2016, 10,1),] ,
 
 }
 
