@@ -61,9 +61,9 @@ telescopecleaning = {
     'coj-domb-1m0a': [datetime.datetime(2018, 6, 10),],
     'elp-doma-1m0a': [datetime.datetime(2017, 9, 20), datetime.datetime(2018, 4, 5),datetime.datetime(2018, 5, 6), ],
     'ogg-clma-2m0a': [datetime.datetime(2017, 10,20),],
-    'cpt-doma-1m0a': [datetime.datetime(2017, 11, 15),],
-    'cpt-domb-1m0a': [datetime.datetime(2017, 11, 15),],
-    'cpt-domc-1m0a': [datetime.datetime(2017, 11, 15),],
+    'cpt-doma-1m0a': [datetime.datetime(2017, 11, 15),datetime.datetime(2018, 9, 13),],
+    'cpt-domb-1m0a': [datetime.datetime(2017, 11, 15),datetime.datetime(2018, 9, 13),],
+    'cpt-domc-1m0a': [datetime.datetime(2017, 11, 15),datetime.datetime(2018, 9, 13),],
 }
 
 # List of events when the telesocope mirro rwas changed.
@@ -440,18 +440,24 @@ def fittrendtomirrormodel (dates,zps, start,end, order=1, plot=False):
 
 
     _logger.info ("Calculating trend line between %s and %s " % (start,end))
-    select = (dates > start)
-    select = select & (dates < end)
-    _x = dates[select]
-    _xx = mdates.date2num(_x)
-    _y = zps[select]
-    poly = np.poly1d(np.polyfit (_xx, _y, order))
-    _logger.info("Slope calculated to % 5.3f mag / month" % (poly.c[0] * 30))
 
-    if plot:
+    poly = np.poly1d([0,0])
 
-        _y = poly (_xx)
-        plt.plot (_x,_y,"--", label="trend= % 5.3f mag / month" % (poly.c[0] * 30))
+    try:
+        select = (dates > start)
+        select = select & (dates < end)
+        _x = dates[select]
+        _xx = mdates.date2num(_x)
+        _y = zps[select]
+        poly = np.poly1d(np.polyfit (_xx, _y, order))
+        _logger.info("Slope calculated to % 5.3f mag / month" % (poly.c[0] * 30))
+
+        if plot:
+
+            _y = poly (_xx)
+            plt.plot (_x,_y,"--", label="trend= % 5.3f mag / month" % (poly.c[0] * 30))
+    except:
+        _logger.error ("While fitting phzp trend: %s")
 
     return poly
 
