@@ -14,7 +14,9 @@ from itertools import cycle
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle
 import matplotlib.dates as mdates
+from matplotlib import rc
 
+rc('text', usetex=True)
 
 from photdbinterface import photdbinterface
 
@@ -207,7 +209,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
                  zp_air[(zpsigselect <= photzpmaxnoise) & (cameraselect == uc)],
                  'o', markersize=2, label=uc)
         plt.plot(dateselect[zpsigselect > photzpmaxnoise], zp_air[zpsigselect > photzpmaxnoise], '.',
-                 markersize=1, c="grey", label='reject' )
+                 markersize=1, c="grey", label='_nolegend_' )
 
     if _x is not None:
         plt.plot(_x, _y, "-", c='red', label='upper envelope')
@@ -227,10 +229,8 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     else:
         _logger.warning("Mirror model failed to compute. not plotting !")
 
-
-
     # prettify, decorations, etc
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     plt.ylim([ymax - 3.5, ymax])
     dateformat(mystarttime,endtime)
     plt.xlabel("DATE-OBS")
@@ -240,7 +240,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     # and finally safe the plot.
     outfigname = "%s/photzptrend-%s-%s-%s.png" % (
         context.imagedbPrefix, select_site, select_telescope, select_filter)
-    plt.savefig(outfigname, dpi=600)
+    plt.savefig(outfigname, dpi=600, bbox_inches="tight")
     plt.close()
 
     # for internal use: generate error plots.
@@ -455,7 +455,7 @@ def fittrendtomirrormodel (dates,zps, start,end, order=1, plot=False):
         if plot:
 
             _y = poly (_xx)
-            plt.plot (_x,_y,"--", label="trend= % 5.3f mag / month" % (poly.c[0] * 30))
+            plt.plot (_x,_y,"--", label="% 5.3f mag \nper month" % (poly.c[0] * 30))
     except:
         _logger.error ("While fitting phzp trend: %s")
 
