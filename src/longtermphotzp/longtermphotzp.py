@@ -14,9 +14,6 @@ from itertools import cycle
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle
 import matplotlib.dates as mdates
-from matplotlib import rc
-
-rc('text', usetex=True)
 
 from photdbinterface import photdbinterface
 
