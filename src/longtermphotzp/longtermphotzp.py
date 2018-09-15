@@ -237,7 +237,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     # and finally safe the plot.
     outfigname = "%s/photzptrend-%s-%s-%s.png" % (
         context.imagedbPrefix, select_site, select_telescope, select_filter)
-    plt.savefig(outfigname, dpi=600, bbox_inches="tight")
+    plt.savefig(outfigname, bbox_inches="tight")
     plt.close()
 
     # for internal use: generate error plots.
@@ -535,7 +535,7 @@ def renderHTMLPage (args):
 
         for zptrend in zptrendimages:
             zptrend = zptrend.replace("%s/" % args.imagedbPrefix, "")
-            line = '<a href="%s"><img src="%s" width="600"/></a>  <img src="%s" width="600"/>  <img src="%s" width="600"/><p/>' % (zptrend, zptrend, zptrend.replace('photzptrend', 'colortermtrend'), zptrend.replace('photzptrend', 'airmasstrend'))
+            line = '<a href="%s"><img src="%s" height="450"/></a>  <img src="%s" height="450"/>  <img src="%s" height="450"/><p/>' % (zptrend, zptrend, zptrend.replace('photzptrend', 'colortermtrend'), zptrend.replace('photzptrend', 'airmasstrend'))
             message = message + line
 
     message = message + "</body></html>"
@@ -581,7 +581,7 @@ def parseCommandLine():
 
 if __name__ == '__main__':
     plt.style.use('ggplot')
-    matplotlib.rcParams['savefig.dpi'] = 600
+    matplotlib.rcParams['savefig.dpi'] = 400
 
     args = parseCommandLine()
 
