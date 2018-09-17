@@ -63,6 +63,8 @@ telescopecleaning = {
     'cpt-doma-1m0a': [datetime.datetime(2017, 11, 15),datetime.datetime(2018, 9, 13),],
     'cpt-domb-1m0a': [datetime.datetime(2017, 11, 15),datetime.datetime(2018, 9, 13),],
     'cpt-domc-1m0a': [datetime.datetime(2017, 11, 15),datetime.datetime(2018, 9, 13),],
+    'tfn-aqwa-0m4a': [datetime.datetime(2018, 9,12),],
+    'tfn-aqwa-0m4b': [datetime.datetime(2018, 9,12),],
 }
 
 # List of events when the telesocope mirro rwas changed.
