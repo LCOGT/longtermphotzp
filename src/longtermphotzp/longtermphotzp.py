@@ -472,7 +472,7 @@ def fittrendtomirrormodel (dates,zps, start,end, order=1, plot=False):
             _y = poly (_xx)
             plt.plot (_x,_y,"--", label="% 5.3f mag \nper month" % (poly.c[0] * 30))
     except:
-        _logger.error ("While fitting phzp trend: %s")
+        _logger.error ("While fitting phzp trend; probably not enough data points.")
 
     return poly
 
