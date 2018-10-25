@@ -10,7 +10,7 @@ EXPOSE 80
 
 
 RUN apt-get update -y \
-        && apt-get install --no-install-recommends -y cron supervisor less vim   \
+        && apt-get install --no-install-recommends -y cron supervisor less vim  parallel \
         && apt-get clean -y \
         && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
