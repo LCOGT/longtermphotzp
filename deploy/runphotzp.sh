@@ -4,7 +4,12 @@ cd ~/Software/lco-throughputreport/src/longtermphotzp
 
 source ../../venv/bin/activate
 
-printf %s\\n {fl,fa,fs,kb} | nice xargs -n 1 -P 3 python3 photcalibration.py --mintexp 10 --lastNdays 3 --cameratype
+sem -j 1 python3 photcalibration.py --mintexp 10 --lastNdays 3 --cameratype fl
+sem -j 1 python3 photcalibration.py --mintexp 10 --lastNdays 3 --cameratype fa
+sem -j 1 python3 photcalibration.py --mintexp 10 --lastNdays 3 --cameratype fs
+sem -j 1 python3 photcalibration.py --mintexp 10 --lastNdays 3 --cameratype kb
+
+sem wait
 
 nice python3 longtermphotzp.py --filter rp
 nice python3 longtermphotzp.py --filter gp
