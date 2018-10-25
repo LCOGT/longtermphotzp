@@ -149,7 +149,14 @@ class photdbinterface:
             dateselect = ( t['dateobs'] > datetime.datetime(year=2017,month=11,day=15) ) & ( t['dateobs'] < datetime.datetime(year=2018,month=4,day=10) ) & (t['camera'] == 'kb96')
             t['zp'][dateselect] = t['zp'][dateselect] - 2.5 * math.log10 (0.851 / 2.74)
 
-        # align kb past of elp for SPIE 2018 presentation
+
+        if 'kb95' in t['camera']:
+            dateselect = ( t['dateobs'] > datetime.datetime(year=2018,month=9,day=18) )  & (t['camera'] == 'kb95')
+            t['zp'][dateselect] = t['zp'][dateselect] - 2.5 * math.log10 (2.75/1.6)
+
+
+
+    # align kb past of elp for SPIE 2018 presentation
         #if 'kb74' in t['camera']:
         #    dateselect =  (t['camera'] == 'kb74') & (t['site'] == 'elp')
         #    t['zp'][dateselect] = t['zp'][dateselect] +0.75
