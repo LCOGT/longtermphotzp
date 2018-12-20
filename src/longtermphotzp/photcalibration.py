@@ -355,14 +355,12 @@ class refcat2:
 
 
             sql_command = sql_command.format(ramin=min_ra, ramax=max_ra, decmin=min_dec, decmax=max_dec)
-            _logger.info (sql_command)
             cursor.execute(sql_command)
-            rows = cursor.fetchall()
-            print (rows)
-            table = Table (rows, names=['ra','dec','g','r','i','z'])
+            rows = np.asarray(cursor.fetchall())
+            table = Table (rows, names=['RA','DEC','g','r','i','z'])
         except:
             _logger.exception("While trying to read from database:")
-            exit(1)
+            return None
 
         table = self.PS1toSDSS(table)
 
