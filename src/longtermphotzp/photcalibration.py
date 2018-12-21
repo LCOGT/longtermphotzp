@@ -33,12 +33,12 @@ class PhotCalib():
     # LCO filter -> sdss filter name, sdsss g-i color term, airmass term, default zero point.
     # possibly need this for all site:telescope:camera:filter settings. Maybe start with one
     # default and see where it goes.
-    refcat = None
+    referencecatalog = None
 
     def __init__(self, refcat2db):
         # super(PhotCalib, self).__init__(pipeline_context)
         # TODO: capture error if no ps1 catalog is found at location
-        self.refcat = refcat2(refcat2db)
+        self.referencecatalog = refcat2(refcat2db)
 
     def do_stage(self, images):
         """ future hook for BANZAI pipeline integration
@@ -74,7 +74,7 @@ class PhotCalib():
         ra = testimage['SCI'].header['CRVAL1']
         dec = testimage['SCI'].header['CRVAL2']
 
-        if not self.ps1catalog.isInCatalogFootprint(ra, dec):
+        if not self.referencecatalog.isInCatalogFootprint(ra, dec):
             _logger.debug("Image not in PS1 footprint. Ignoring")
             testimage.close()
             return None
@@ -90,7 +90,7 @@ class PhotCalib():
         retCatalog['FOCOBOFF'] = testimage['SCI'].header['FOCOBOFF']
 
         # Check if filter is supported
-        if retCatalog['instfilter'] not in self.ps1catalog.FILTERMAPPING:
+        if retCatalog['instfilter'] not in self.referencecatalog.FILTERMAPPING:
             _logger.debug("%s - Filter %s not viable for photometric calibration. Sorry" % (image, retCatalog['instfilter']))
             testimage.close()
             return None
@@ -108,7 +108,7 @@ class PhotCalib():
             return None
 
         # Get the instrumental filter and the matching reference catalog filter names.
-        referenceInformation = self.ps1catalog.FILTERMAPPING[retCatalog['instfilter']]
+        referenceInformation = self.referencecatalog.FILTERMAPPING[retCatalog['instfilter']]
         referenceFilterName = referenceInformation['refMag']
 
         # Load photometry catalog from image, and transform into RA/Dec coordinates
@@ -134,7 +134,7 @@ class PhotCalib():
         testimage.close()
 
         # Query reference catalog TODO: paramterize FoV of query!
-        refcatalog = self.ps1catalog.get_reference_catalog(ra, dec, 0.25)
+        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.25)
         if refcatalog is None:
             _logger.warning("%s, no reference catalog received." % image)
             return None
@@ -448,7 +448,7 @@ def parseCommandLine():
     parser.add_argument('--log-level', dest='log_level', default='INFO', choices=['DEBUG', 'INFO'],
                         help='Set the log level')
     parser.add_argument('--refcat2db', dest='refcat2db', default='~/Catalogs/refcat2/refcat2.db',
-                        help='Directory of PS1 catalog')
+                        help='Directory of Atlas refcat2 catalog database')
     parser.add_argument("--diagnosticplotsdir", dest='outputimageRootDir', default=None,
                         help='Output directory for diagnostic photometry plots. No plots generated if option is omitted. This is a time consuming task. ')
     parser.add_argument('--photodb', dest='imagedbPrefix', default='~/lcozpplots/lcophotzp.db',
