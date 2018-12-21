@@ -75,7 +75,7 @@ class refcat2dbmaker():
     '''
 
 
-    dbname = 'refcat2.db'
+    dbname = '/home/dharbeck/Catalogs/refcat2/refcat2.db'
     # Coulmns that we will ingest into the sqlite database
     usedcolnames=['objid','RA','Dec','pmra','pmdec','g','r','i','z','dg','dr','di','dz']
 
@@ -156,14 +156,14 @@ class refcat2dbmaker():
         cursor.execute('begin transaction')
         cursor.execute('CREATE TABLE IF NOT EXISTS sources (%s);' % self.fieldsstringtpye)
         cursor.execute('COMMIT')
-
         for catalog in catalogfiles:
-            log.info ("Adding %s" % catalog)
-            self.addallfromcsv (catalog, cursor)
+             log.info ("Adding %s" % catalog)
+             self.addallfromcsv (catalog, cursor)
 
         log.info ("Creating rtree")
         cursor.execute('CREATE VIRTUAL TABLE if not exists positions using rtree(objid, ramin, ramax, decmin, decmax);')
         cursor.execute('insert into positions (objid, ramin, ramax, decmin, decmax) select objid, RA, RA, Dec, Dec from sources;')
+        cursor.execute("COMMIT")
         cursor.close()
 
 
