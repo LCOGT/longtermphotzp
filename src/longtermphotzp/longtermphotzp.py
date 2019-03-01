@@ -91,7 +91,8 @@ mirrorreplacmenet = {
     'lsc-domb-1m0a': [datetime.datetime(2016,  4,1),
                       datetime.datetime(2018, 9, 14),],
     'lsc-domc-1m0a': [datetime.datetime(2016,  4,1),
-                      datetime.datetime(2017, 8, 31),],
+                      datetime.datetime(2017, 8, 31),
+                      datetime.datetime(2018, 9, 14),],
 
     'cpt-doma-1m0a': [datetime.datetime(2016, 10,1),
                       datetime.datetime(2016, 11, 1),
