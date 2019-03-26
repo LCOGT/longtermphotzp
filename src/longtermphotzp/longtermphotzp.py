@@ -253,7 +253,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     plt.xlabel("DATE-OBS")
     plt.ylabel("Photometric Zeropoint %s" % select_filter)
     plt.title("Long term throughput  %s:%s in %s" % (select_site, select_telescope, select_filter))
-
+    plt.gcf().set_size_inches(12,6)
     # and finally safe the plot.
     outfigname = "%s/photzptrend-%s-%s-%s.png" % (
         context.imagedbPrefix, select_site, select_telescope, select_filter)
@@ -518,6 +518,8 @@ def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cached
     name=""
     for ii in type:
         name += str(ii)
+
+    plt.gcf().set_size_inches(12,6)
     plt.savefig("%s/allmodels_%s_%s.png" % (context.imagedbPrefix, name, context.filter), bbox_inches='tight')
     plt.close()
 
@@ -602,6 +604,7 @@ def parseCommandLine():
 if __name__ == '__main__':
     plt.style.use('ggplot')
     matplotlib.rcParams['savefig.dpi'] = 400
+    matplotlib.rcParams['figure.figsize'] = (8.0,6.0)
 
     args = parseCommandLine()
 
