@@ -155,6 +155,15 @@ class photdbinterface:
             t['zp'][dateselect] = t['zp'][dateselect] - 2.5 * math.log10 (2.75/1.6)
 
 
+        if 'fs02' in t['camera']:
+            # https://github.com/LCOGT/site-configuration/commit/26d03f28868579d49dcc5e5e4e6a6650651ae72c
+            dateselect = ( t['dateobs'] < datetime.datetime(year=2019,month=3,day=12) ) & (t['camera'] == 'fs02')
+            t['zp'][dateselect] = t['zp'][dateselect] - 2.5 * math.log10 (8.09 / 7.7)
+
+        if 'fs01' in t['camera']:
+            # https://github.com/LCOGT/site-configuration/commit/26d03f28868579d49dcc5e5e4e6a6650651ae72c
+            dateselect = ( t['dateobs'] < datetime.datetime(year=2019,month=3,day=12) ) & (t['camera'] == 'fs01')
+            t['zp'][dateselect] = t['zp'][dateselect] - 2.5 * math.log10 (8.14 / 7.7)
 
     # align kb past of elp for SPIE 2018 presentation
         #if 'kb74' in t['camera']:
