@@ -56,7 +56,7 @@ telescopecleaning = {
     'coj-clma-0m4a': [datetime.datetime(2017, 6, 30),],
     'coj-clma-0m4b': [datetime.datetime(2017, 6, 30),],
     'coj-clma-2m0a': [datetime.datetime(2018, 6, 20),],
-    'coj-doma-1m0a': [datetime.datetime(2018, 6, 18),],
+    'coj-doma-1m0a': [datetime.datetime(2018, 6, 18), datetime.datetime(2019, 4, 3), ],
     'coj-domb-1m0a': [datetime.datetime(2018, 6, 10), datetime.datetime(2019, 3, 25),],
     'elp-doma-1m0a': [datetime.datetime(2017, 9, 20), datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 6),
                       datetime.datetime(2018, 6, 9), datetime.datetime(2018, 12, 11), ],
