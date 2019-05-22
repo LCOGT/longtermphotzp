@@ -68,7 +68,7 @@ telescopecleaning = {
     'tfn-aqwa-0m4b': [datetime.datetime(2018, 9,12),],
 }
 
-# List of events when the telesocope mirro rwas changed.
+# List of events when the telesocope mirror was changed.
 # in practice, program will attempt to do a fit between dates listed here. so it does not matter what triggered
 # the new slope calculation
 mirrorreplacmenet = {
@@ -76,7 +76,8 @@ mirrorreplacmenet = {
                       datetime.datetime(2017, 10,20),],
 
     'elp-doma-1m0a': [datetime.datetime(2016,  4,1),
-                      datetime.datetime(2018, 4, 5), ],
+                      datetime.datetime(2018, 4, 5), 
+                      datetime.datetime(2019, 5, 22), ], # mirror wash
 
     'coj-clma-2m0a': [datetime.datetime(2016,  4,1),
                       datetime.datetime(2018, 6, 20),],
