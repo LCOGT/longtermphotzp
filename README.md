@@ -99,9 +99,10 @@ Deploying at LCO
 ===
 
 Building the container:
+```
 docker build -t docker.lco.global/photzp .
 docker push  docker.lco.global/photzp
-
+```
 
 Running an example in container:
 ```
