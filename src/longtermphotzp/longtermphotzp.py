@@ -217,7 +217,17 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
 
         if (_site == select_site) and (select_telescope == '%s-%s' % (_enc,_tel)):
             for event in telescopecleaning[telid]:
-                plt.axvline (x=event, color='grey', linestyle='--')
+                plt.axvline (x=event, color='grey', linestyle=':')
+
+
+    for telid in mirrorreplacmenet:
+        _site,_enc,_tel = telid.split ("-")
+
+        if (_site == select_site) and (select_telescope == '%s-%s' % (_enc,_tel)):
+            for event in mirrorreplacmenet[telid]:
+                plt.axvline (x=event, color='orange', linestyle='--')
+
+
 
     #  plot all the zeropoint measurements, but label different cameras differently.
     uniquecameras = np.unique(cameraselect)
