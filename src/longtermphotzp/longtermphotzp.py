@@ -56,7 +56,7 @@ telescopecleaning = {
     'coj-clma-0m4a': [datetime.datetime(2017, 6, 30), datetime.datetime(2019, 4, 4),],
     'coj-clma-0m4b': [datetime.datetime(2017, 6, 30), datetime.datetime(2019, 4, 4),],
     'coj-clma-2m0a': [datetime.datetime(2018, 6, 20),],
-    'coj-doma-1m0a': [datetime.datetime(2018, 6, 18), datetime.datetime(2019, 4, 3), ],
+    'coj-doma-1m0a': [datetime.datetime(2018, 6, 18), datetime.datetime(2019, 4, 3), datetime.datetime(2019, 7, 17),],
     'coj-domb-1m0a': [datetime.datetime(2018, 6, 10), datetime.datetime(2019, 3, 25),],
     'elp-clma-0m4a': [datetime.datetime(2019, 5, 29),],
     'elp-doma-1m0a': [datetime.datetime(2017, 9, 20), datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 6),
@@ -74,7 +74,8 @@ telescopecleaning = {
 # the new slope calculation
 mirrorreplacmenet = {
     'ogg-clma-2m0a': [datetime.datetime(2016,  4,1),
-                      datetime.datetime(2017, 10,20),],
+                      datetime.datetime(2017, 10,20),
+                      datetime.datetime(2019, 6, 16)],  # this was a mirror wash only
 
     'elp-doma-1m0a': [datetime.datetime(2016,  4,1),
                       datetime.datetime(2018, 4, 5), 
