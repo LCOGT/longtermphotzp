@@ -59,6 +59,13 @@ def make_elasticsearch(index, filters, queries=None, exclusion_filters=None, ran
 def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, mintexp=30,
                               filterlist=['gp', 'rp', 'ip', 'zp'], es_url='http://elasticsearch.lco.gtn:9200'):
 
+    """ Queries for a list of processed LCO images that are viable to get a photometric zeropoint in the griz bands measured.
+
+        Selection criteria are by DAY-OBS, site, by camaera type (fs,fa,kb), what filters to use, and minimum exposure time.
+        Only day-obs is a mandatory fields, we do not want to query the entire archive at once.
+     """
+
+    # TODO: further preselect by number of sources to avoid overly crowded or empty fields
     query_filters = [{'DAY-OBS': dayobs}, {'RLEVEL': 91}, {'WCSERR': 0}, ]
     range_filters = [{'EXPTIME': {'gte': mintexp}}, ]
     terms_filters = [{'FILTER': filterlist}]
@@ -75,7 +82,6 @@ def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, m
     records = make_elasticsearch('fitsheaders', query_filters, queries, exclusion_filters=None, es_url=es_url,
                                  range_filters=range_filters, prefix_filters=prefix_filters,
                                  terms_filters=terms_filters).scan()
-
     records_sanitized = [record['filename']
                            for record in records]
     return records_sanitized

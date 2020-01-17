@@ -372,7 +372,7 @@ class refcat2:
 
 #### Wrapper routines to use photometric zeropointing stand-alone
 
-def process_imagelist(inputlist, db, args):
+def process_imagelist(inputlist, db, args, rewritetoarchivename=True):
     """ Invoke the per image processing for a list of files, but check for duplication. """
     # get list of files of intersest from elasticsearch
     initialsize = len (inputlist)
@@ -388,8 +388,17 @@ def process_imagelist(inputlist, db, args):
     photzpStage = PhotCalib(args.refcat2db)
     for image in inputlist:
         image = image.rstrip()
-        #photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp)
+        if rewritetoarchivename:
+            image=lcofilename_to_archivepath(image, args.rootdir)
+        photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp)
         _logger.debug ("analyze image: {}".format (image))
+
+def lcofilename_to_archivepath(filename, rootpath):
+    m = re.search ('^(...)1m...-(....)-(........)', filename)
+    site = m.group(1)
+    camera = m.group(2)
+    dateobs = m.group(3)
+    return "{}/{}/{}/{}/processed/{}".format (rootpath, site, camera, dateobs,filename)
 
 def parseCommandLine():
     """ Read command line parameters
