@@ -1,6 +1,7 @@
 #from __future__ import absolute_import, division, print_function, unicode_literals
 import matplotlib
 from photdbinterface import photdbinterface
+import es_aws_imagefinder
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -371,71 +372,24 @@ class refcat2:
 
 #### Wrapper routines to use photometric zeropointing stand-alone
 
-def crawlDirectory(directory, db, args):
-
-    search = "%s/*-[es][19]1.fits.fz" % (directory)
-    inputlist = glob.glob(search)
+def process_imagelist(inputlist, db, args):
+    """ Invoke the per image processing for a list of files, but check for duplication. """
+    # get list of files of intersest from elasticsearch
     initialsize = len (inputlist)
-
     rejects = []
     if not args.redo:
         for image in inputlist:
             if db.exists(image):
                 rejects.append (image)
-
         for r in rejects:
             inputlist.remove (r)
-
-    _logger.info ("Found %d files intially, but cleaned %d already measured images. Starting analysis of %d files" % (initialsize, len(rejects), len(inputlist)))
+    _logger.debug ("Found %d files initially, but cleaned %d already measured images. Starting analysis of %d files" % (initialsize, len(rejects), len(inputlist)))
 
     photzpStage = PhotCalib(args.refcat2db)
     for image in inputlist:
         image = image.rstrip()
-        photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp)
-
-
-def crawlSiteCameraArchive(site, camera, args, date=None):
-    '''
-    Process in the archive
-
-    :param site:
-    :param camera:
-    :param args:
-    :param date:
-    :return:
-    '''
-
-    if date is None:
-        date = '*'
-
-    if site is None:
-        _logger.error ("Must define a site !")
-        exit (1)
-
-    imagedb = photdbinterface(args.imagedbPrefix)
-
-    searchdir = "%s/%s/%s/%s/%s" % (args.rootdir, site, camera, date, args.processstatus)
-
-    _logger.info("Searching in directories: %s" % (searchdir))
-
-    crawlDirectory(searchdir, imagedb, args)
-    imagedb.close();
-
-
-def crawlSite(site, type, args):
-    """ Search for all cameras of a given type (fl, kb,fs) in a site directory and processed them """
-    searchdir = "%s/%s/%s*" % (args.rootdir, site, type)
-
-    cameralist = glob.glob(searchdir)
-    cameras = []
-    for candidate in cameralist:
-        cameras.append((site, os.path.basename(os.path.normpath(candidate))))
-
-    for setup in cameras:
-        for date in args.date:
-            print(setup[0], setup[1], date)
-            crawlSiteCameraArchive(setup[0], setup[1], args, date)
-
+        #photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp)
+        _logger.debug ("analyze image: {}".format (image))
 
 def parseCommandLine():
     """ Read command line parameters
@@ -443,7 +397,6 @@ def parseCommandLine():
 
     parser = argparse.ArgumentParser(
         description='Determine photometric zeropoint of banzai-reduced LCO imaging data.')
-
 
     parser.add_argument('--log-level', dest='log_level', default='INFO', choices=['DEBUG', 'INFO'],
                         help='Set the log level')
@@ -459,6 +412,7 @@ def parseCommandLine():
     parser.add_argument('--mintexp', dest='mintexp', default=60, type=float,  help='Minimum exposure time to accept')
     parser.add_argument('--redo', action='store_true')
     parser.add_argument ('--preview', dest='processstatus', default='processed', action='store_const', const='preview')
+
 
 
 
@@ -505,43 +459,48 @@ def parseCommandLine():
     print (args.processstatus)
     return args
 
-
 def photzpmain():
+
+
+    #    inputlist = es_aws_imagefinder.get_frames_for_photometry(dateobs, site, camera)
     args = parseCommandLine()
-
-    if args.cameratype is not None:
-
-        cameras = [camera for camera in args.cameratype.split(',')]
-
-        if args.site is not None:
-            sites = [site for site in args.site.split(',')]
-        else:
-            sites = ('lsc', 'cpt', 'ogg', 'coj', 'tfn', 'elp', 'sqa', 'bpl')
-
-        print("Crawling through camera types ", cameras, " at sites ", sites, " for date ", args.date)
-        for site in sites:
-            for cameratype in cameras:
-                crawlSite(site, cameratype, args)
-
-    elif args.camera is not None:
-
-        if args.site is None:
-            sites = '*'
-        else:
-            sites = args.site
-
-        print("Calibrating camera ", args.camera, " at site ", sites, ' for date ', args.date)
-        for date in args.date:
-            crawlSiteCameraArchive(sites, args.camera, args, date=date)
-
-    elif args.crawldirectory is not None:
-        imagedb = photdbinterface("%s/%s" % (args.crawldirectory, 'imagezp.db'))
-
-        crawlDirectory(args.crawldirectory, imagedb, args)
-        imagedb.close()
-
+    if args.site is not None:
+        sites = [site for site in args.site.split(',')]
     else:
-        print("Need to specify either a camera, or a camera type.")
+        sites = ('lsc', 'cpt', 'ogg', 'coj', 'tfn', 'elp')
+
+
+    for date in args.date:
+
+        if args.cameratype is not None:
+            cameratypes = [x for x in args.cameratype.split(',')]
+            for site in sites:
+                for cameratype in cameratypes:
+                    inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site, cameratype=cameratype, mintexp=args.mintexp)
+                    imagedb = photdbinterface(args.imagedbPrefix)
+                    _logger.info("Processing image list N={} for type {} at site  {} for date {}".format (len(inputlist),cameratype, site, date))
+                    process_imagelist(inputlist,imagedb, args)
+                    imagedb.close()
+
+        elif args.camera is not None:
+
+
+            inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site=None, camera=args.camera, mintexp=args.mintexp)
+            _logger.info("Processing image list N={} for camera {} at for date {}".format (len(inputlist),args.camera, date))
+            imagedb = photdbinterface(args.imagedbPrefix)
+
+            process_imagelist(inputlist,imagedb, args)
+            imagedb.close()
+
+        elif args.crawldirectory is not None:
+            print ("Not supported")
+            inputlist = os.path.basename (glob.glob ("{}/*e91.fits.fz".format (args.crawldirectory)))
+            imagedb = photdbinterface("%s/%s" % (args.crawldirectory, 'imagezp.db'))
+            process_imagelist(inputlist, imagedb, args)
+            imagedb.close()
+
+        else:
+            print("Need to specify either a camera, or a camera type.")
 
     sys.exit(0)
 

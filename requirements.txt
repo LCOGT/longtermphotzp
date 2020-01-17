@@ -3,3 +3,6 @@ astropy
 scipy
 numpy
 sqlalchemy
+pytest
+elasticsearch
+elasticsearch_dsl
