@@ -394,10 +394,12 @@ def process_imagelist(inputlist, db, args, rewritetoarchivename=True):
         _logger.debug ("analyze image: {}".format (image))
 
 def lcofilename_to_archivepath(filename, rootpath):
-    m = re.search ('^(...)1m...-(....)-(........)', filename)
+    #_logger.debug ("Finding full apth name for image {} at root {}".format(filename, rootpath))
+    m = re.search ('^(...).....-(....)-(........)', filename)
     site = m.group(1)
     camera = m.group(2)
     dateobs = m.group(3)
+
     return "{}/{}/{}/{}/processed/{}".format (rootpath, site, camera, dateobs,filename)
 
 def parseCommandLine():

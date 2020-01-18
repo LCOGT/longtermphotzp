@@ -10,7 +10,6 @@ sqlfile="/database/lcophotzp.db"
 
 #printf %s\\n {fl,fa,fs,kb} |  xargs -n 1 -P 3 /usr/local/bin/python3 photcalibration.py --photodb $sqlfile --ps1dir /panstarrs --mintexp 10 --lastNdays 3 --cameratype
 
-/usr/local/bin/python3 photcalibration.py --photodb $sqlfile --refcat2db /refcat2/refcat2.db --mintexp 10 --lastNdays 3 --cameratype fl
 /usr/local/bin/python3 photcalibration.py --photodb $sqlfile --refcat2db /refcat2/refcat2.db --mintexp 10 --lastNdays 3 --cameratype fa
 /usr/local/bin/python3 photcalibration.py --photodb $sqlfile --refcat2db /refcat2/refcat2.db --mintexp 10 --lastNdays 3 --cameratype fs
 /usr/local/bin/python3 photcalibration.py --photodb $sqlfile --refcat2db /refcat2/refcat2.db --mintexp 10 --lastNdays 3 --cameratype kb
