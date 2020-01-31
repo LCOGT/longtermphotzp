@@ -16,3 +16,5 @@ sqlfile="/database/lcophotzp.db"
 
 /usr/local/bin/python3 longtermphotzp.py --database $sqlfile --outputdirectory /database --filter gp
 /usr/local/bin/python3 longtermphotzp.py --database $sqlfile --outputdirectory /database --filter rp
+/usr/local/bin/python3 longtermphotzp.py --database $sqlfile --outputdirectory /database --filter ip
+/usr/local/bin/python3 longtermphotzp.py --database $sqlfile --outputdirectory /database --filter zp
