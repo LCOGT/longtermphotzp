@@ -3,7 +3,7 @@ import logging
 from longtermphotzp.es_aws_imagefinder import download_from_archive
 
 logging.basicConfig()
-def test_aws_fits_access():
+def notest_aws_fits_access():
 
 
         # public dark

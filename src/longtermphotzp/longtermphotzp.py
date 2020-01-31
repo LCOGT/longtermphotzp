@@ -11,7 +11,6 @@ import logging
 import glob
 import os
 from itertools import cycle
-import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle
 import matplotlib.dates as mdates
 

@@ -1,5 +1,4 @@
 import logging
-
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from astropy.table import Table

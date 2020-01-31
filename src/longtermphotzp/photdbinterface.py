@@ -7,21 +7,13 @@ from astropy.table import Table
 import astropy.time as astt
 import math
 
-
-
-
 assert sys.version_info >= (3,5)
 _logger = logging.getLogger(__name__)
 
-
 class photdbinterface:
     ''' Storage model for data:
-
     individual photometric zeropoints per exposure
-
-
     long term mirror model: upper envelope fit for a telescope's trendline
-
     '''
 
     createstatement = "CREATE TABLE IF NOT EXISTS lcophot (" \
@@ -37,15 +29,12 @@ class photdbinterface:
                       " colorterm real," \
                       " zpsig real)"
 
-
     createmodeldb  = "CREATE TABLE IF NOT EXISTS telescopemodel (" \
                       "telescopeid TEXT, " \
                       " filter text," \
                       " dateobs text," \
                       " modelzp real" \
                       " )"
-
-
 
     def __init__(self, fname):
         _logger.debug ("Open data base file %s" % (fname))

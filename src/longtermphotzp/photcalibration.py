@@ -184,10 +184,10 @@ class PhotCalib():
                 print ("Use AWS")
                 imageobject = es_aws_imagefinder.download_from_archive(imageentry['frameid'][0])
             else:
-                print ("Loading from file system")
-                imageobject = fits.open(str(imageentry['filename']))
+                print ("Loading from file system: {}".format (str(imageentry['filename'][0])))
+                imageobject = fits.open(str(imageentry['filename'][0]))
         except:
-            _logger.warning ("File {} could not be accessed".format (imageName))
+            _logger.warning ("File {} could not be accessed: {}".format (imageName,sys.exc_info()[0]))
             return None
 
         retCatalog = self.generateCrossmatchedCatalog(imageobject, mintexp=mintexp)
@@ -272,7 +272,7 @@ class PhotCalib():
         else:
             _logger.info("Not saving output for image %s " % imageName)
 
-        return photzp
+        return photzp, photzpsig, colorterm
 
 
 class refcat2:
