@@ -46,7 +46,7 @@ class PhotCalib():
             pass
             # logging_tags = logs.image_config_to_tags(image, self.group_by_keywords)
 
-    def generateCrossmatchedCatalog(self, image, mintexp=60):
+    def generateCrossmatchedCatalog(self, imageobject, mintexp=60):
         """ Load the banzai-generated photometry catalog from  'CAT' extension, queries PS1 catalog for image FoV, and
         returns a cross-matched catalog.
 
@@ -54,55 +54,48 @@ class PhotCalib():
          if photometric filter is not supported, none is returned
          if exposure time is < 60 seconds, None is returned.
 
-        :param image: input fits image path+name
+        :param image: an opened fits image
         :return:
         """
 
         # Build up a baseline refernce catlog with meta data.
-        #TODO: this is a bit retarded since we are copoying FITS headers around.
-        retCatalog = {'fname': image,
-                      'instmag': None
-                      }
-
-        # Read banzai star catalog
-        testimage = fits.open(image)
+        # TODO: this is a bit retarded since we are copying FITS headers around.
+        retCatalog = {
+            'instmag': None
+        }
 
         # Boilerplate grab of status information
-        ra = testimage['SCI'].header['CRVAL1']
-        dec = testimage['SCI'].header['CRVAL2']
+        ra = imageobject['SCI'].header['CRVAL1']
+        dec = imageobject['SCI'].header['CRVAL2']
 
         if not self.referencecatalog.isInCatalogFootprint(ra, dec):
             _logger.debug("Image not in reference catalog footprint. Ignoring")
-            testimage.close()
             return None
 
-        retCatalog['exptime'] = testimage['SCI'].header['EXPTIME']
-        retCatalog['instfilter'] = testimage['SCI'].header['FILTER']
-        retCatalog['airmass'] = testimage['SCI'].header['AIRMASS']
-        retCatalog['dateobs'] = testimage['SCI'].header['DATE-OBS']
-        retCatalog['instrument'] = testimage['SCI'].header['INSTRUME']
-        retCatalog['siteid'] = testimage['SCI'].header['SITEID']
-        retCatalog['domid'] = testimage['SCI'].header['ENCID']
-        retCatalog['telescope'] = testimage['SCI'].header['TELID']
-        retCatalog['FOCOBOFF'] = testimage['SCI'].header['FOCOBOFF']
+        retCatalog['exptime'] = imageobject['SCI'].header['EXPTIME']
+        retCatalog['instfilter'] = imageobject['SCI'].header['FILTER']
+        retCatalog['airmass'] = imageobject['SCI'].header['AIRMASS']
+        retCatalog['dateobs'] = imageobject['SCI'].header['DATE-OBS']
+        retCatalog['instrument'] = imageobject['SCI'].header['INSTRUME']
+        retCatalog['siteid'] = imageobject['SCI'].header['SITEID']
+        retCatalog['domid'] = imageobject['SCI'].header['ENCID']
+        retCatalog['telescope'] = imageobject['SCI'].header['TELID']
+        retCatalog['FOCOBOFF'] = imageobject['SCI'].header['FOCOBOFF']
 
         # Check if filter is supported
         if retCatalog['instfilter'] not in self.referencecatalog.FILTERMAPPING:
             _logger.debug(
                 "%s - Filter %s not viable for photometric calibration. Sorry" % (image, retCatalog['instfilter']))
-            testimage.close()
             return None
 
         # Check if exposure time is long enough
         if (retCatalog['exptime'] < mintexp):
             _logger.debug("%s - Exposure %s time is deemed too short, ignoring" % (image, retCatalog['exptime']))
-            testimage.close()
             return None
 
         # verify there is no deliberate defocus
         if (retCatalog['FOCOBOFF'] is not None) and (retCatalog['FOCOBOFF'] != 0):
             _logger.debug("%s - Exposure is deliberately defocussed by %s, ignoring" % (image, retCatalog['FOCOBOFF']))
-            testimage.close()
             return None
 
         # Get the instrumental filter and the matching reference catalog filter names.
@@ -111,25 +104,20 @@ class PhotCalib():
 
         # Load photometry catalog from image, and transform into RA/Dec coordinates
         try:
-            instCatalog = testimage['CAT'].data
+            instCatalog = imageobject['CAT'].data
         except:
             _logger.warning("%s - No extension \'CAT\' available, skipping." % (image))
-            testimage.close()
             return None
 
         # Transform the image catalog to RA / Dec based on the WCS solution in the header.
         # TODO: rerun astrometry.net with a higher order distortion model
 
-        image_wcs = WCS(testimage['SCI'].header)
+        image_wcs = WCS(imageobject['SCI'].header)
         try:
             ras, decs = image_wcs.all_pix2world(instCatalog['x'], instCatalog['y'], 1)
         except:
             _logger.error("%s: Failed to convert images coordinates to world coordinates. Giving up on file." % (image))
-            testimage.close()
             return None
-
-        # Now we have all we wanted from the input image, close it
-        testimage.close()
 
         # Query reference catalog TODO: paramterize FoV of query!
         refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.25)
@@ -178,20 +166,38 @@ class PhotCalib():
         std = np.std(data)
         return data[abs(data - np.median(data)) < m * std]
 
-    def analyzeImage(self, imageName, outputdb=None,
-                     outputimageRootDir=None, mintexp=60):
-        """ Do full photometric zeropoint analysis on an image. This is the main entry point
-         """
-        # TODO: Make this procedure thread safe so it can be accelerated a bit.
+    def analyzeImage(self, imageentry, outputdb=None,
+                     outputimageRootDir=None, mintexp=60, useaws=False):
+        """
+            Do full photometric zeropoint analysis on an image. This is the main entry point
 
-        retCatalog = self.generateCrossmatchedCatalog(imageName, mintexp=mintexp)
+            param iamgeentry: Table row to caontain 'filename' and 'frameid'
+        """
 
+        # The filename may or may not be the full path to the image
+
+        imageName=os.path.basename(str(imageentry['filename'][0]))
+
+        # Read banzai star catalog
+        try:
+            if useaws:
+                print ("Use AWS")
+                imageobject = es_aws_imagefinder.download_from_archive(imageentry['frameid'][0])
+            else:
+                print ("Loading from file system")
+                imageobject = fits.open(str(imageentry['filename']))
+        except:
+            _logger.warning ("File {} could not be accessed".format (imageName))
+            return None
+
+        retCatalog = self.generateCrossmatchedCatalog(imageobject, mintexp=mintexp)
+        imageobject.close()
         if (retCatalog is None) or (retCatalog['instmag'] is None) or (len(retCatalog['ra']) < 10):
             if retCatalog is None:
                 return
 
             if len(retCatalog['ra']) < 10:
-                _logger.info("%s: Catalog returned, but is has less than 10 stars. Ignoring. " % (imageName))
+                _logger.info("%s: Catalog returned, but is has less than 10 stars. Ignoring. " % (imageentry))
             return
 
         # calculate the per star zeropoint
@@ -264,15 +270,7 @@ class PhotCalib():
                  retCatalog['telescope'], retCatalog['instrument'], retCatalog['instfilter'],
                  retCatalog['airmass'], photzp, colorterm, photzpsig))
         else:
-            _logger.info("Not safing output for image %s " % imageName)
-        # with open(pickle, 'a') as f:
-        #     output = "%s %s %s %s %s %s %s %s % 6.3f  % 6.3f  % 6.3f\n" % (
-        #         imageName, retCatalog['dateobs'], retCatalog['siteid'], retCatalog['domid'],
-        #         retCatalog['telescope'], retCatalog['instrument'], retCatalog['instfilter'],
-        #         retCatalog['airmass'], photzp, colorterm, photzpsig)
-        #     _logger.info(output)
-        #     f.write(output)
-        #     f.close()
+            _logger.info("Not saving output for image %s " % imageName)
 
         return photzp
 
@@ -356,26 +354,31 @@ class refcat2:
         return table
 
 
-def process_imagelist(inputlist, db, args, rewritetoarchivename=True):
+def process_imagelist(inputlist, db, args, rewritetoarchivename=True, inputlistIsArchiveID=False):
     """ Invoke the per image processing for a list of files, but check for duplication. """
-    # get list of files of intersest from elasticsearch
+    # get list of files of interest from elasticsearch
     initialsize = len(inputlist)
+    print(inputlist)
     rejects = []
     if not args.redo:
-        for image in inputlist:
+        for image in inputlist['filename']:
             if db.exists(image):
                 rejects.append(image)
+
         for r in rejects:
-            inputlist.remove(r)
+            pass
+            # TODO: find out how to delete table entries that are duplicate
+            # inputlist.remove(r)
     _logger.debug("Found %d files initially, but cleaned %d already measured images. Starting analysis of %d files" % (
-    initialsize, len(rejects), len(inputlist)))
+        initialsize, len(rejects), len(inputlist)))
 
     photzpStage = PhotCalib(args.refcat2db)
     for image in inputlist:
-        image = image.rstrip()
         if rewritetoarchivename:
-            image = lcofilename_to_archivepath(image, args.rootdir)
-        photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp)
+            fn = lcofilename_to_archivepath(image['filename'], args.rootdir)
+            image = Table (np.asarray([fn,image['frameid']]), names=['filename','frameid'])
+        print (image)
+        photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp, useaws=args.useaws)
         _logger.debug("analyze image: {}".format(image))
 
 
@@ -410,7 +413,8 @@ def parseCommandLine():
     parser.add_argument('--mintexp', dest='mintexp', default=60, type=float, help='Minimum exposure time to accept')
     parser.add_argument('--redo', action='store_true')
     parser.add_argument('--preview', dest='processstatus', default='processed', action='store_const', const='preview')
-
+    parser.add_argument('--useaws', action='store_true',
+                        help="Use LCO archive API to retrieve frame vs direct /archive file mount access")
     mutex = parser.add_mutually_exclusive_group()
     mutex.add_argument('--date', dest='date', default=[None, ], nargs='+', help='Specific date to process.')
     mutex.add_argument('--lastNdays', type=int)
@@ -457,7 +461,7 @@ def photzpmain():
         sites = ('lsc', 'cpt', 'ogg', 'coj', 'tfn', 'elp')
 
     for date in args.date:
-
+        _logger.info("Processing DAY-OBS {}".format(date))
         if args.cameratype is not None:
             # crawl by camera type
             cameratypes = [x for x in args.cameratype.split(',')]
@@ -465,6 +469,9 @@ def photzpmain():
                 for cameratype in cameratypes:
                     inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site, cameratype=cameratype,
                                                                              mintexp=args.mintexp)
+                    if inputlist is None:
+                        _logger.info("None list returned for date {}. Nothing to do here.".format(date))
+                        continue
                     imagedb = photdbinterface(args.imagedbPrefix)
                     _logger.info("Processing image list N={} for type {} at site  {} for date {}".format(len(inputlist),
                                                                                                          cameratype,
@@ -476,6 +483,9 @@ def photzpmain():
             # crawl for a specific camera
             inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site=None, camera=args.camera,
                                                                      mintexp=args.mintexp)
+            if inputlist is None:
+                _logger.info("None list returned for date {}. Nothing to do here.".format(date))
+                continue
             _logger.info(
                 "Processing image list N={} for camera {} at for date {}".format(len(inputlist), args.camera, date))
             imagedb = photdbinterface(args.imagedbPrefix)

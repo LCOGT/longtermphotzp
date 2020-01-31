@@ -1,5 +1,18 @@
+import logging
+
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
+from astropy.table import Table
+import numpy as np
+import requests
+from astropy.io import fits
+import io
+import os
+
+_logger = logging.getLogger(__name__)
+
+
+ARCHIVE_API_TOKEN = os.getenv('ARCHIVE_API_TOKEN', '')
 
 
 def make_elasticsearch(index, filters, queries=None, exclusion_filters=None, range_filters=None, prefix_filters=None,
@@ -66,7 +79,7 @@ def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, m
      """
 
     # TODO: further preselect by number of sources to avoid overly crowded or empty fields
-    query_filters = [{'DAY-OBS': dayobs}, {'RLEVEL': 91}, {'WCSERR': 0}, ]
+    query_filters = [{'DAY-OBS': dayobs}, {'RLEVEL': 91}, {'WCSERR': 0}, {"OBSTYPE":"EXPOSE"}]
     range_filters = [{'EXPTIME': {'gte': mintexp}}, ]
     terms_filters = [{'FILTER': filterlist}]
     prefix_filters = []
@@ -82,6 +95,32 @@ def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, m
     records = make_elasticsearch('fitsheaders', query_filters, queries, exclusion_filters=None, es_url=es_url,
                                  range_filters=range_filters, prefix_filters=prefix_filters,
                                  terms_filters=terms_filters).scan()
-    records_sanitized = [record['filename']
-                           for record in records]
+    if records is None:
+        return None
+    records_sanitized = np.asarray([[record['filename'], record['frameid']] for record in records])
+    records_sanitized = Table(records_sanitized, names=['filename','frameid'])
     return records_sanitized
+
+def download_from_archive(frameid):
+    """
+    Download a file from the LCO archive by frame id.
+    :param frameid: Archive API frame ID
+    :return: Astropy HDUList
+    """
+    url = f'https://archive-api.lco.global/frames/{frameid}'
+    _logger.info ("Downloading image frameid {} from URL: {}".format (frameid,url))
+    headers = {'Authorization': 'Token {}'.format(ARCHIVE_API_TOKEN)}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    response_dict = response.json()
+    if response_dict == {}:
+        _logger.warning("No file url was returned from id query")
+        raise Exception('Could not find file remotely.')
+    frame_url = response_dict['url']
+    _logger.info (frame_url)
+    file_response = requests.get(frame_url)
+    file_response.raise_for_status()
+    f = fits.open(io.BytesIO(file_response.content))
+    return f
+
+

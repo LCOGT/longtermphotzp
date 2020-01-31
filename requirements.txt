@@ -6,3 +6,4 @@ sqlalchemy
 pytest
 elasticsearch
 elasticsearch_dsl
+requests
