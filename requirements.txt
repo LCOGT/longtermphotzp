@@ -7,3 +7,4 @@ pytest
 elasticsearch
 elasticsearch_dsl
 requests
+setuptools
