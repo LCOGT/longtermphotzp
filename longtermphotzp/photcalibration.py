@@ -1,6 +1,6 @@
 import matplotlib
-from photdbinterface import photdbinterface
-import es_aws_imagefinder
+from longtermphotzp.photdbinterface import photdbinterface
+import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 

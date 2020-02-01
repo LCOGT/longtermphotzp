@@ -14,7 +14,7 @@ from itertools import cycle
 from matplotlib.patches import Rectangle
 import matplotlib.dates as mdates
 
-from photdbinterface import photdbinterface
+from longtermphotzp.photdbinterface import photdbinterface
 
 assert sys.version_info >= (3,5)
 _logger = logging.getLogger(__name__)
@@ -613,7 +613,7 @@ def parseCommandLine():
     return args
 
 
-if __name__ == '__main__':
+def longtermphotzp():
     plt.style.use('ggplot')
     matplotlib.rcParams['savefig.dpi'] = 400
     matplotlib.rcParams['figure.figsize'] = (8.0,6.0)
@@ -651,3 +651,7 @@ if __name__ == '__main__':
 
     sys.exit(0)
 
+
+
+if __name__ == '__main__':
+    longtermphotzp()

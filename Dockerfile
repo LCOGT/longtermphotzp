@@ -19,7 +19,8 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt --upgrade
 
 COPY . /lco/throughput
-
+WORKDIR /lco/throughput
+RUN python setup.py install
 COPY deploy/supervisor-app.conf /etc/supervisor/conf.d/
 COPY deploy/crontab /etc/cron.d/
 RUN chmod 0644 /etc/cron.d/crontab
