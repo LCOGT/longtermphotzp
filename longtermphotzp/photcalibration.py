@@ -1,5 +1,5 @@
 import matplotlib
-from longtermphotzp.photdbinterface import photdbinterface
+from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
 import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -261,13 +261,17 @@ class PhotCalib():
             plt.savefig("%s/%s_%s_color.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
             plt.close()
 
-        # TODO: Make this thread safe, e.g., write to transactional database, or return values for storing externally.
-
         if outputdb is not None:
-            outputdb.addphotzp(
-                (imageName, retCatalog['dateobs'].replace('T', ' '), retCatalog['siteid'], retCatalog['domid'],
-                 retCatalog['telescope'], retCatalog['instrument'], retCatalog['instfilter'],
-                 retCatalog['airmass'], photzp, colorterm, photzpsig))
+            m = PhotZPMeasurement (name=imageName, dateobs = retCatalog['dateobs'].replace('T', ' '),
+                                   siteid = retCatalog['siteid'], domeid = retCatalog['domid'],
+                                   telescope=  retCatalog['telescope'], instrument = retCatalog['instrument'],
+                                   filter = retCatalog['instfilter'], airmass = retCatalog['airmass'],
+                                   photzp = photzp, colorterm = colorterm, photzpsig = photzpsig)
+            outputdb.addphotzp(m)
+            # outputdb.addphotzp(
+            #     (imageName, retCatalog['dateobs'].replace('T', ' '), retCatalog['siteid'], retCatalog['domid'],
+            #      retCatalog['telescope'], retCatalog['instrument'], retCatalog['instfilter'],
+            #      retCatalog['airmass'], photzp, colorterm, photzpsig))
         else:
             _logger.info("Not saving output for image %s " % imageName)
 

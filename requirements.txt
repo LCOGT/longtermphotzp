@@ -8,3 +8,5 @@ elasticsearch
 elasticsearch_dsl
 requests
 setuptools
+sqlalchemy
+sqlalchemy_utils
