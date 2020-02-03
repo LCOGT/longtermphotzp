@@ -1,5 +1,0 @@
-0 2,17 * * * root /lco/throughput/deploy/runphotzp-docker.sh >>/var/log/photzp.log 2>&1
-
-#* * * * * root /bin/echo "Hello `date`"  >>/proc/1/fd/1 2>&1
-#* * * * * root /bin/echo "Hello `date`"  >>/var/log/echotest
-
