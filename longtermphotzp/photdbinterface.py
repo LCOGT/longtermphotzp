@@ -1,20 +1,17 @@
 import logging
 import sys
-import sqlite3
 import datetime
 import numpy as np
 from astropy.table import Table
 import astropy.time as astt
 import math
-
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Float, create_engine
 
 assert sys.version_info >= (3, 5)
 _logger = logging.getLogger(__name__)
-
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Float, create_engine
 
 Base = declarative_base()
 
@@ -23,10 +20,10 @@ class PhotZPMeasurement(Base):
     __tablename__ = 'lcophot'
     name = Column(String, primary_key=True)
     dateobs = Column(String)
-    site = Column(String)
-    dome = Column(String)
-    telescope = Column(String)
-    camera = Column(String)
+    site = Column(String, index=True)
+    dome = Column(String, index=True)
+    telescope = Column(String, index=True)
+    camera = Column(String, index=True)
     filter = Column(String)
     airmass = Column(Float)
     zp = Column(Float)
@@ -34,9 +31,10 @@ class PhotZPMeasurement(Base):
     zpsig = Column(Float)
 
 
-class TelecopeThroughputModelPoint(Base):
+class TelescopeThroughputModelPoint(Base):
     __tablename__ = 'telescopemodel'
-    telescopeid = Column(String, primary_key=True)
+    entryid = Column(Integer, primary_key=True)
+    telescopeid = Column(String)
     filter = Column(String)
     dateobs = Column(String)
     modelzp = Column(Float)
@@ -48,33 +46,13 @@ class photdbinterface:
     long term mirror model: upper envelope fit for a telescope's trendline
     '''
 
-    createstatement = "CREATE TABLE IF NOT EXISTS lcophot (" \
-                      "name TEXT PRIMARY KEY, " \
-                      "dateobs text," \
-                      " site text," \
-                      " dome text," \
-                      " telescope text," \
-                      " camera text," \
-                      " filter text," \
-                      " airmass real," \
-                      " zp real," \
-                      " colorterm real," \
-                      " zpsig real)"
-
-    createmodeldb = "CREATE TABLE IF NOT EXISTS telescopemodel (" \
-                    "telescopeid TEXT, " \
-                    " filter text," \
-                    " dateobs text," \
-                    " modelzp real" \
-                    " )"
-
     def __init__(self, fname):
         _logger.debug("Open data base file %s" % (fname))
-        self.engine = create_engine(f'sqlite:///{fname}', echo=True)
+        self.engine = create_engine(f'sqlite:///{fname}', echo=False)
         if not database_exists(self.engine.url):
             create_database(self.engine.url)
         PhotZPMeasurement.__table__.create(bind=self.engine, checkfirst=True)
-        TelecopeThroughputModelPoint.__table__.create(bind=self.engine, checkfirst=True)
+        TelescopeThroughputModelPoint.__table__.create(bind=self.engine, checkfirst=True)
         self.session = sessionmaker(bind=self.engine)()
 
     def addphotzp(self, photmeasurementObject, commit=True):
@@ -177,14 +155,12 @@ class photdbinterface:
          """
         t = None
         _logger.debug("reading data for mirror model [%s] [%s]" % (telescopeid, filter))
-        q = self.session.query(TelecopeThroughputModelPoint)
+        q = self.session.query(TelescopeThroughputModelPoint)
         if telescopeid is not None:
-            q = q.filter(TelecopeThroughputModelPoint.telescopeid == telescopeid)
+            q = q.filter(TelescopeThroughputModelPoint.telescopeid == telescopeid)
         if filter is not None:
-            q = q.filter(TelecopeThroughputModelPoint.filter == filter)
-
+            q = q.filter(TelescopeThroughputModelPoint.filter == filter)
         allrows = np.asarray([[e.dateobs, e.modelzp] for e in q.all()])
-        print("All rows: ", allrows)
         t = Table(allrows, names=['dateobs', 'zp'])
         if len(t) > 0:
             t['dateobs'] = t['dateobs'].astype(str)
@@ -196,42 +172,47 @@ class photdbinterface:
 
     def storemirrormodel(self, telescopeid, filter, dates, zps, commit=True):
 
-        _logger.debug("Store mirror model for: [%s] filter [%s], %d records" % (telescopeid, filter, len(dates)))
+        _logger.info("Store mirror model for: [%s] filter [%s], %d records" % (telescopeid, filter, len(dates)))
 
-        with self.conn:
-            self.conn.execute("delete from telescopemodel where telescopeid like ? AND filter like ?",
-                              (telescopeid, filter))
-            for ii in range(len(dates)):
-                # TODO: nuke the old model
+        # self.session("delete from telescopemodel where telescopeid like ? AND filter like ?",
+        #              (telescopeid, filter))
 
-                self.conn.execute("insert or replace into telescopemodel values (?,?,?,?)",
-                                  (telescopeid, filter, dates[ii], zps[ii]))
+        self.session.query(TelescopeThroughputModelPoint).filter(
+            TelescopeThroughputModelPoint.telescopeid == telescopeid).filter(
+            TelescopeThroughputModelPoint.filter == filter).delete()
+
+        for ii in range(len(dates)):
+            mp = TelescopeThroughputModelPoint(telescopeid=telescopeid, dateobs=dates[ii], modelzp=zps[ii],
+                                               filter=filter)
+            self.session.add(mp)
+            # self.conn.execute("insert or replace into telescopemodel values (?,?,?,?)",
+            #                   (telescopeid, filter, dates[ii], zps[ii]))
 
         if (commit):
-            self.conn.commit()
+            self.session.commit()
 
         pass
 
     def findmirrormodels(self, telescopeclass, filter):
         _logger.debug("Searching for mirror models with contraint %s %s" % (telescopeclass, filter))
 
-        q = self.session.query(TelecopeThroughputModelPoint).filter(
-            TelecopeThroughputModelPoint.filter == filter).filter(
-            TelecopeThroughputModelPoint.telescopeid.like(f'%{telescopeclass}%')).distinct(
-            TelecopeThroughputModelPoint.telescopeid)
+        q = self.session.query(TelescopeThroughputModelPoint.telescopeid).filter(
+            TelescopeThroughputModelPoint.filter == filter).filter(
+            TelescopeThroughputModelPoint.telescopeid.like(f'%{telescopeclass}%')).distinct()
         rows = q.all()
         allrows = np.asarray([e.telescopeid for e in rows])
-        _logger.debug("Uniqe identifiers: %s" % allrows)
+        _logger.info("Uniqe identifiers: %s" % allrows)
         return allrows
 
 
 if __name__ == '__main__':
+    # some testing code that should be modified and migrated into the test suite.
     print("Hello")
     db = photdbinterface("lcophotzp.db")
 
-    # all = db.readRecords(site='lsc', camera='fa04')
-    # print(len(all))
-    # print(db.findmirrormodels('1m0', 'rp'))
-    m = db.readmirrormodel(telescopeid='lsc-domb-1m0a', filter='zp')
-    print(m)
+    all = db.readRecords(site='lsc', camera='fa04')
+    print("photzp measurement records found: ", len(all))
+    mirrormodels = db.findmirrormodels('1m0', 'rp')
+    print("Mirror models found", len(mirrormodels), mirrormodels)
+    m = db.readmirrormodel(telescopeid='lsc-domb-1m0a', filter='gp')
     db.close()
