@@ -91,6 +91,21 @@ $ python3 longtermphotzp.py -h
      --importold
 ```
 
+## Environment Variables
+
+This script will automatically save files to an AWS S3 Bucket if the following
+environment variables are defined:
+
+| Environment Variable | Description |
+| --- | --- |
+| `AWS_ACCESS_KEY_ID` | AWS Access Key |
+| `AWS_SECRET_ACCESS_KEY` | AWS Secret Key |
+| `AWS_S3_BUCKET` | AWS S3 Bucket Name |
+| `AWS_DEFAULT_REGION`| AWS S3 Bucket Region (us-west-2) |
+
+If the variables are not defined, this software will save files to the local
+disk on the filesystem path defined by the user's command line arguments.
+
 ## Build
 
 This project is built automatically by the [LCO Jenkins Server](http://jenkins.lco.gtn/).

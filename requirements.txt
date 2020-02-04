@@ -10,3 +10,4 @@ requests
 setuptools
 sqlalchemy
 sqlalchemy_utils
+boto3==1.11.10
