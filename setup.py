@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name = 'longtermphotzp',
-    version="0.0.1",
+    version="1.0.0",
     author='Daniel Harbeck',
     author_email='dharbeck@lco.global',
     classifiers=[
