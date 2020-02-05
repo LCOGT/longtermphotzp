@@ -1,3 +1,5 @@
+#!/bin/env python
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -8,14 +10,14 @@ import calendar
 import scipy.signal
 import argparse
 import logging
-import glob
+import boto3
+import io
 import os
 from itertools import cycle
-import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle
 import matplotlib.dates as mdates
 
-from photdbinterface import photdbinterface
+from longtermphotzp.photdbinterface import photdbinterface
 
 assert sys.version_info >= (3,5)
 _logger = logging.getLogger(__name__)
@@ -112,6 +114,29 @@ mirrorreplacmenet = {
 
 telescopereferencethroughput = {'rp': {"1m0": 23.8, "2m0" : 25.35}}
 
+def aws_enabled():
+    '''Return True if AWS support is configured'''
+    access_key = os.environ.get('AWS_ACCESS_KEY_ID', None)
+    secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY', None)
+    s3_bucket = os.environ.get('AWS_S3_BUCKET', None)
+    region = os.environ.get('AWS_DEFAULT_REGION', None)
+
+    return access_key and secret_key and s3_bucket and region
+
+def write_to_storage_backend(directory, filename, data):
+    if aws_enabled():
+        # AWS S3 Bucket upload
+        client = boto3.client('s3')
+        bucket = os.environ.get('AWS_S3_BUCKET', None)
+        with io.BytesIO(data) as fileobj:
+            _logger.debug(f'Write data to AWS S3: {bucket}/{filename}')
+            response = client.upload_fileobj(fileobj, bucket, filename)
+            return response
+    else:
+        fullpath = os.path.join(directory, filename)
+        with open(fullpath, 'w') as fileobj:
+            fileobj.write(data)
+            return True
 
 def getCombineddataByTelescope(site, telescope, context, instrument=None, cacheddb=None):
     """
@@ -155,7 +180,7 @@ def dateformat (starttime,endtime):
 
 
 def plotlongtermtrend(select_site, select_telescope, select_filter, context, instrument=None, cacheddb = None):
-
+    filenames = []
     data = getCombineddataByTelescope(select_site, select_telescope, context, instrument, cacheddb=cacheddb)
 
     mystarttime = starttime
@@ -271,19 +296,26 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     plt.title("Long term throughput  %s:%s in %s" % (select_site, select_telescope, select_filter))
     plt.gcf().set_size_inches(12,6)
     # and finally safe the plot.
-    outfigname = "%s/photzptrend-%s-%s-%s.png" % (
-        context.imagedbPrefix, select_site, select_telescope, select_filter)
-    plt.savefig(outfigname, bbox_inches="tight")
-    plt.close()
+    with io.BytesIO() as fileobj:
+        plt.savefig(fileobj, format='png', bbox_inches='tight')
+        plt.close()
+
+        filename = 'photzptrend-{}-{}-{}.png'.format(select_site, select_telescope, select_filter)
+        filenames.append(filename)
+        write_to_storage_backend(context.imagedbPrefix, filename, fileobj.getvalue())
 
     # for internal use: generate error plots.
     if context.errorhistogram:
         plt.figure()
         plt.hist(zpsigselect, 50, range=[0, 1], normed=True)
-        outerrorhistfname = "%s/errorhist-%s-%s-%s.png" % (
-            context.imagedbPrefix, select_site, select_telescope, select_filter)
-        plt.savefig(outerrorhistfname)
-        plt.close()
+
+        with io.BytesIO() as fileobj:
+            plt.savefig(fileobj, format='png')
+            plt.close()
+
+            filename = 'errorhist-%s-%s-%s.png'.format(select_site, select_telescope, select_filter)
+            filenames.append(filename)
+            write_to_storage_backend(context.imagedbPrefix, filename, fileobj.getvalue())
 
     # plot airmass vs zeropoint as a sanity check tool
     plt.figure()
@@ -294,8 +326,13 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     plt.title ("Global airmass trend and correction check")
     meanzp = np.nanmedian(zpselect)
     plt.ylim([meanzp - 0.5, meanzp + 0.5])
-    plt.savefig("%s/airmasstrend-%s-%s-%s.png" % (context.imagedbPrefix, select_site, select_telescope, select_filter))
-    plt.close()
+    with io.BytesIO() as fileobj:
+        plt.savefig(fileobj, format='png')
+        plt.close()
+
+        filename = 'airmasstrend-{}-{}-{}.png'.format(select_site, select_telescope, select_filter)
+        filenames.append(filename)
+        write_to_storage_backend(context.imagedbPrefix, filename, fileobj.getvalue())
 
     # Color terms
     plt.figure()
@@ -326,12 +363,17 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     plt.title("Color term (g-r)  %s:%s in %s" % (select_site, select_telescope, select_filter))
     plt.xlabel("DATE-OBS")
     plt.ylabel("Color term coefficient (g-r)")
-    plt.savefig(
-        "%s/colortermtrend-%s-%s-%s.png" % (context.imagedbPrefix, select_site, select_telescope, select_filter))
-    plt.close()
+    with io.BytesIO() as fileobj:
+        plt.savefig(fileobj, format='png')
+        plt.close()
+
+        filename = 'colortermtrend-{}-{}-{}.png'.format(select_site, select_telescope, select_filter)
+        filenames.append(filename)
+        write_to_storage_backend(context.imagedbPrefix, filename, fileobj.getvalue())
 
     # thats it, some day please refactor(select_filter, this into smaller chunks.
 
+    return filenames
 
 def plot_referencethoughput(start, end,select_filter, select_telescope):
 
@@ -495,12 +537,18 @@ def fittrendtomirrormodel (dates,zps, start,end, order=1, plot=False):
     return poly
 
 def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cacheddb = None):
-    """ fetch mirror model from database for a selected class of telescopes and put them all into one single plot. """
+    '''
+    Fetch mirror model from database for a selected class of telescopes, and
+    put them all into one single plot.
+
+    Returns a list of figure names (S3 keys)
+    '''
+    filenames = []
 
     if cacheddb is None:
         db = photdbinterface(context.database)
     else:
-        db=cacheddb
+        db = cacheddb
 
     myfilter = context.filter
     modellist = []
@@ -513,7 +561,7 @@ def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cached
     _logger.info ("Plotting several models in a single plot. These are the models returned from search %s: %s" % (type,modellist))
 
     plt.rc('lines', linewidth=1)
-    prop_cycle=  cycle( ['-', '-.'])
+    prop_cycle = cycle(['-', '-.'])
 
 
 
@@ -535,18 +583,24 @@ def plotallmirrormodels(context, type=['2m0a','1m0a'], range=[22.5,25.5], cached
     for ii in type:
         name += str(ii)
 
-    plt.gcf().set_size_inches(12,6)
-    plt.savefig("%s/allmodels_%s_%s.png" % (context.imagedbPrefix, name, context.filter), bbox_inches='tight')
-    plt.close()
+    with io.BytesIO() as fileobj:
+        # create the plot into an in-memory Fileobj
+        plt.gcf().set_size_inches(12,6)
+        plt.savefig(fileobj, format='png', bbox_inches='tight')
+        plt.close()
+
+        # save the plot onto stable storage
+        filename = 'allmodels_{}_{}.png'.format(name, context.filter)
+        filenames.append(filename)
+        write_to_storage_backend(context.imagedbPrefix, filename, fileobj.getvalue())
 
     if cacheddb is None:
         db.close()
 
+    return filenames
 
-def renderHTMLPage (args):
+def renderHTMLPage (context, filenames):
     _logger.info ("Now rendering output html page")
-
-    outputfile = "%s/index.html" % (args.imagedbPrefix)
 
     message = """<html>
 <head></head>
@@ -555,33 +609,32 @@ def renderHTMLPage (args):
     message += "<p/>Figures updated %s UTC <p/>\n"  % (datetime.datetime.utcnow())
     message += """
 <h1> Overview </h1>
-     <a href="allmodels_2m01m0_rp.png"> <img src="allmodels_2m01m0_rp.png"/ width="800"> </a>
-     <a href="allmodels_0m4_rp.png"><img src="allmodels_0m4_rp.png" width="800"/></a>
+     <a href="allmodels_2m01m0_rp.png"><img src="allmodels_2m01m0_rp.png" width="800" /></a>
+     <a href="allmodels_0m4_rp.png"><img src="allmodels_0m4_rp.png" width="800" /></a>
     <p/>
-    
+
 <h1> Details by Site: </h1>
 """
 
     for site in telescopedict:
         message = message + " <h2> %s </h2>\n" % (site)
 
-        zptrendimages = glob.glob ("%s/photzptrend-%s-????-????-rp.png" % (args.imagedbPrefix, site))
-
+        zptrendimages = [k for k in filenames if k.startswith('photzptrend')]
         zptrendimages.sort(key = lambda x: x[-16: -4])
 
         _logger.debug ("Found individual telescopes zp trend plots for site %s to include:\n\t %s " % (site,zptrendimages))
 
         for zptrend in zptrendimages:
-            zptrend = zptrend.replace("%s/" % args.imagedbPrefix, "")
             line = '<a href="%s"><img src="%s" height="450"/></a>  <img src="%s" height="450"/>  <img src="%s" height="450"/><p/>' % (zptrend, zptrend, zptrend.replace('photzptrend', 'colortermtrend'), zptrend.replace('photzptrend', 'airmasstrend'))
             message = message + line
 
     message = message + "</body></html>"
 
-    with open (outputfile, 'w+') as f:
-        f.write (message)
-        f.close()
+    with io.BytesIO() as fileobj:
+        fileobj.write(message)
 
+        filename = 'index.html'
+        write_to_storage_backend(context.imagedbPrefix, filename, fileobj.getvalue())
 
 
 def parseCommandLine():
@@ -617,11 +670,12 @@ def parseCommandLine():
     return args
 
 
-if __name__ == '__main__':
+def longtermphotzp():
     plt.style.use('ggplot')
     matplotlib.rcParams['savefig.dpi'] = 400
     matplotlib.rcParams['figure.figsize'] = (8.0,6.0)
 
+    filenames = []
     args = parseCommandLine()
 
     if args.site is not None:
@@ -640,18 +694,22 @@ if __name__ == '__main__':
 
             for telescope in crawlScopes:
                 _logger.info ("Now plotting and fitting mirror model for %s %s in filter %s" % (site, telescope, args.filter))
-                plotlongtermtrend(site, telescope, args.filter, args, cacheddb=db )
+                filenames += plotlongtermtrend(site, telescope, args.filter, args, cacheddb=db )
 
         db.close()
 
     # Generate mirror model plots for all telscopes in a single plot
     if args.createsummaryplots:
-        plotallmirrormodels(args,type=['2m0','1m0'])
-        plotallmirrormodels(args, type=['0m4'], range=[20,23])
+        filenames += plotallmirrormodels(args, type=['2m0', '1m0'])
+        filenames += plotallmirrormodels(args, type=['0m4'], range=[20, 23])
 
     # Make a fancy HTML page
     if args.renderhtml:
-        renderHTMLPage(args)
+        renderHTMLPage(args, filenames)
 
     sys.exit(0)
 
+
+
+if __name__ == '__main__':
+    longtermphotzp()

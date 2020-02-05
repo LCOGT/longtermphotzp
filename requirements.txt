@@ -3,3 +3,13 @@ astropy
 scipy
 numpy
 sqlalchemy
+pytest
+elasticsearch
+elasticsearch_dsl
+requests
+setuptools
+sqlalchemy
+sqlalchemy_utils
+boto3==1.11.10
+Flask==1.1.1
+gunicorn[gevent]==20.0.4

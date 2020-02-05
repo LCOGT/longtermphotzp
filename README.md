@@ -1,5 +1,4 @@
-Las Cumbres Observatory long term monitoring of telescope throughput
----
+# Las Cumbres Observatory long term monitoring of telescope throughput
 
 This repository hosts the tools to provide a long term telescope throughput monitoring service. The components are:
 
@@ -18,14 +17,13 @@ This repository hosts the tools to provide a long term telescope throughput moni
    
 An example way to run a photometric calibration is provided in the deploy/runphotzp.sh script. 
 
-Usage:
-===
+## Usage
 
 To calculate the photometric zeropoint of a set of iamges:
 
 
 ```
-python3 photcalibration.py -h
+$ python3 photcalibration.py -h
 
 usage: photcalibration.py [-h] [--log-level {DEBUG,INFO}] [--ps1dir PS1DIR]
                           [--diagnosticplotsdir OUTPUTIMAGEROOTDIR]
@@ -62,13 +60,12 @@ optional arguments:
                         camera type to process at selected sites to process.
   --crawldirectory CRAWLDIRECTORY
                         process all reduced image in specific directoy
-
 ```
-
 
 To interpret the resulting database:
 
-```python3 longtermphotzp.py -h
+```
+$ python3 longtermphotzp.py -h
    usage: longtermphotzp.py [-h] [--log_level {DEBUG,INFO}]
                             [--outputdirectory IMAGEDBPREFIX]
                             [--database DATABASE] [--site SITE]
@@ -94,18 +91,28 @@ To interpret the resulting database:
      --importold
 ```
 
+## Environment Variables
 
-Deploying at LCO
-===
+This script will automatically save files to an AWS S3 Bucket if the following
+environment variables are defined:
 
-Building the container:
-```
-docker build -t docker.lco.global/photzp .
-docker push  docker.lco.global/photzp
-```
+| Environment Variable | Description |
+| --- | --- |
+| `AWS_ACCESS_KEY_ID` | AWS Access Key |
+| `AWS_SECRET_ACCESS_KEY` | AWS Secret Key |
+| `AWS_S3_BUCKET` | AWS S3 Bucket Name |
+| `AWS_DEFAULT_REGION`| AWS S3 Bucket Region (us-west-2) |
 
-Running an example in container:
-```
- python3 photcalibration.py --mintexp 10 --lastNdays 3 --cameratype fl --photodb /database/lcophotzp.db --ps1dir /panstarrs/
- python3 longtermphotzp.py --database  /database/lcophotzp.db --outputdirectory /database
-```
+If the variables are not defined, this software will save files to the local
+disk on the filesystem path defined by the user's command line arguments.
+
+## Build
+
+This project is built automatically by the [LCO Jenkins Server](http://jenkins.lco.gtn/).
+Please see the [Jenkinsfile](Jenkinsfile) for further details.
+
+## Production Deployment
+
+This project is deployed to the LCO Kubernetes Cluster. Please see the
+[LCO Helm Charts Repository](https://github.com/LCOGT/helm-charts) for further
+details.
