@@ -84,17 +84,17 @@ class PhotCalib():
         # Check if filter is supported
         if retCatalog['instfilter'] not in self.referencecatalog.FILTERMAPPING:
             _logger.debug(
-                "%s - Filter %s not viable for photometric calibration. Sorry" % (image, retCatalog['instfilter']))
+                "Filter %s not viable for photometric calibration. Sorry" % (retCatalog['instfilter']))
             return None
 
         # Check if exposure time is long enough
         if (retCatalog['exptime'] < mintexp):
-            _logger.debug("%s - Exposure %s time is deemed too short, ignoring" % (image, retCatalog['exptime']))
+            _logger.debug("Exposure %s time is deemed too short, ignoring" % ( retCatalog['exptime']))
             return None
 
         # verify there is no deliberate defocus
         if (retCatalog['FOCOBOFF'] is not None) and (retCatalog['FOCOBOFF'] != 0):
-            _logger.debug("%s - Exposure is deliberately defocussed by %s, ignoring" % (image, retCatalog['FOCOBOFF']))
+            _logger.debug("Exposure is deliberately defocussed by %s, ignoring" % ( retCatalog['FOCOBOFF']))
             return None
 
         # Get the instrumental filter and the matching reference catalog filter names.
@@ -105,7 +105,7 @@ class PhotCalib():
         try:
             instCatalog = imageobject['CAT'].data
         except:
-            _logger.warning("%s - No extension \'CAT\' available, skipping." % (image))
+            _logger.warning("No extension \'CAT\' available, skipping.")
             return None
 
         # Transform the image catalog to RA / Dec based on the WCS solution in the header.
@@ -115,13 +115,13 @@ class PhotCalib():
         try:
             ras, decs = image_wcs.all_pix2world(instCatalog['x'], instCatalog['y'], 1)
         except:
-            _logger.error("%s: Failed to convert images coordinates to world coordinates. Giving up on file." % (image))
+            _logger.error("Failed to convert images coordinates to world coordinates. Giving up on file." )
             return None
 
         # Query reference catalog TODO: paramterize FoV of query!
         refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.25)
         if refcatalog is None:
-            _logger.warning("%s, no reference catalog received." % image)
+            _logger.warning("no reference catalog received.")
             return None
 
         # Start the catalog matching, using astropy skycoords built-in functions.
