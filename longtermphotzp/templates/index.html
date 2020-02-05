@@ -29,6 +29,10 @@
     <h2>Details by Site</h2>
     {% for sitecode, filenames in info.items() %}
     <h3>{{ sitecode }}</h3>
+
+    <!-- TODO: do another loop over the individual telescopes -->
+    <!-- for telescope in telescopes -->
+    <!-- <h3>{{telescope}}</h3>  -->
     {% for image in filenames %}
 
     {% set photzptrend_image = image %}
@@ -48,6 +52,7 @@
     <a href="{{ url|safe }}">
       <img src="{{ url|safe }}" height="450" />
     </a>
+    <!-- endfor -->
     {% endfor %}
     {% endfor %}
 

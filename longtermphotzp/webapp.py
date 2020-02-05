@@ -42,8 +42,7 @@ def s3_list_objects():
 
 def build_site_info_dict():
     retval = collections.defaultdict(list)
-
-    # Build the dictionary containing sitecode => list of filenames 
+    # TODO: instead of site -> filenames make a site->telescope->filenames dictionary
     for objdict in s3_list_objects():
         filename = objdict['Key']
         parts = filename.split('-')
