@@ -46,7 +46,7 @@ def build_site_info_dict():
     for objdict in s3_list_objects():
         filename = objdict['Key']
         parts = filename.split('-')
-        if len(parts) >= 2 and parts[0] == 'photzptrend':
+        if len(parts) >= 2 and parts[0] == 'photzptrend' and parts[4].startswith('rp'):
             sitecode = parts[1]
             retval[sitecode].append(filename)
 
