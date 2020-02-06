@@ -263,10 +263,10 @@ class PhotCalib():
 
         if outputdb is not None:
             m = PhotZPMeasurement (name=imageName, dateobs = retCatalog['dateobs'].replace('T', ' '),
-                                   siteid = retCatalog['siteid'], domeid = retCatalog['domid'],
-                                   telescope=  retCatalog['telescope'], instrument = retCatalog['instrument'],
+                                   site = retCatalog['siteid'], dome = retCatalog['domid'],
+                                   telescope=  retCatalog['telescope'], camera = retCatalog['instrument'],
                                    filter = retCatalog['instfilter'], airmass = retCatalog['airmass'],
-                                   photzp = photzp, colorterm = colorterm, photzpsig = photzpsig)
+                                   zp = photzp, colorterm = colorterm, zpsig = photzpsig)
             outputdb.addphotzp(m)
             # outputdb.addphotzp(
             #     (imageName, retCatalog['dateobs'].replace('T', ' '), retCatalog['siteid'], retCatalog['domid'],
