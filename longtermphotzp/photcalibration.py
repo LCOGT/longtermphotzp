@@ -1,3 +1,4 @@
+import astropy
 import matplotlib
 from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
 import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
@@ -357,7 +358,7 @@ class refcat2:
         return table
 
 
-def process_imagelist(inputlist, db, args, rewritetoarchivename=True, inputlistIsArchiveID=False):
+def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchivename=True, inputlistIsArchiveID=False):
     """ Invoke the per image processing for a list of files, but check for duplication. """
     # get list of files of interest from elasticsearch
     initialsize = len(inputlist)
@@ -371,6 +372,12 @@ def process_imagelist(inputlist, db, args, rewritetoarchivename=True, inputlistI
         for r in rejects:
             pass
             # TODO: find out how to delete table entries that are duplicate
+            row = np.where(inputlist['filename'] == r)
+            if len(row)>0:
+                row = row[0][0]
+                _logger.info (f"remove duplicate from table: {r} at row {row}")
+                inputlist.remove_row(row)
+
             # inputlist.remove(r)
     _logger.debug("Found %d files initially, but cleaned %d already measured images. Starting analysis of %d files" % (
         initialsize, len(rejects), len(inputlist)))
