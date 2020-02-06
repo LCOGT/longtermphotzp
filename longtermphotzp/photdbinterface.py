@@ -30,6 +30,8 @@ class PhotZPMeasurement(Base):
     colorterm = Column(Float)
     zpsig = Column(Float)
 
+    def __repr__(self):
+        return f'{self.name} {self.dateobs} {self.filter} {self.zp}'
 
 class TelescopeThroughputModelPoint(Base):
     __tablename__ = 'telescopemodel'
