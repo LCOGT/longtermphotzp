@@ -79,7 +79,7 @@ class photdbinterface:
         self.session.close()
 
     def readRecords(self, site=None, dome=None, telescope=None, camera=None):
-        """  Read the photometry records fromt eh database, optionally filtered by site, dome, telescope, and camera.
+        """  Read the photometry records from the database, optionally filtered by site, dome, telescope, and camera.
 
         """
 
