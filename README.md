@@ -7,8 +7,8 @@ This repository hosts the tools to provide a long term telescope throughput moni
  
  Dependencies:
  * read-only access to LCO archive mount at /archive
- * read-only access to a local copy of the PANSTARRS catalog
-   * This is accessible on chanunpa at /net/fsfs.lco.gtn/data/AstroCatalogs/PS1/
+ * read-only access to a local copy of the Atlas refcat2 catalog
+   * This is accessible on chanunpa at /net/fsfs.lco.gtn/data/AstroCatalogs/Atlas-refcat2/
  * read/write access to a directory that will contain 
    * The database file itself
    * mirror throughput model files, trend plots (pngs), and a html file gluing it all together. 
@@ -19,7 +19,7 @@ An example way to run a photometric calibration is provided in the deploy/runpho
 
 ## Usage
 
-To calculate the photometric zeropoint of a set of iamges:
+To calculate the photometric zeropoint of a set of images:
 
 
 ```
