@@ -134,7 +134,7 @@ def write_to_storage_backend(directory, filename, data):
             return response
     else:
         fullpath = os.path.join(directory, filename)
-        with open(fullpath, 'w') as fileobj:
+        with open(fullpath, 'wb') as fileobj:
             fileobj.write(data)
             return True
 
@@ -631,7 +631,7 @@ def renderHTMLPage (context, filenames):
     message = message + "</body></html>"
 
     with io.BytesIO() as fileobj:
-        fileobj.write(message)
+        fileobj.write(message.encode('utf-8'))
 
         filename = 'index.html'
         write_to_storage_backend(context.imagedbPrefix, filename, fileobj.getvalue())

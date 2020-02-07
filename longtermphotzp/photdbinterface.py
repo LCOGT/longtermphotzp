@@ -34,7 +34,7 @@ class PhotZPMeasurement(Base):
         return f'{self.name} {self.dateobs} {self.filter} {self.zp}'
 
 class TelescopeThroughputModelPoint(Base):
-    __tablename__ = 'telescopemodel'
+    __tablename__ = 'telescopemodel_ver2'
     entryid = Column(Integer, primary_key=True)
     telescopeid = Column(String)
     filter = Column(String)
@@ -51,6 +51,7 @@ class photdbinterface:
     def __init__(self, fname):
         _logger.debug("Open data base file %s" % (fname))
         self.engine = create_engine(f'sqlite:///{fname}', echo=False)
+
         if not database_exists(self.engine.url):
             create_database(self.engine.url)
         PhotZPMeasurement.__table__.create(bind=self.engine, checkfirst=True)
