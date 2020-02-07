@@ -47,7 +47,7 @@
     </a>
 
     {% set airmasstrend_image = image.replace('photzptrend', 'airmasstrend') %}
-    {% set url = generate_presigned_url(colortermtrend_image) %}
+    {% set url = generate_presigned_url(airmasstrend_image) %}
     <a href="{{ url|safe }}">
       <img src="{{ url|safe }}" height="450" />
     </a>
