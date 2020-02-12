@@ -116,7 +116,7 @@ def download_from_archive(frameid):
         _logger.warning("No file url was returned from id query")
         raise Exception('Could not find file remotely.')
     frame_url = response_dict['url']
-    _logger.info (frame_url)
+    _logger.debug (frame_url)
     file_response = requests.get(frame_url)
     file_response.raise_for_status()
     f = fits.open(io.BytesIO(file_response.content))

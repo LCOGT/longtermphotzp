@@ -84,18 +84,18 @@ class PhotCalib():
 
         # Check if filter is supported
         if retCatalog['instfilter'] not in self.referencecatalog.FILTERMAPPING:
-            _logger.debug(
+            _logger.info(
                 "Filter %s not viable for photometric calibration. Sorry" % (retCatalog['instfilter']))
             return None
 
         # Check if exposure time is long enough
         if (retCatalog['exptime'] < mintexp):
-            _logger.debug("Exposure %s time is deemed too short, ignoring" % ( retCatalog['exptime']))
+            _logger.info("Exposure %s time is deemed too short, ignoring" % ( retCatalog['exptime']))
             return None
 
         # verify there is no deliberate defocus
         if (retCatalog['FOCOBOFF'] is not None) and (retCatalog['FOCOBOFF'] != 0):
-            _logger.debug("Exposure is deliberately defocussed by %s, ignoring" % ( retCatalog['FOCOBOFF']))
+            _logger.info("Exposure is deliberately defocussed by %s, ignoring" % ( retCatalog['FOCOBOFF']))
             return None
 
         # Get the instrumental filter and the matching reference catalog filter names.
@@ -181,10 +181,10 @@ class PhotCalib():
         # Read banzai star catalog
         try:
             if useaws:
-                print ("Use AWS")
+                _logger.debug ("Use AWS")
                 imageobject = es_aws_imagefinder.download_from_archive(imageentry['frameid'][0])
             else:
-                print ("Loading from file system: {}".format (str(imageentry['filename'][0])))
+                _logger.debug ("Loading from file system: {}".format (str(imageentry['filename'][0])))
                 imageobject = fits.open(str(imageentry['filename'][0]))
         except:
             _logger.warning ("File {} could not be accessed: {}".format (imageName,sys.exc_info()[0]))
@@ -194,6 +194,7 @@ class PhotCalib():
         imageobject.close()
         if (retCatalog is None) or (retCatalog['instmag'] is None) or (len(retCatalog['ra']) < 10):
             if retCatalog is None:
+                _logger.info (f"No matched catalog was returned for image {imageName}")
                 return
 
             if len(retCatalog['ra']) < 10:
@@ -274,7 +275,7 @@ class PhotCalib():
             #      retCatalog['telescope'], retCatalog['instrument'], retCatalog['instfilter'],
             #      retCatalog['airmass'], photzp, colorterm, photzpsig))
         else:
-            _logger.info("Not saving output for image %s " % imageName)
+            _logger.warning("Not saving output for image %s " % imageName)
 
         return photzp, photzpsig, colorterm
 
