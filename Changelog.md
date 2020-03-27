@@ -1,4 +1,6 @@
 # Changelog
+##Version 6.8 March 2020
+* Update mirror washes for cpt and elp
 
 ##Version(s) 6.x February 2020
 
