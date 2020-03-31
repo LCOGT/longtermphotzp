@@ -95,9 +95,11 @@ mirrorreplacmenet = {
     'coj-clma-2m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2018, 6, 20), ],
     'coj-doma-1m0a': [datetime.datetime(2016, 10, 1),
-                      datetime.datetime(2018, 6, 18), ],
+                      datetime.datetime(2018, 6, 18),
+                      datetime.datetime(2020, 2, 20), ],
     'coj-domb-1m0a': [datetime.datetime(2016, 10, 1),
-                      datetime.datetime(2018, 6, 10), ],
+                      datetime.datetime(2018, 6, 10),
+                      datetime.datetime(2020, 2, 26), ],
 
     'lsc-doma-1m0a': [datetime.datetime(2016, 6, 1),
                       datetime.datetime(2016, 10, 15),
