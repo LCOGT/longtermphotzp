@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Float, create_engine
+import os
 
 assert sys.version_info >= (3, 5)
 _logger = logging.getLogger(__name__)
@@ -18,6 +19,27 @@ Base = declarative_base()
 
 class PhotZPMeasurement(Base):
     __tablename__ = 'lcophot'
+
+    def __init__(self, rec):
+         self.name = rec.name
+         self.dateobs = rec.dateobs
+         self.site = rec.site
+         self.dome = rec.dome
+         self.telescope = rec.telescope
+         self.camera = rec.camera
+         self.filter = rec.filter
+         if rec.airmass is None:
+             self.airmass = None
+         if isinstance(rec.airmass, float):
+             self.airmass=rec.airmass
+         else:
+             self.airmass = None
+             _logger.warning(f"Air mass is not float: {rec.airmass} {type(rec.airmass)} {float} ")
+
+         self.zp = rec.zp if math.isfinite (rec.zp) else math.nan
+         self.colorterm = rec.colorterm if math.isfinite (rec.colorterm) else math.nan
+         self.zpsig = rec.zpsig if math.isfinite (rec.zpsig) else math.nan
+
     name = Column(String, primary_key=True)
     dateobs = Column(String)
     site = Column(String, index=True)
@@ -32,6 +54,7 @@ class PhotZPMeasurement(Base):
 
     def __repr__(self):
         return f'{self.name} {self.dateobs} {self.filter} {self.zp}'
+
 
 class TelescopeThroughputModelPoint(Base):
     __tablename__ = 'telescopemodel_ver2'
@@ -48,12 +71,9 @@ class photdbinterface:
     long term mirror model: upper envelope fit for a telescope's trendline
     '''
 
-    def __init__(self, fname):
-        _logger.debug("Open data base file %s" % (fname))
-        self.engine = create_engine(f'sqlite:///{fname}', echo=False)
-
-        if not database_exists(self.engine.url):
-            create_database(self.engine.url)
+    def __init__(self, dburl):
+        _logger.info("Open data base url %s" % (dburl))
+        self.engine = create_engine(dburl, echo=False)
         PhotZPMeasurement.__table__.create(bind=self.engine, checkfirst=True)
         TelescopeThroughputModelPoint.__table__.create(bind=self.engine, checkfirst=True)
         self.session = sessionmaker(bind=self.engine)()
@@ -210,8 +230,10 @@ class photdbinterface:
 
 if __name__ == '__main__':
     # some testing code that should be modified and migrated into the test suite.
-    print("Hello")
-    db = photdbinterface("lcophotzp.db")
+    logging.basicConfig(level=getattr(logging, 'DEBUG'),
+                        format='%(asctime)s.%(msecs).03d %(levelname)7s: %(module)20s: %(message)s')
+    print(os.environ['DATABASE'])
+    db = photdbinterface(os.environ['DATABASE'])
 
     all = db.readRecords(site='lsc', camera='fa04')
     print("photzp measurement records found: ", len(all))
