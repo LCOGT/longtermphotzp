@@ -20,25 +20,25 @@ Base = declarative_base()
 class PhotZPMeasurement(Base):
     __tablename__ = 'lcophot'
 
-    def __init__(self, rec):
-         self.name = rec.name
-         self.dateobs = rec.dateobs
-         self.site = rec.site
-         self.dome = rec.dome
-         self.telescope = rec.telescope
-         self.camera = rec.camera
-         self.filter = rec.filter
-         if rec.airmass is None:
-             self.airmass = None
-         if isinstance(rec.airmass, float):
-             self.airmass=rec.airmass
-         else:
-             self.airmass = None
-             _logger.warning(f"Air mass is not float: {rec.airmass} {type(rec.airmass)} {float} ")
-
-         self.zp = rec.zp if math.isfinite (rec.zp) else math.nan
-         self.colorterm = rec.colorterm if math.isfinite (rec.colorterm) else math.nan
-         self.zpsig = rec.zpsig if math.isfinite (rec.zpsig) else math.nan
+    # def __init__(self, rec):
+    #      self.name = rec.name
+    #      self.dateobs = rec.dateobs
+    #      self.site = rec.site
+    #      self.dome = rec.dome
+    #      self.telescope = rec.telescope
+    #      self.camera = rec.camera
+    #      self.filter = rec.filter
+    #      if rec.airmass is None:
+    #          self.airmass = None
+    #      if isinstance(rec.airmass, float):
+    #          self.airmass=rec.airmass
+    #      else:
+    #          self.airmass = None
+    #          _logger.warning(f"Air mass is not float: {rec.airmass} {type(rec.airmass)} {float} ")
+    #
+    #      self.zp = rec.zp if math.isfinite (rec.zp) else math.nan
+    #      self.colorterm = rec.colorterm if math.isfinite (rec.colorterm) else math.nan
+    #      self.zpsig = rec.zpsig if math.isfinite (rec.zpsig) else math.nan
 
     name = Column(String, primary_key=True)
     dateobs = Column(String)
