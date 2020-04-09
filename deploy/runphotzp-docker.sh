@@ -1,15 +1,27 @@
 #!/bin/bash
 
-#printf %s\\n {fl,fa,fs,kb} |  xargs -n 1 -P 3 /usr/local/bin/python3 photcalibration.py --photodb $LONGTERMPHOTZP_DATABASE_FILE --ps1dir /panstarrs --mintexp 10 --lastNdays 3 --cameratype
+# PostgreSQL Database Configuration using the LCO standard for database
+# connection configuration in containerized projects.
+DB_HOST="${DB_HOST:-127.0.0.1}"
+DB_PORT="${DB_PORT:-5432}"
+DB_NAME="${DB_NAME:-lcogt-commissioning}"
+DB_USER="${DB_USER:-lcogt-commissioning}"
+DB_PASS="${DB_PASS:-undefined}"
 
-photcalibration --useaws --photodb $LONGTERMPHOTZP_DATABASE_FILE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays 3 --cameratype fa
-photcalibration --useaws --photodb $LONGTERMPHOTZP_DATABASE_FILE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays 3 --cameratype fs
-photcalibration --useaws --photodb $LONGTERMPHOTZP_DATABASE_FILE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays 3 --cameratype kb
+NDAYS="${NDAYS:-3}"
 
-longtermphotzp --database $LONGTERMPHOTZP_DATABASE_FILE --outputdirectory /database --filter gp
-longtermphotzp --database $LONGTERMPHOTZP_DATABASE_FILE --outputdirectory /database --filter rp
-longtermphotzp --database $LONGTERMPHOTZP_DATABASE_FILE --outputdirectory /database --filter ip
-longtermphotzp --database $LONGTERMPHOTZP_DATABASE_FILE --outputdirectory /database --filter zp
+# SQLAlchemy database connection string
+export DATABASE="${DATABASE:-postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}}"
+echo $DATABASE
+
+photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype fa
+photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype fs
+photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype kb
+
+longtermphotzp --database $DATABASE --outputdirectory /database --filter gp
+longtermphotzp --database $DATABASE --outputdirectory /database --filter rp
+longtermphotzp --database $DATABASE --outputdirectory /database --filter ip
+longtermphotzp --database $DATABASE --outputdirectory /database --filter zp
 
 # Exit successfully. None of the above commands take success/failure into
 # account, so we don't care here either...
