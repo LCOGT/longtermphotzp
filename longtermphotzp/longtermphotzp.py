@@ -707,7 +707,9 @@ def longtermphotzp():
             for telescope in crawlScopes:
                 _logger.info(
                     "Now plotting and fitting mirror model for %s %s in filter %s" % (site, telescope, args.filter))
-                filenames += plotlongtermtrend(site, telescope, args.filter, args, cacheddb=db)
+                result = plotlongtermtrend(site, telescope, args.filter, args, cacheddb=db)
+                if result is not None:
+                    filenames += result
 
         db.close()
 
