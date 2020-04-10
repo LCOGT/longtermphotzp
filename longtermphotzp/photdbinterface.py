@@ -71,12 +71,22 @@ class photdbinterface:
     long term mirror model: upper envelope fit for a telescope's trendline
     '''
 
+    # Only one engine per app, but several connections possible
+    # Not nicely coded through, better to have a factory method some day.
+    engines = {}
+
     def __init__(self, dburl):
-        _logger.info("Open data base url %s" % (dburl))
-        self.engine = create_engine(dburl, echo=False)
-        PhotZPMeasurement.__table__.create(bind=self.engine, checkfirst=True)
-        TelescopeThroughputModelPoint.__table__.create(bind=self.engine, checkfirst=True)
-        self.session = sessionmaker(bind=self.engine)()
+        if dburl not in photdbinterface.engines:
+            _logger.info (f"Creating new database engine for url {dburl}")
+            myengine = create_engine(dburl, echo=False)
+            photdbinterface.engines[dburl] = myengine
+        else:
+            _logger.info (f"Reusing  database engine for url {dburl}")
+            myengine = photdbinterface.engines[dburl]
+
+        PhotZPMeasurement.__table__.create(bind=myengine, checkfirst=True)
+        TelescopeThroughputModelPoint.__table__.create(bind=myengine, checkfirst=True)
+        self.session = sessionmaker(bind=myengine)()
 
     def addphotzp(self, photmeasurementObject, commit=True):
         _logger.info("About to insert: %s" % str(photmeasurementObject))
@@ -96,7 +106,7 @@ class photdbinterface:
 
     def close(self):
         """ Close the database safely"""
-        _logger.debug("Closing data base session")
+        _logger.info("Closing data base session")
         self.session.close()
 
     def readRecords(self, site=None, dome=None, telescope=None, camera=None):
@@ -233,8 +243,18 @@ if __name__ == '__main__':
     logging.basicConfig(level=getattr(logging, 'DEBUG'),
                         format='%(asctime)s.%(msecs).03d %(levelname)7s: %(module)20s: %(message)s')
     print(os.environ['DATABASE'])
-    db = photdbinterface(os.environ['DATABASE'])
 
+
+    db = photdbinterface(os.environ['DATABASE'])
+    all = db.readRecords(site='lsc', camera='fa04')
+    print("photzp measurement records found: ", len(all))
+    mirrormodels = db.findmirrormodels('1m0', 'rp')
+    print("Mirror models found", len(mirrormodels), mirrormodels)
+    m = db.readmirrormodel(telescopeid='lsc-domb-1m0a', filter='gp')
+    db.close()
+
+
+    db = photdbinterface(os.environ['DATABASE'])
     all = db.readRecords(site='lsc', camera='fa04')
     print("photzp measurement records found: ", len(all))
     mirrormodels = db.findmirrormodels('1m0', 'rp')

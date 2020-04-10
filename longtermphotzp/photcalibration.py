@@ -297,11 +297,11 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
             row = np.where(inputlist['filename'] == r)
             if len(row)>0:
                 row = row[0][0]
-                _logger.info (f"remove duplicate from table: {r} at row {row}")
+                _logger.debug (f"remove duplicate from table: {r} at row {row}")
                 inputlist.remove_row(row)
 
             # inputlist.remove(r)
-    _logger.debug("Found %d files initially, but cleaned %d already measured images. Starting analysis of %d files" % (
+    _logger.info("Found %d files initially, but cleaned %d already measured images. Starting analysis of %d files" % (
         initialsize, len(rejects), len(inputlist)))
 
     photzpStage = PhotCalib(args.refcat2db)
