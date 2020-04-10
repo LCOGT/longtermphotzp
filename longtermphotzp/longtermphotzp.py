@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 import sys
+import math
 import calendar
 import scipy.signal
 import argparse
@@ -240,17 +241,18 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     zp_air = zpselect + airmasscorrection[select_filter] * airmasselect - airmasscorrection[select_filter]
 
     # find the overall trend of zeropoint variations, save to output file.
-    _x, _y = findUpperEnvelope(dateselect[zpsigselect < photzpmaxnoise], zp_air[zpsigselect < photzpmaxnoise],
-                               ymax=ymax)
-
-    if cacheddb is None:
-        db = photdbinterface(context.database)
+    if len(dateselect[zpsigselect < photzpmaxnoise]) > 0:
+        _x, _y = findUpperEnvelope(dateselect[zpsigselect < photzpmaxnoise], zp_air[zpsigselect < photzpmaxnoise],
+                                   ymax=ymax)
+        db = photdbinterface(context.database) if cacheddb is None else cacheddb
+        db.storemirrormodel("%s-%s" % (select_site, select_telescope), select_filter, _x, _y)
+        if cacheddb is None:
+            db.close()
     else:
-        db = cacheddb
-    db.storemirrormodel("%s-%s" % (select_site, select_telescope), select_filter, _x, _y)
+        _x = None
+        _y = None
 
-    if cacheddb is None:
-        db.close()
+
 
     # now we are starting to plot stuff
 
@@ -338,7 +340,10 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     plt.ylabel("Photomertic Zeropoint %s" % select_filter)
     plt.title("Global airmass trend and correction check")
     meanzp = np.nanmedian(zpselect)
-    plt.ylim([meanzp - 0.5, meanzp + 0.5])
+    if math.isfinite(meanzp):
+        plt.ylim([meanzp - 0.5, meanzp + 0.5])
+    else:
+        plt.ylim ([20,26])
     with io.BytesIO() as fileobj:
         plt.savefig(fileobj, format='png')
         plt.close()
@@ -684,7 +689,7 @@ def parseCommandLine():
 
 def longtermphotzp():
     plt.style.use('ggplot')
-    matplotlib.rcParams['savefig.dpi'] = 400
+    matplotlib.rcParams['savefig.dpi'] = 300
     matplotlib.rcParams['figure.figsize'] = (8.0, 6.0)
 
     filenames = []
