@@ -18,8 +18,8 @@ photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE 
 photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype fs
 photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype kb
 
-longtermphotzp --database $DATABASE --outputdirectory /database --filter gp
 longtermphotzp --database $DATABASE --outputdirectory /database --filter rp
+longtermphotzp --database $DATABASE --outputdirectory /database --filter gp
 longtermphotzp --database $DATABASE --outputdirectory /database --filter ip
 longtermphotzp --database $DATABASE --outputdirectory /database --filter zp
 
