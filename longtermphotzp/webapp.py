@@ -87,6 +87,7 @@ def healthz():
     return 'Healthy!\n'
 
 def main():
+    #app.run(port=8080)
     pass
 
 if __name__ == '__main__':
