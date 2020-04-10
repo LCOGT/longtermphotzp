@@ -284,7 +284,6 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
     """ Invoke the per image processing for a list of files, but check for duplication. """
     # get list of files of interest from elasticsearch
     initialsize = len(inputlist)
-    print(inputlist)
     rejects = []
     if not args.redo:
         for image in inputlist['filename']:
@@ -309,7 +308,6 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
         if rewritetoarchivename:
             fn = lcofilename_to_archivepath(image['filename'], args.rootdir)
             image = Table (np.asarray([fn,image['frameid']]), names=['filename','frameid'])
-        print (image)
         photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp, useaws=args.useaws)
         _logger.debug("analyze image: {}".format(image))
 
