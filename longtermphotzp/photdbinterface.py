@@ -77,11 +77,11 @@ class photdbinterface:
 
     def __init__(self, dburl):
         if dburl not in photdbinterface.engines:
-            _logger.info (f"Creating new database engine for url {dburl}")
+            _logger.info(f"Creating new database engine for url {dburl}")
             myengine = create_engine(dburl, echo=False)
             photdbinterface.engines[dburl] = myengine
         else:
-            _logger.info (f"Reusing  database engine for url {dburl}")
+            _logger.info(f"Reusing  database engine for url {dburl}")
             myengine = photdbinterface.engines[dburl]
 
         PhotZPMeasurement.__table__.create(bind=myengine, checkfirst=True)
@@ -89,13 +89,19 @@ class photdbinterface:
         self.session = sessionmaker(bind=myengine)()
 
     def addphotzp(self, photmeasurementObject, commit=True):
-        _logger.info("About to insert: %s" % str(photmeasurementObject))
+
+        _logger.debug("addphotzp: %s" % str(photmeasurementObject))
+
         existingEntry = self.exists(photmeasurementObject.name)
         if existingEntry:
-            print("Allready in db: {}".format(existingEntry))
-            existingEntry.zp = 3
+            _logger.info(f"Updating exsitng data base entry: {photmeasurementObject} -> {existingEntry}")
+            existingEntry.zp = photmeasurementObject.zp
+            existingEntry.zpsig = photmeasurementObject.zpsig
+            existingEntry.colorterm = photmeasurementObject.colorterm
         else:
+            _logger.info("Insert: %s" % str(photmeasurementObject))
             self.session.add(photmeasurementObject)
+
         if commit:
             self.session.commit()
 
@@ -244,7 +250,6 @@ if __name__ == '__main__':
                         format='%(asctime)s.%(msecs).03d %(levelname)7s: %(module)20s: %(message)s')
     print(os.environ['DATABASE'])
 
-
     db = photdbinterface(os.environ['DATABASE'])
     all = db.readRecords(site='lsc', camera='fa04')
     print("photzp measurement records found: ", len(all))
@@ -252,7 +257,6 @@ if __name__ == '__main__':
     print("Mirror models found", len(mirrormodels), mirrormodels)
     m = db.readmirrormodel(telescopeid='lsc-domb-1m0a', filter='gp')
     db.close()
-
 
     db = photdbinterface(os.environ['DATABASE'])
     all = db.readRecords(site='lsc', camera='fa04')
