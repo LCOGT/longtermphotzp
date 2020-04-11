@@ -4,17 +4,18 @@
 Simple Flask application to handle dynamically generating the HTML based on
 the available images for the Long Term Photometric Zero Point web application
 '''
+import collections
+import datetime
+import logging
+import os
 
+import boto3
+from botocore.exceptions import ClientError
 from flask import Flask
 from flask import render_template
 
-import collections
-import datetime
-import boto3
-import sys
-import os
-
 app = Flask(__name__)
+
 
 def get_last_update_time_from_object():
     client = boto3.client('s3')
@@ -24,6 +25,7 @@ def get_last_update_time_from_object():
     }
     response = client.head_object(**params)
     return response['LastModified']
+
 
 def s3_list_objects():
     '''
@@ -40,21 +42,24 @@ def s3_list_objects():
         for elem in page.get('Contents', []):
             yield elem
 
-def build_site_info_dict():
+
+def build_site_info_dict(filter=None):
     retval = collections.defaultdict(list)
     # TODO: instead of site -> filenames make a site->telescope->filenames dictionary
     for objdict in s3_list_objects():
         filename = objdict['Key']
         parts = filename.split('-')
-        if len(parts) >= 2 and parts[0] == 'photzptrend' and parts[4].startswith('rp'):
+        if len(parts) >= 2 and parts[0] == 'photzptrend' and parts[4].startswith(
+                filter if filter is not None else 'rp'):
             sitecode = parts[1]
             retval[sitecode].append(filename)
 
     # Sort it appropriately
     for key, values in retval.items():
-        values.sort(key = lambda x: x[-16: -4])
+        values.sort(key=lambda x: x[-16: -4])
 
     return retval
+
 
 def generate_presigned_url(filename):
     # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-presigned-urls.html
@@ -72,23 +77,33 @@ def generate_presigned_url(filename):
 
     return response
 
+
 @app.route('/')
 @app.route('/index.html')
-def indexhtml():
+def indexhtml(filter=None):
     params = {
         'generate_presigned_url': generate_presigned_url,
         'timestamp': get_last_update_time_from_object(),
-        'info': build_site_info_dict(),
+        'info': build_site_info_dict(filter),
+        'filter': filter if filter in ['gp', 'rp', 'ip', 'zp'] else 'rp',
     }
     return render_template('index.html', **params)
+
+
+@app.route('/byfilter/<filter>')
+def indexbyfilter(filter):
+    return indexhtml(filter=filter)
+
 
 @app.route('/healthz')
 def healthz():
     return 'Healthy!\n'
 
+
 def main():
-    #app.run(port=8080)
+    app.run(port=8080)
     pass
+
 
 if __name__ == '__main__':
     main()
