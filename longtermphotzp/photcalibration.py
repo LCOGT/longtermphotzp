@@ -175,20 +175,22 @@ class PhotCalib():
         """
 
         # The filename may or may not be the full path to the image
-
-        imageName=os.path.basename(str(imageentry['filename']))
+        filename = str(imageentry['filename'])
+        frameid = int(imageentry['frameid'])
+        imageName=os.path.basename(filename)
+        _logger.info (f'\n\nImage {filename} {frameid} iamgeName for DB is {imageName}\n\n')
 
         # Read banzai star catalog
         try:
             if useaws:
                 _logger.debug ("Use AWS")
-                imageobject = es_aws_imagefinder.download_from_archive(imageentry['frameid'][0])
+                imageobject = es_aws_imagefinder.download_from_archive(frameid)
             else:
-                _logger.debug ("Loading from file system: {}".format (str(imageentry['filename'])))
-                imageobject = fits.open(str(imageentry['filename']))
+                _logger.info ("Loading from file system: {}".format (filename))
+                imageobject = fits.open(filename)
         except:
-            _logger.warning ("File {} could not be accessed: {}".format (imageName,sys.exc_info()[0]))
-            return None
+            _logger.warning ("File {} could not be accessed: {}".format (filename,sys.exc_info()[0]))
+            return 0,0,0
 
         retCatalog = self.generateCrossmatchedCatalog(imageobject, mintexp=mintexp)
         imageobject.close()
@@ -206,15 +208,12 @@ class PhotCalib():
         refmag = retCatalog['refmag']
         refcol = retCatalog['refcol']
 
-        # Calculate the photometric zeropoint.
-        # TODO: Robust median w/ rejection, error propagation.
-
+        # First guess
         cleandata = self.reject_outliers(magZP, 3)
         photzp = np.median(cleandata)
         photzpsig = np.std(cleandata)
 
         # calculate color term
-
         try:
             cond = (refcol > 0) & (refcol < 3) & (np.abs(magZP - photzp) < 0.75)
             colorparams = np.polyfit(refcol[cond], (magZP - photzp)[cond], 1)
@@ -304,7 +303,7 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
         if rewritetoarchivename:
             fn = lcofilename_to_archivepath(image['filename'], args.rootdir)
             image = Table (np.asarray([fn,image['frameid']]), names=['filename','frameid'])
-        _logger.debug("analyze image: \n{}".format(image))
+        _logger.info("processimagelist: send of to analyze image: \n{}".format(image))
         photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp, useaws=args.useaws)
 
 
@@ -426,8 +425,7 @@ def photzpmain():
         # Crawl files in a local directory
         print(f"Not tested {args.crawldirectory}")
         inputlist = (glob.glob(f"{args.crawldirectory}/*[es]91.fits.fz"))
-        inputlist = Table ([inputlist, [-1]* len(inputlist)], names=['filename', 'frameid'])
-        print (inputlist)
+        inputlist = Table ( [inputlist, [-1]* len(inputlist)] , names=['filename', 'frameid'])
         imagedb = photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
         process_imagelist(inputlist, imagedb, args, rewritetoarchivename=False)
         imagedb.close()
