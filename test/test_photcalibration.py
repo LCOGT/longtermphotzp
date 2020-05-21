@@ -9,7 +9,7 @@ def test_photcalibration(tmpdir):
     input = np.asarray(["./test/data/cpt1m012-fa06-20200113-0102-e91.fits.fz", -1])
     t = Table (input, names=['filename','frameid'])
 
-    p = photcal.PhotCalib(os.path.expanduser('~/Catalogs/refcat2/refcat2.db'))
+    p = photcal.PhotCalib(os.path.expanduser('/Catalogs/refcat2/refcat2.db'))
     photzp, photzpsig, colorterm = p.analyzeImage(t, useaws=False, outputimageRootDir=tmpdir)
     print (photzp, photzpsig, colorterm)
 
