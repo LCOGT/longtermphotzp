@@ -176,7 +176,7 @@ class PhotCalib():
 
         # The filename may or may not be the full path to the image
 
-        imageName=os.path.basename(str(imageentry['filename'][0]))
+        imageName=os.path.basename(str(imageentry['filename']))
 
         # Read banzai star catalog
         try:
@@ -184,8 +184,8 @@ class PhotCalib():
                 _logger.debug ("Use AWS")
                 imageobject = es_aws_imagefinder.download_from_archive(imageentry['frameid'][0])
             else:
-                _logger.debug ("Loading from file system: {}".format (str(imageentry['filename'][0])))
-                imageobject = fits.open(str(imageentry['filename'][0]))
+                _logger.debug ("Loading from file system: {}".format (str(imageentry['filename'])))
+                imageobject = fits.open(str(imageentry['filename']))
         except:
             _logger.warning ("File {} could not be accessed: {}".format (imageName,sys.exc_info()[0]))
             return None
@@ -304,8 +304,9 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
         if rewritetoarchivename:
             fn = lcofilename_to_archivepath(image['filename'], args.rootdir)
             image = Table (np.asarray([fn,image['frameid']]), names=['filename','frameid'])
+        _logger.debug("analyze image: \n{}".format(image))
         photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp, useaws=args.useaws)
-        _logger.debug("analyze image: {}".format(image))
+
 
 
 def lcofilename_to_archivepath(filename, rootpath):
@@ -327,22 +328,22 @@ def parseCommandLine():
 
     parser.add_argument('--log-level', dest='log_level', default='INFO', choices=['DEBUG', 'INFO'],
                         help='Set the log level')
-    parser.add_argument('--refcat2db', dest='refcat2db', default='~/Catalogs/refcat2/refcat2.db',
+    parser.add_argument('--refcat2db', dest='refcat2db', default='/Catalogs/refcat2/refcat2.db',
                         help='Directory of Atlas refcat2 catalog database')
     parser.add_argument("--diagnosticplotsdir", dest='outputimageRootDir', default=None,
                         help='Output directory for diagnostic photometry plots. No plots generated if option is omitted. This is a time consuming task. ')
-    parser.add_argument('--photodb', dest='imagedbPrefix', default='~/lcozpplots/lcophotzp.db',
+    parser.add_argument('--photodb', dest='imagedbPrefix', default=f'sqlite:///{os.path.expanduser("~/lcophotzp.db")}',
                         help='Result output directory. .db file is written here')
     parser.add_argument('--imagerootdir', dest='rootdir', default='/archive/engineering',
                         help="LCO archive root directory")
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
-    parser.add_argument('--mintexp', dest='mintexp', default=60, type=float, help='Minimum exposure time to accept')
+    parser.add_argument('--mintexp', dest='mintexp', default=10, type=float, help='Minimum exposure time to accept')
     parser.add_argument('--redo', action='store_true')
     parser.add_argument('--preview', dest='processstatus', default='processed', action='store_const', const='preview')
     parser.add_argument('--useaws', action='store_true',
                         help="Use LCO archive API to retrieve frame vs direct /archive file mount access")
     mutex = parser.add_mutually_exclusive_group()
-    mutex.add_argument('--date', dest='date', default=[None, ], nargs='+', help='Specific date to process.')
+    mutex.add_argument('--date', dest='date', default=[], nargs='+', help='Specific date to process.')
     mutex.add_argument('--lastNdays', type=int)
 
     cameragroup = parser.add_mutually_exclusive_group()
@@ -356,8 +357,6 @@ def parseCommandLine():
 
     logging.basicConfig(level=getattr(logging, args.log_level.upper()),
                         format='%(asctime)s.%(msecs).03d %(levelname)7s: %(module)20s: %(message)s')
-
-    args.imagedbPrefix = os.path.expanduser(args.imagedbPrefix)
 
     if args.outputimageRootDir is not None:
         args.outputimageRootDir = os.path.expanduser(args.outputimageRootDir)
@@ -386,6 +385,7 @@ def photzpmain():
     else:
         sites = ('lsc', 'cpt', 'ogg', 'coj', 'tfn', 'elp')
 
+    print ('DATES: ' , args.date)
     for date in args.date:
         _logger.info("Processing DAY-OBS {}".format(date))
         if args.cameratype is not None:
@@ -418,16 +418,20 @@ def photzpmain():
             process_imagelist(inputlist, imagedb, args)
             imagedb.close()
 
-        elif args.crawldirectory is not None:
-            # Crawl files in a local directory
-            print("Not tested")
-            inputlist = os.path.basename(glob.glob("{}/*e91.fits.fz".format(args.crawldirectory)))
-            imagedb = photdbinterface("%s/%s" % (args.crawldirectory, 'imagezp.db'))
-            process_imagelist(inputlist, imagedb, args, rewritetoarchivename=False)
-            imagedb.close()
+
 
         else:
             print("Need to specify either a camera, or a camera type.")
+    if args.crawldirectory is not None:
+        # Crawl files in a local directory
+        print(f"Not tested {args.crawldirectory}")
+        inputlist = (glob.glob(f"{args.crawldirectory}/*[es]91.fits.fz"))
+        inputlist = Table ([inputlist, [-1]* len(inputlist)], names=['filename', 'frameid'])
+        print (inputlist)
+        imagedb = photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
+        process_imagelist(inputlist, imagedb, args, rewritetoarchivename=False)
+        imagedb.close()
+
     sys.exit(0)
 
 
