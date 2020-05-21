@@ -270,10 +270,6 @@ class PhotCalib():
                                    filter = retCatalog['instfilter'], airmass = retCatalog['airmass'],
                                    zp = photzp, colorterm = colorterm, zpsig = photzpsig)
             outputdb.addphotzp(m)
-            # outputdb.addphotzp(
-            #     (imageName, retCatalog['dateobs'].replace('T', ' '), retCatalog['siteid'], retCatalog['domid'],
-            #      retCatalog['telescope'], retCatalog['instrument'], retCatalog['instfilter'],
-            #      retCatalog['airmass'], photzp, colorterm, photzpsig))
         else:
             _logger.warning("Not saving output for image %s " % imageName)
 
