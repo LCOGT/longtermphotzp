@@ -1,4 +1,7 @@
 # Changelog
+## Version 6.9.6 August 2020
+* Update mirror washes at elp doma and domb
+
 ##Version 6.8 March 2020
 * Update mirror washes for cpt and elp
 

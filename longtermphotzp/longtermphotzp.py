@@ -89,8 +89,10 @@ mirrorreplacmenet = {
                       datetime.datetime(2018, 4, 5),
                       datetime.datetime(2019, 5, 22),  # mirror wash
                       datetime.datetime(2019, 10, 20),  # mirror wash
+                      datetime.datetime(2020, 8, 22),  # mirror wash
                       ],
     'elp-domb-1m0a': [datetime.datetime(2019, 10, 20),  # mirror wash
+                      datetime.datetime(2020, 8, 19),  # mirror wash
                       ],
 
     'coj-clma-2m0a': [datetime.datetime(2016, 4, 1),
