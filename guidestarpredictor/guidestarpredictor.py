@@ -14,7 +14,7 @@ def get_FOV_needed_for_position (ra = 0, dec=0, database = None, maglimit=17, in
     refposition = SkyCoord (ra * u.degree, dec * u.degree)
     seperations = cReference.separation(refposition).to(u.arcsec)
     angles = cReference.position_angle(refposition).to(u.deg)
-
+    
     closestidx = np.argmin (seperations)
     return seperations[closestidx] / u.arcsec, angles[closestidx] / u.deg,
 
