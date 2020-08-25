@@ -1,9 +1,11 @@
 import astropy
 import matplotlib
+from scipy import optimize
 
+import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
 from longtermphotzp.atlasrefcat2 import atlas_refcat2
 from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
-import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -33,6 +35,7 @@ class PhotCalib():
     # possibly need this for all site:telescope:camera:filter settings. Maybe start with one
     # default and see where it goes.
     referencecatalog = None
+
 
     def __init__(self, refcat2db):
         self.referencecatalog = atlas_refcat2(refcat2db)
@@ -90,12 +93,12 @@ class PhotCalib():
 
         # Check if exposure time is long enough
         if (retCatalog['exptime'] < mintexp):
-            _logger.info("Exposure %s time is deemed too short, ignoring" % ( retCatalog['exptime']))
+            _logger.info("Exposure %s time is deemed too short, ignoring" % (retCatalog['exptime']))
             return None
 
         # verify there is no deliberate defocus
         if (retCatalog['FOCOBOFF'] is not None) and (retCatalog['FOCOBOFF'] != 0):
-            _logger.info("Exposure is deliberately defocussed by %s, ignoring" % ( retCatalog['FOCOBOFF']))
+            _logger.info("Exposure is deliberately defocussed by %s, ignoring" % (retCatalog['FOCOBOFF']))
             return None
 
         # Get the instrumental filter and the matching reference catalog filter names.
@@ -116,7 +119,7 @@ class PhotCalib():
         try:
             ras, decs = image_wcs.all_pix2world(instCatalog['x'], instCatalog['y'], 1)
         except:
-            _logger.error("Failed to convert images coordinates to world coordinates. Giving up on file." )
+            _logger.error("Failed to convert images coordinates to world coordinates. Giving up on file.")
             return None
 
         # Query reference catalog TODO: paramterize FoV of query!
@@ -166,6 +169,23 @@ class PhotCalib():
         std = np.std(data)
         return data[abs(data - np.median(data)) < m * std]
 
+
+    def robustfit (self, deltamag, refcol):
+        #Initial preselection based on absoute values
+        cond = (refcol > 0) & (refcol < 3) & (np.abs( (deltamag - np.median (deltamag))) < 0.75)
+        colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
+        color_p = np.poly1d(colorparams)
+        delta = np.abs(deltamag - color_p(refcol))
+        cond = (delta < 0.2) & (delta < 2 * np.std (delta))
+        colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
+        color_p = np.poly1d(colorparams)
+        new_colorterm = colorparams[0]
+        new_zeropoint = colorparams[1]
+        new_std = np.std (  (deltamag - color_p(refcol))[cond] )
+        _logger.debug (f'Fit: zp = {new_zeropoint} color = {new_colorterm} rms = {new_std}')
+        return colorparams, cond
+
+
     def analyzeImage(self, imageentry, outputdb=None,
                      outputimageRootDir=None, mintexp=60, useaws=False):
         """
@@ -177,26 +197,26 @@ class PhotCalib():
         # The filename may or may not be the full path to the image
         filename = str(imageentry['filename'])
         frameid = int(imageentry['frameid'])
-        imageName=os.path.basename(filename)
-        _logger.info (f'\n\nImage {filename} {frameid} iamgeName for DB is {imageName}\n\n')
+        imageName = os.path.basename(filename)
+        _logger.info(f'\n\nImage {filename} {frameid} iamgeName for DB is {imageName}\n\n')
 
         # Read banzai star catalog
         try:
             if useaws:
-                _logger.debug ("Use AWS")
+                _logger.debug("Use AWS")
                 imageobject = es_aws_imagefinder.download_from_archive(frameid)
             else:
-                _logger.info ("Loading from file system: {}".format (filename))
+                _logger.info("Loading from file system: {}".format(filename))
                 imageobject = fits.open(filename)
         except:
-            _logger.warning ("File {} could not be accessed: {}".format (filename,sys.exc_info()[0]))
-            return 0,0,0
+            _logger.warning("File {} could not be accessed: {}".format(filename, sys.exc_info()[0]))
+            return 0, 0, 0
 
         retCatalog = self.generateCrossmatchedCatalog(imageobject, mintexp=mintexp)
         imageobject.close()
         if (retCatalog is None) or (retCatalog['instmag'] is None) or (len(retCatalog['ra']) < 10):
             if retCatalog is None:
-                _logger.info (f"No matched catalog was returned for image {imageName}")
+                _logger.info(f"No matched catalog was returned for image {imageName}")
                 return
 
             if len(retCatalog['ra']) < 10:
@@ -215,6 +235,7 @@ class PhotCalib():
 
         # calculate color term
         try:
+            #old way:
             cond = (refcol > 0) & (refcol < 3) & (np.abs(magZP - photzp) < 0.75)
             colorparams = np.polyfit(refcol[cond], (magZP - photzp)[cond], 1)
             color_p = np.poly1d(colorparams)
@@ -224,10 +245,17 @@ class PhotCalib():
             color_p = np.poly1d(colorparams)
             colorterm = colorparams[0]
 
+            newcolorparam, new_cond = self.robustfit(magZP,refcol)
+            new_colorterm = newcolorparam[0]
+            new_zeropoint = newcolorparam[1]
+            color_p = np.poly1d(newcolorparam)
+            print (f"New zeropoint, color term: {new_zeropoint}, { new_colorterm} old color term {colorterm}")
+
         except:
             _logger.warning("could not fit a color term. ")
             color_p = None
             colorterm = 0
+
 
         # if requested, generate all sorts of diagnostic plots
         if (outputimageRootDir is not None) and (os.path.exists(outputimageRootDir)):
@@ -236,10 +264,11 @@ class PhotCalib():
 
             ### Zeropoint plot
             plt.figure()
-            plt.plot(refmag, magZP, '.')
+            plt.plot(refmag[~new_cond], (magZP - color_p(refcol) + new_zeropoint)[~new_cond], 'x', color='grey')
+            plt.plot(refmag[new_cond], (magZP - color_p(refcol)+new_zeropoint)[new_cond], '.', color='red')
             plt.xlim([10, 22])
             plt.ylim([photzp - 0.5, photzp + 0.5])
-            plt.axhline(y=photzp, color='r', linestyle='-')
+            plt.axhline(y=new_zeropoint, color='r', linestyle='-')
             plt.xlabel("Reference catalog mag")
             plt.ylabel("Reference Mag - Instrumental Mag (%s)" % (retCatalog['instfilter']))
             plt.title("Photometric zeropoint %s %5.2f" % (outbasename, photzp))
@@ -248,26 +277,29 @@ class PhotCalib():
 
             ### Color term plot
             plt.figure()
-            plt.plot(refcol, magZP - photzp, '.')
+            plt.plot(refcol[~new_cond], magZP[~new_cond] , 'x',  color='grey')
+            plt.plot(refcol[new_cond], magZP[new_cond] , '.',  color='red')
+            plt.axhline(y=new_zeropoint, color='grey', linestyle='-', label=f"zeropoint {new_zeropoint:5.2f}")
+
             if color_p is not None:
                 xp = np.linspace(-0.5, 3.5, 10)
-                plt.plot(xp, color_p(xp), '-', label="color term fit % 6.4f" % (colorterm))
+                plt.plot(xp, color_p(xp), '--', color='blue', label=f"color term {colorterm:5.3f}" )
                 plt.legend()
 
             plt.xlim([-0.5, 3.0])
-            plt.ylim([-1, 1])
+            plt.ylim([photzp - 0.5, photzp + 0.5])
             plt.xlabel("(g-r)$_{\\rm{SDSS}}$ Reference")
-            plt.ylabel("Reference Mag - Instrumental Mag - ZP (%5.2f) %s" % (photzp, retCatalog['instfilter']))
+            plt.ylabel("Reference Mag - Instrumental Mag  %s" % ( retCatalog['instfilter']))
             plt.title("Color correction %s " % (outbasename))
             plt.savefig("%s/%s_%s_color.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
             plt.close()
 
         if outputdb is not None:
-            m = PhotZPMeasurement (name=imageName, dateobs = retCatalog['dateobs'].replace('T', ' '),
-                                   site = retCatalog['siteid'], dome = retCatalog['domid'],
-                                   telescope=  retCatalog['telescope'], camera = retCatalog['instrument'],
-                                   filter = retCatalog['instfilter'], airmass = retCatalog['airmass'],
-                                   zp = photzp, colorterm = colorterm, zpsig = photzpsig)
+            m = PhotZPMeasurement(name=imageName, dateobs=retCatalog['dateobs'].replace('T', ' '),
+                                  site=retCatalog['siteid'], dome=retCatalog['domid'],
+                                  telescope=retCatalog['telescope'], camera=retCatalog['instrument'],
+                                  filter=retCatalog['instfilter'], airmass=retCatalog['airmass'],
+                                  zp=photzp, colorterm=colorterm, zpsig=photzpsig)
             outputdb.addphotzp(m)
         else:
             _logger.warning("Not saving output for image %s " % imageName)
@@ -289,9 +321,9 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
             pass
             # TODO: find out how to delete table entries that are duplicate
             row = np.where(inputlist['filename'] == r)
-            if len(row)>0:
+            if len(row) > 0:
                 row = row[0][0]
-                _logger.debug (f"remove duplicate from table: {r} at row {row}")
+                _logger.debug(f"remove duplicate from table: {r} at row {row}")
                 inputlist.remove_row(row)
 
             # inputlist.remove(r)
@@ -302,10 +334,10 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
     for image in inputlist:
         if rewritetoarchivename:
             fn = lcofilename_to_archivepath(image['filename'], args.rootdir)
-            image = Table (np.asarray([fn,image['frameid']]), names=['filename','frameid'])
+            image = Table(np.asarray([fn, image['frameid']]), names=['filename', 'frameid'])
         _logger.info("processimagelist: send of to analyze image: \n{}".format(image))
-        photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp, useaws=args.useaws)
-
+        photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp,
+                                 useaws=args.useaws)
 
 
 def lcofilename_to_archivepath(filename, rootpath):
@@ -384,7 +416,7 @@ def photzpmain():
     else:
         sites = ('lsc', 'cpt', 'ogg', 'coj', 'tfn', 'elp')
 
-    print ('DATES: ' , args.date)
+    print('DATES: ', args.date)
     for date in args.date:
         _logger.info("Processing DAY-OBS {}".format(date))
         if args.cameratype is not None:
@@ -425,7 +457,7 @@ def photzpmain():
         # Crawl files in a local directory
         print(f"Not tested {args.crawldirectory}")
         inputlist = (glob.glob(f"{args.crawldirectory}/*[es]91.fits.fz"))
-        inputlist = Table ( [inputlist, [-1]* len(inputlist)] , names=['filename', 'frameid'])
+        inputlist = Table([inputlist, [-1] * len(inputlist)], names=['filename', 'frameid'])
         imagedb = photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
         process_imagelist(inputlist, imagedb, args, rewritetoarchivename=False)
         imagedb.close()
