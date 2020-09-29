@@ -351,7 +351,7 @@ def parseCommandLine():
 
     cameragroup = parser.add_mutually_exclusive_group()
     cameragroup.add_argument('--camera', dest='camera', default=None, help='specific camera to process. ')
-    cameragroup.add_argument('--cameratype', dest='cameratype', default=None, choices=['fs', 'fl', 'fa', 'kb'],
+    cameragroup.add_argument('--cameratype', dest='cameratype', default=None, choices=['fs', 'fl', 'fa', 'kb', 'ep'],
                              help='camera type to process at selected sites to process. ')
     cameragroup.add_argument('--crawldirectory', default=None, type=str,
                              help="process all reduced image in specific directoy")

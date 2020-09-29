@@ -17,6 +17,8 @@ echo $DATABASE
 photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype fa
 photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype fs
 photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype kb
+photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype ep
+
 
 longtermphotzp --database $DATABASE --outputdirectory /database --filter rp
 longtermphotzp --database $DATABASE --outputdirectory /database --filter gp

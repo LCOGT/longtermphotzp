@@ -1,4 +1,8 @@
 # Changelog
+
+## Version 6.9.7 September 2020
+* Add Muscat3 ep cameras to be analysed
+
 ## Version 6.9.6 August 2020
 * Update mirror washes at elp doma and domb
 
