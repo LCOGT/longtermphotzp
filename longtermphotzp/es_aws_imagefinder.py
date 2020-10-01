@@ -68,7 +68,7 @@ def make_elasticsearch(index, filters, queries=None, exclusion_filters=None, ran
 
 
 def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, mintexp=30,
-                              filterlist=['gp', 'rp', 'ip', 'zp'], es_url='http://elasticsearch.lco.gtn:9200'):
+                              filterlist=['gp', 'rp', 'ip', 'zp', 'zs'], es_url='http://elasticsearch.lco.gtn:9200'):
     """ Queries for a list of processed LCO images that are viable to get a photometric zeropoint in the griz bands measured.
 
         Selection criteria are by DAY-OBS, site, by camaera type (fs,fa,kb), what filters to use, and minimum exposure time.
