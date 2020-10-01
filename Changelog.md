@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 6.9.8 October 1st 2020
+* Fix issue where zs filter names were not recognized. now they are mapped to zp. 
+* Minor fixes for muscat. Add Muscat installation date og ogg 2m0a time line as new mirror event.  
+
 ## Version 6.9.7 September 2020
 * Add Muscat3 ep cameras to be analysed
 
