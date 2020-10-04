@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 6.9.10 October 3 2020
+* Expand plot range to include z filter.
+
 ## Version 6.9.9 October 3 2020
 * Treat zp and zs filter the same in images for now. 
 
