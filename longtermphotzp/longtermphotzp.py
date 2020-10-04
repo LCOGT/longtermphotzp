@@ -216,7 +216,10 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     selection = np.ones(len(data['name']), dtype=bool)
 
     if select_filter is not None:
-        selection = selection & (data['filter'] == select_filter)
+        if (select_filter == 'zp') or (select_filter == 'zs'):
+            selection = selection &  ( (data['filter'] == 'zs') | (data['filter'] == 'zp'))
+        else:
+            selection = selection & (data['filter'] == select_filter)
     if instrument is not None:
         selection = selection & (data['camera'] == instrument)
 

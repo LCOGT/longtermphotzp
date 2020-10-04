@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 6.9.9 October 3 2020
+* Treat zp and zs filter the same in images for now. 
+
 ## Version 6.9.8 October 1st 2020
 * Fix issue where zs filter names were not recognized. now they are mapped to zp. 
 * Minor fixes for muscat. Add Muscat installation date og ogg 2m0a time line as new mirror event.  
