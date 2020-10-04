@@ -312,7 +312,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
 
     # prettify, decorations, etc
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-    plt.ylim([ymax - 3.5, ymax])
+    plt.ylim([ymax - 4.5, ymax])
     dateformat(mystarttime, endtime)
     plt.xlabel("DATE-OBS")
     plt.ylabel("Photometric Zeropoint %s" % select_filter)
