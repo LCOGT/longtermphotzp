@@ -156,6 +156,8 @@ class PhotCalib():
         retCatalog['ra'] = refcatalog['RA'][condition]
         retCatalog['dec'] = refcatalog['DEC'][condition]
         retCatalog['matchDistance'] = distance[condition]
+        retCatalog['x'] = instCatalog['x'][condition]
+        retCatalog['y'] = instCatalog['y'][condition]
         # TODO: Read photometric error columns from reference and instrument catalogs, properly propagate error.
 
         return retCatalog
@@ -292,6 +294,34 @@ class PhotCalib():
             plt.ylabel("Reference Mag - Instrumental Mag  %s" % ( retCatalog['instfilter']))
             plt.title("Color correction %s " % (outbasename))
             plt.savefig("%s/%s_%s_color.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
+            plt.close()
+
+            ### x/y/r variations in photometric zeropoint
+
+            plt.figure ()
+
+            residual = magZP[new_cond] - color_p (refcol[new_cond])
+            plt.subplot (3,1,1)
+            plt.plot (retCatalog['x'][new_cond], residual,'.')
+            plt.ylim([-0.2,0.2])
+            plt.ylabel ("\nCCD X")
+
+            plt.title("Residuals of zero point %s " % (outbasename))
+
+            plt.subplot (3,1,2)
+            plt.plot (retCatalog['y'][new_cond], residual,'.')
+            plt.ylim([-0.2,0.2])
+            plt.xlabel ("y coordinate [pixel]")
+            plt.ylabel (f'residual in {retCatalog["instfilter"]}[mag]\nCCD-Y')
+
+            plt.subplot (3,1,3)
+            plt.plot (np.sqrt (  (retCatalog['x'][new_cond]-1024) **2 + (retCatalog['x'][new_cond]-1024) **2), residual,'.')
+            plt.ylim([-0.2,0.2])
+            plt.xlabel ("coordinate [pixel]")
+            plt.ylabel (f'\nradial')
+
+
+            plt.savefig("%s/%s_%s_residuals.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']), bbox_inches='tight')
             plt.close()
 
         if outputdb is not None:
