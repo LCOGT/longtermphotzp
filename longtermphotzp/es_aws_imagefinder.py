@@ -90,7 +90,7 @@ def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, m
         prefix_filters.append({'INSTRUME': cameratype})
 
     queries = []
-    records = make_elasticsearch('fitsheaders', query_filters, queries, exclusion_filters=None, es_url=es_url,
+    records = make_elasticsearch('lco-fitsheaders', query_filters, queries, exclusion_filters=None, es_url=es_url,
                                  range_filters=range_filters, prefix_filters=prefix_filters,
                                  terms_filters=terms_filters).scan()
     if records is None:
