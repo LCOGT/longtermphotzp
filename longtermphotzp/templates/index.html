@@ -21,7 +21,6 @@
     {% set filenames = ['allmodels_2m01m0_rp.png', 'allmodels_0m4_rp.png', ] %}
     {% for image in filenames %}
     {% set url = generate_presigned_url(image) %}
-    {% set url = url.replace ('rp', filter )
     <a href="{{ url|safe }}">
       <img src="{{ url|safe }}" width="800" />
     </a>

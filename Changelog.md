@@ -1,4 +1,6 @@
 # Changelog
+## Version 6.9.12
+* Bug fix
 
 ## Version 6.9.11
 * Use fitsheaders-alias index for elasticsearch
