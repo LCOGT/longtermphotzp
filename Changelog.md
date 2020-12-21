@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 6.9.11
+* Use fitsheaders-alias index for elasticsearch
+
 ## Version 6.9.10 October 3 2020
 * Expand plot range to include z filter.
 
