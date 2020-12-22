@@ -67,6 +67,7 @@ telescopecleaning = {
     'elp-doma-1m0a': [datetime.datetime(2017, 9, 20), datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 6),
                       datetime.datetime(2018, 6, 9), datetime.datetime(2018, 12, 11), ],
     'ogg-clma-2m0a': [datetime.datetime(2017, 10, 20), ],
+
     'cpt-doma-1m0a': [datetime.datetime(2017, 11, 15), datetime.datetime(2018, 9, 13), datetime.datetime(2018, 10, 24),
                       ],
     'cpt-domb-1m0a': [datetime.datetime(2017, 11, 15), datetime.datetime(2018, 9, 13), datetime.datetime(2018, 10, 24),
@@ -83,14 +84,18 @@ telescopecleaning = {
 mirrorreplacmenet = {
     'ogg-clma-2m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2017, 10, 20),
-                      datetime.datetime(2019, 6, 16)],  # this was a mirror wash only
+                      datetime.datetime(2019, 6, 16),# this was a mirror wash only
+                      datetime.datetime(2020, 9, 27), # Transition to Muscat3
+                      ],
 
     'elp-doma-1m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2018, 4, 5),
                       datetime.datetime(2019, 5, 22),  # mirror wash
                       datetime.datetime(2019, 10, 20),  # mirror wash
+                      datetime.datetime(2020, 8, 22),  # mirror wash
                       ],
     'elp-domb-1m0a': [datetime.datetime(2019, 10, 20),  # mirror wash
+                      datetime.datetime(2020, 8, 19),  # mirror wash
                       ],
 
     'coj-clma-2m0a': [datetime.datetime(2016, 4, 1),
@@ -211,7 +216,10 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     selection = np.ones(len(data['name']), dtype=bool)
 
     if select_filter is not None:
-        selection = selection & (data['filter'] == select_filter)
+        if (select_filter == 'zp') or (select_filter == 'zs'):
+            selection = selection &  ( (data['filter'] == 'zs') | (data['filter'] == 'zp'))
+        else:
+            selection = selection & (data['filter'] == select_filter)
     if instrument is not None:
         selection = selection & (data['camera'] == instrument)
 
@@ -304,7 +312,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
 
     # prettify, decorations, etc
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-    plt.ylim([ymax - 3.5, ymax])
+    plt.ylim([ymax - 4.5, ymax])
     dateformat(mystarttime, endtime)
     plt.xlabel("DATE-OBS")
     plt.ylabel("Photometric Zeropoint %s" % select_filter)

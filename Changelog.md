@@ -1,4 +1,26 @@
 # Changelog
+## Version 6.9.12
+* Bug fix
+
+## Version 6.9.11
+* Use fitsheaders-alias index for elasticsearch
+
+## Version 6.9.10 October 3 2020
+* Expand plot range to include z filter.
+
+## Version 6.9.9 October 3 2020
+* Treat zp and zs filter the same in images for now. 
+
+## Version 6.9.8 October 1st 2020
+* Fix issue where zs filter names were not recognized. now they are mapped to zp. 
+* Minor fixes for muscat. Add Muscat installation date og ogg 2m0a time line as new mirror event.  
+
+## Version 6.9.7 September 2020
+* Add Muscat3 ep cameras to be analysed
+
+## Version 6.9.6 August 2020
+* Update mirror washes at elp doma and domb
+
 ##Version 6.8 March 2020
 * Update mirror washes for cpt and elp
 
