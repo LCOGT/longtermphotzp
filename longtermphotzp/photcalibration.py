@@ -232,26 +232,27 @@ class PhotCalib():
 
         # First guess
         cleandata = self.reject_outliers(magZP, 3)
-        photzp = np.median(cleandata)
+        firstguess_photzp = np.median(cleandata)
         photzpsig = np.std(cleandata)
 
         # calculate color term
         try:
             #old way:
-            cond = (refcol > 0) & (refcol < 3) & (np.abs(magZP - photzp) < 0.75)
-            colorparams = np.polyfit(refcol[cond], (magZP - photzp)[cond], 1)
-            color_p = np.poly1d(colorparams)
-            delta = np.abs(magZP - photzp - color_p(refcol))
-            cond = (delta < 0.2)
-            colorparams = np.polyfit(refcol[cond], (magZP - photzp)[cond], 1)
-            color_p = np.poly1d(colorparams)
-            colorterm = colorparams[0]
+            # cond = (refcol > 0) & (refcol < 3) & (np.abs(magZP - photzp) < 0.75)
+            # colorparams = np.polyfit(refcol[cond], (magZP - photzp)[cond], 1)
+            # color_p = np.poly1d(colorparams)
+            # delta = np.abs(magZP - photzp - color_p(refcol))
+            # cond = (delta < 0.2)
+            # colorparams = np.polyfit(refcol[cond], (magZP - photzp)[cond], 1)
+            # color_p = np.poly1d(colorparams)
+            # colorterm = colorparams[0]
 
+            # the new way
             newcolorparam, new_cond = self.robustfit(magZP,refcol)
-            new_colorterm = newcolorparam[0]
-            new_zeropoint = newcolorparam[1]
+            colorterm = newcolorparam[0]
+            photzp = newcolorparam[1]
             color_p = np.poly1d(newcolorparam)
-            print (f"New zeropoint, color term: {new_zeropoint}, { new_colorterm} old color term {colorterm}")
+            print (f"New zeropoint, color term: {photzp}, {colorterm}")
 
         except:
             _logger.warning("could not fit a color term. ")
@@ -266,11 +267,11 @@ class PhotCalib():
 
             ### Zeropoint plot
             plt.figure()
-            plt.plot(refmag[~new_cond], (magZP - color_p(refcol) + new_zeropoint)[~new_cond], 'x', color='grey')
-            plt.plot(refmag[new_cond], (magZP - color_p(refcol)+new_zeropoint)[new_cond], '.', color='red')
+            plt.plot(refmag[~new_cond], (magZP - color_p(refcol) + photzp)[~new_cond], 'x', color='grey')
+            plt.plot(refmag[new_cond], (magZP - color_p(refcol)+photzp)[new_cond], '.', color='red')
             plt.xlim([10, 22])
             plt.ylim([photzp - 0.5, photzp + 0.5])
-            plt.axhline(y=new_zeropoint, color='r', linestyle='-')
+            plt.axhline(y=photzp, color='r', linestyle='-')
             plt.xlabel("Reference catalog mag")
             plt.ylabel("Reference Mag - Instrumental Mag (%s)" % (retCatalog['instfilter']))
             plt.title("Photometric zeropoint %s %5.2f" % (outbasename, photzp))
@@ -281,7 +282,7 @@ class PhotCalib():
             plt.figure()
             plt.plot(refcol[~new_cond], magZP[~new_cond] , 'x',  color='grey')
             plt.plot(refcol[new_cond], magZP[new_cond] , '.',  color='red')
-            plt.axhline(y=new_zeropoint, color='grey', linestyle='-', label=f"zeropoint {new_zeropoint:5.2f}")
+            plt.axhline(y=photzp, color='grey', linestyle='-', label=f"zeropoint {photzp:5.2f}")
 
             if color_p is not None:
                 xp = np.linspace(-0.5, 3.5, 10)

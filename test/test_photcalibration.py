@@ -11,14 +11,14 @@ def do_photometrytestonFile(filename, reference_photzp, reference_colorterm, tmp
         photzp, photzpsig, colorterm = p.analyzeImage(r, useaws=False, outputimageRootDir=tmpdir)
         print (filename, photzp, photzpsig, colorterm)
 
-    assert math.fabs (photzp - reference_photzp) < 0.1, "Test for correct photomertic zeropoint"
-    assert math.fabs (colorterm - reference_colorterm) < 0.01, "Test for correct photomertic zeropoint"
+    assert math.fabs (photzp - reference_photzp) < 0.1, f"Test for correct photomertic zeropoint of {filename}"
+    assert math.fabs (colorterm - reference_colorterm) < 0.01, f"Test for correct colorterm of {filename}"
 
 def test_photcalibration(tmpdir):
 
     print ("Data are stored in temp dir: ", tmpdir )
     startdir = os.path.dirname(os.path.abspath(__file__))
 
-    do_photometrytestonFile(f"{startdir}/data/cpt1m012-fa06-20200113-0102-e91.fits.fz", 23.09,-0.008, tmpdir=tmpdir)
-    do_photometrytestonFile(f"{startdir}/data/ogg2m001-ep04-20201006-0097-e91.fits.fz", 25.21,-0.0063, tmpdir=tmpdir)
+    do_photometrytestonFile(f"{startdir}/data/cpt1m012-fa06-20200113-0102-e91.fits.fz", 23.1,-0.008, tmpdir=tmpdir)
+    do_photometrytestonFile(f"{startdir}/data/ogg2m001-ep04-20201006-0097-e91.fits.fz", 25.15, 0.063, tmpdir=tmpdir)
 
