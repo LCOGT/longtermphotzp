@@ -1,4 +1,8 @@
 # Changelog
+
+Version 7.0RC1
+* test production release
+
 ## Version 6.9.12
 * Bug fix
 
