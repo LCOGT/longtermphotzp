@@ -1,5 +1,8 @@
 # Changelog
 
+Version 7.0.1
+*  Include COJ realuminsation in Feb 2021
+
 Version 7.0RC1
 * test production release
 
