@@ -1,5 +1,8 @@
 # Changelog
 
+Version 7.0.2
+* Correct COJ realuminsaion to show up at such and not just as mirror clean
+
 Version 7.0.1
 *  Include COJ realuminsation in Feb 2021
 
