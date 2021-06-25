@@ -41,7 +41,7 @@ telescopedict = {
     'ogg': ['clma-2m0a', 'clma-0m4b', 'clma-0m4c'],
     'elp': ['doma-1m0a', 'domb-1m0a', 'aqwa-0m4a'],
     'cpt': ['doma-1m0a', 'domb-1m0a', 'domc-1m0a', 'aqwa-0m4a'],
-    'tfn': ['aqwa-0m4a', 'aqwa-0m4b'],
+    'tfn': ['aqwa-0m4a', 'aqwa-0m4b', 'doma-1m0a', 'domb-1m0a'],
     #  'sqa': ['doma-0m8a'],
     #  'bpl': ['doma-1m0a']
 }
