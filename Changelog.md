@@ -1,4 +1,6 @@
 # Changelog
+Version 7.0.3
+* Add tfn dome A,B telescopes
 
 Version 7.0.2
 * Correct COJ realuminsaion to show up at such and not just as mirror clean
