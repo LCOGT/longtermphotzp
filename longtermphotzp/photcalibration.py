@@ -84,6 +84,13 @@ class PhotCalib():
         retCatalog['domid'] = imageobject['SCI'].header['ENCID']
         retCatalog['telescope'] = imageobject['SCI'].header['TELID']
         retCatalog['FOCOBOFF'] = imageobject['SCI'].header['FOCOBOFF']
+        retCatalog['WCSERR'] =  imageobject['SCI'].header['WCSERR']
+
+        # Check if WCS is OK, otherwise we could not cross-match with catalog
+        if retCatalog['WCSERR'] != 0:
+            _logger.info(
+                f"WCS solve not valid in FITS header. Skipping. Error code is: {retCatalog['WCSERR']}")
+            return None
 
         # Check if filter is supported
         if retCatalog['instfilter'] not in self.referencecatalog.FILTERMAPPING:
@@ -148,8 +155,11 @@ class PhotCalib():
         # Calculate instrumental magnitude from PSF instrument photometry
         instmag = -2.5 * np.log10(instCatalog['FLUX'][condition] / retCatalog['exptime'])
 
+        instmagzero = -2.5 * np.log10(instCatalog['FLUX'][condition])
+
         # Calculate the magnitude difference between reference and inst catalog
         retCatalog['instmag'] = instmag
+        retCatalog['instmagzero'] = instmagzero
         retCatalog['refcol'] = (refcatalog['g'] - refcatalog['i'])[condition]
 
         retCatalog['refmag'] = refcatalog[referenceFilterName][condition]
@@ -277,6 +287,22 @@ class PhotCalib():
             plt.title("Photometric zeropoint %s %5.2f" % (outbasename, photzp))
             plt.savefig("%s/%s_%s_zp.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
             plt.close()
+
+            ### Zeropoint plot, but based on instrumental magnitudes.
+            # plt.figure()
+            # plt.plot(retCatalog['instmagzero'][~new_cond], (magZP - color_p(refcol) + photzp)[~new_cond], 'x', color='grey')
+            # plt.plot(retCatalog['instmagzero'][new_cond], (magZP - color_p(refcol)+photzp)[new_cond], '.', color='red')
+            # plt.xlim([-20, -7.5])
+            # plt.ylim([photzp - 0.5, photzp + 0.5])
+            # plt.axhline(y=photzp, color='r', linestyle='-')
+            # plt.xlabel("Instrumental Magnitude, not exp time corrected")
+            # plt.ylabel("Reference Mag - Instrumental Mag (%s)" % (retCatalog['instfilter']))
+            # plt.title("Photometric zeropoint %s %5.2f" % (outbasename, photzp))
+            # plt.savefig("%s/%s_%s_zp_inst.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
+            # plt.close()
+
+
+
 
             ### Color term plot
             plt.figure()
