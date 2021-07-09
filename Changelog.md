@@ -1,4 +1,8 @@
 # Changelog
+
+Version 7.0.4
+* Fix matplotlib 3.4 incompatability w/ pythn 3.6. Bumping python to 3.7
+
 Version 7.0.3
 * Add tfn dome A,B telescopes
 
