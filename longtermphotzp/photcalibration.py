@@ -136,7 +136,7 @@ class PhotCalib():
 
         # Start the catalog matching, using astropy skycoords built-in functions.
         cInstrument = SkyCoord(ra=ras * u.degree, dec=decs * u.degree)
-        cReference = SkyCoord(ra=refcatalog['RA'] * u.degree, dec=refcatalog['DEC'] * u.degree)
+        cReference = SkyCoord(ra=refcatalog['ra'] * u.degree, dec=refcatalog['dec'] * u.degree)
         idx, d2d, d3d = cReference.match_to_catalog_sky(cInstrument)
 
         # Reshuffle the source catalog to index-match the reference catalog.
@@ -159,11 +159,11 @@ class PhotCalib():
         # Calculate the magnitude difference between reference and inst catalog
         retCatalog['instmag'] = instmag
         retCatalog['instmagzero'] = instmagzero
-        retCatalog['refcol'] = (refcatalog['g'] - refcatalog['i'])[condition]
+        retCatalog['refcol'] = (refcatalog['gmag'] - refcatalog['imag'])[condition]
 
         retCatalog['refmag'] = refcatalog[referenceFilterName][condition]
-        retCatalog['ra'] = refcatalog['RA'][condition]
-        retCatalog['dec'] = refcatalog['DEC'][condition]
+        retCatalog['ra'] = refcatalog['ra'][condition]
+        retCatalog['dec'] = refcatalog['dec'][condition]
         retCatalog['matchDistance'] = distance[condition]
         retCatalog['x'] = instCatalog['x'][condition]
         retCatalog['y'] = instCatalog['y'][condition]

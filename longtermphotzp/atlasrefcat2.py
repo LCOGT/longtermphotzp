@@ -13,11 +13,11 @@ class atlas_refcat2:
     '''
 
     FILTERMAPPING = {}
-    FILTERMAPPING['gp'] = {'refMag': 'g', 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
-    FILTERMAPPING['rp'] = {'refMag': 'r', 'colorTerm': 0.0, 'airmassTerm': 0.12, 'defaultZP': 0.0}
-    FILTERMAPPING['ip'] = {'refMag': 'i', 'colorTerm': 0.0, 'airmassTerm': 0.08, 'defaultZP': 0.0}
-    FILTERMAPPING['zp'] = {'refMag': 'z', 'colorTerm': 0.0, 'airmassTerm': 0.05, 'defaultZP': 0.0}
-    FILTERMAPPING['zs'] = {'refMag': 'z', 'colorTerm': 0.0, 'airmassTerm': 0.05, 'defaultZP': 0.0}
+    FILTERMAPPING['gp'] = {'refMag': 'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
+    FILTERMAPPING['rp'] = {'refMag': 'rmag', 'colorTerm': 0.0, 'airmassTerm': 0.12, 'defaultZP': 0.0}
+    FILTERMAPPING['ip'] = {'refMag': 'imag', 'colorTerm': 0.0, 'airmassTerm': 0.08, 'defaultZP': 0.0}
+    FILTERMAPPING['zp'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.05, 'defaultZP': 0.0}
+    FILTERMAPPING['zs'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.05, 'defaultZP': 0.0}
 
     ###  PS to SDSS color transformations according to  Finkbeiner 2016
     ###  http://iopscience.iop.org/article/10.3847/0004-637X/822/2/66/meta#apj522061s2-4 Table 2
@@ -28,10 +28,10 @@ class atlas_refcat2:
     ## shown in paper. Reverse after the fact to avoid confusion when looking at paper
 
     ps1colorterms = {}
-    ps1colorterms['g'] = [-0.01808, -0.13595, +0.01941, -0.00183][::-1]
-    ps1colorterms['r'] = [-0.01836, -0.03577, +0.02612, -0.00558][::-1]
-    ps1colorterms['i'] = [+0.01170, -0.00400, +0.00066, -0.00058][::-1]
-    ps1colorterms['z'] = [-0.01062, +0.07529, -0.03592, +0.00890][::-1]
+    ps1colorterms['gmag'] = [-0.01808, -0.13595, +0.01941, -0.00183][::-1]
+    ps1colorterms['rmag'] = [-0.01836, -0.03577, +0.02612, -0.00558][::-1]
+    ps1colorterms['imag'] = [+0.01170, -0.00400, +0.00066, -0.00058][::-1]
+    ps1colorterms['zmag'] = [-0.01062, +0.07529, -0.03592, +0.00890][::-1]
 
     def __init__(self, refcat2_url):
         self.refcat2_url = refcat2_url
@@ -47,7 +47,7 @@ class atlas_refcat2:
         :return: modified table.
         """
         if table is not None:
-            pscolor = table['g'] - table['i']
+            pscolor = table['gmag'] - table['imag']
             for filter in self.ps1colorterms:
                 colorcorrection = np.polyval(self.ps1colorterms[filter], pscolor)
                 table[filter] -= colorcorrection
