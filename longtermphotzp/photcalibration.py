@@ -36,9 +36,8 @@ class PhotCalib():
     # default and see where it goes.
     referencecatalog = None
 
-
-    def __init__(self, refcat2db):
-        self.referencecatalog = atlas_refcat2(refcat2db)
+    def __init__(self, refcat2_url):
+        self.referencecatalog = atlas_refcat2(refcat2_url)
 
     def do_stage(self, images):
         """ future hook for BANZAI pipeline integration
@@ -387,7 +386,7 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
     _logger.info("Found %d files initially, but cleaned %d already measured images. Starting analysis of %d files" % (
         initialsize, len(rejects), len(inputlist)))
 
-    photzpStage = PhotCalib(args.refcat2db)
+    photzpStage = PhotCalib(args.refcat2_url)
     for image in inputlist:
         if rewritetoarchivename:
             fn = lcofilename_to_archivepath(image['filename'], args.rootdir)
@@ -416,8 +415,8 @@ def parseCommandLine():
 
     parser.add_argument('--log-level', dest='log_level', default='INFO', choices=['DEBUG', 'INFO'],
                         help='Set the log level')
-    parser.add_argument('--refcat2db', dest='refcat2db', default='/Catalogs/refcat2/refcat2.db',
-                        help='Directory of Atlas refcat2 catalog database')
+    parser.add_argument('--refcat2-url', dest='refcat2_url', default='http://phot-catalog.lco.gtn/',
+                        help='URL of Atlas refcat2 catalog database')
     parser.add_argument("--diagnosticplotsdir", dest='outputimageRootDir', default=None,
                         help='Output directory for diagnostic photometry plots. No plots generated if option is omitted. This is a time consuming task. ')
     parser.add_argument('--photodb', dest='imagedbPrefix', default=f'sqlite:///{os.path.expanduser("~/lcophotzp.db")}',

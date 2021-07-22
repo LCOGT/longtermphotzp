@@ -1,6 +1,6 @@
 import math
 import os
-import sqlite3
+import requests
 
 import numpy as np
 from astropy.table import Table
@@ -33,12 +33,8 @@ class atlas_refcat2:
     ps1colorterms['i'] = [+0.01170, -0.00400, +0.00066, -0.00058][::-1]
     ps1colorterms['z'] = [-0.01062, +0.07529, -0.03592, +0.00890][::-1]
 
-    def __init__(self, dbfile):
-        if (dbfile is None) or (not os.path.isfile(dbfile)):
-            _logger.error("Unable to find reference catalog: %s" % (str(dbfile)))
-            self.dbfile = None
-            return
-        self.dbfile = dbfile
+    def __init__(self, refcat2_url):
+        self.refcat2_url = refcat2_url
 
     def isInCatalogFootprint(self, ra, dec):
         return True
@@ -60,28 +56,12 @@ class atlas_refcat2:
 
     def get_reference_catalog(self, ra, dec, radius):
         " Read region of interest from the catalog"
-        rows = None
         try:
-            connection = sqlite3.connect(self.dbfile)
-            cursor = connection.cursor()
-            if (not radius == None and radius > 0):
-                min_dec = dec - radius
-                max_dec = dec + radius
-                min_ra = ra - radius / math.cos(math.radians(dec))
-                max_ra = ra + radius / math.cos(math.radians(dec))
-
-            sql_command = 'select sources.RA, sources.Dec, sources.g,sources.r,sources.i, sources.z from sources, positions ' \
-                          'where positions.ramin >= {ramin} and positions.ramax <= {ramax} ' \
-                          'and positions.decmin >= {decmin} and positions.decmax <= {decmax} ' \
-                          'and positions.objid = sources.objid'
-
-            sql_command = sql_command.format(ramin=min_ra, ramax=max_ra, decmin=min_dec, decmax=max_dec)
-            cursor.execute(sql_command)
-            rows = np.asarray(cursor.fetchall())
-            table = Table(rows, names=['RA', 'DEC', 'g', 'r', 'i', 'z'])
-            cursor.close()
-        except:
-            _logger.exception("While trying to read from database:")
+            response = requests.get(self.refcat2_url + 'radius', params={'ra': ra, 'dec': dec, 'radius': radius})
+            response.raise_for_status()
+            table = Table(response.json())
+        except Exception as e:
+            _logger.exception(f"While trying to read from refcat2: {e}")
             return None
 
         table = self.PStoSDSS(table)
