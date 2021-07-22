@@ -159,15 +159,15 @@ class PhotCalib():
         # Calculate the magnitude difference between reference and inst catalog
         retCatalog['instmag'] = instmag
         retCatalog['instmagzero'] = instmagzero
-        retCatalog['refcol'] = (refcatalog['gmag'] - refcatalog['imag'])[condition]
-
+        retCatalog['refcol'] = (refcatalog['gmag'] - refcatalog['rmag'])[condition]
+        retCatalog['refcolerr'] = np.sqrt(refcatalog['gmagerr']**2 + refcatalog['rmagerr']**2)[condition]
         retCatalog['refmag'] = refcatalog[referenceFilterName][condition]
+        retCatalog['refmagerr'] =  refcatalog[f'{referenceFilterName}err'][condition]
         retCatalog['ra'] = refcatalog['ra'][condition]
         retCatalog['dec'] = refcatalog['dec'][condition]
         retCatalog['matchDistance'] = distance[condition]
         retCatalog['x'] = instCatalog['x'][condition]
         retCatalog['y'] = instCatalog['y'][condition]
-        # TODO: Read photometric error columns from reference and instrument catalogs, properly propagate error.
 
         return retCatalog
 
