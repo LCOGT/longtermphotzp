@@ -159,8 +159,8 @@ class PhotCalib():
         # Calculate the magnitude difference between reference and inst catalog
         retCatalog['instmag'] = instmag
         retCatalog['instmagzero'] = instmagzero
-        retCatalog['refcol'] = (refcatalog['gmag'] - refcatalog['rmag'])[condition]
-        retCatalog['refcolerr'] = np.sqrt(refcatalog['gmagerr']**2 + refcatalog['rmagerr']**2)[condition]
+        retCatalog['refcol'] = (refcatalog['gmag'] - refcatalog['imag'])[condition]
+        retCatalog['refcolerr'] = np.sqrt(refcatalog['gmagerr']**2 + refcatalog['imagerr']**2)[condition]
         retCatalog['refmag'] = refcatalog[referenceFilterName][condition]
         retCatalog['refmagerr'] =  refcatalog[f'{referenceFilterName}err'][condition]
         retCatalog['ra'] = refcatalog['ra'][condition]
