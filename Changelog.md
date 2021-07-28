@@ -1,4 +1,6 @@
 # Changelog
+Version 7.1.0
+* Use a query to a aws postgress database instead of a locally mounted refcat2 mysql db.
 
 Version 7.0.4
 * Fix matplotlib 3.4 incompatability w/ pythn 3.6. Bumping python to 3.7
