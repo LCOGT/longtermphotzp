@@ -36,9 +36,8 @@ class PhotCalib():
     # default and see where it goes.
     referencecatalog = None
 
-
-    def __init__(self, refcat2db):
-        self.referencecatalog = atlas_refcat2(refcat2db)
+    def __init__(self, refcat2_url):
+        self.referencecatalog = atlas_refcat2(refcat2_url)
 
     def do_stage(self, images):
         """ future hook for BANZAI pipeline integration
@@ -130,14 +129,14 @@ class PhotCalib():
             return None
 
         # Query reference catalog TODO: paramterize FoV of query!
-        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.25)
+        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33)
         if refcatalog is None:
             _logger.warning("no reference catalog received.")
             return None
 
         # Start the catalog matching, using astropy skycoords built-in functions.
         cInstrument = SkyCoord(ra=ras * u.degree, dec=decs * u.degree)
-        cReference = SkyCoord(ra=refcatalog['RA'] * u.degree, dec=refcatalog['DEC'] * u.degree)
+        cReference = SkyCoord(ra=refcatalog['ra'] * u.degree, dec=refcatalog['dec'] * u.degree)
         idx, d2d, d3d = cReference.match_to_catalog_sky(cInstrument)
 
         # Reshuffle the source catalog to index-match the reference catalog.
@@ -160,15 +159,15 @@ class PhotCalib():
         # Calculate the magnitude difference between reference and inst catalog
         retCatalog['instmag'] = instmag
         retCatalog['instmagzero'] = instmagzero
-        retCatalog['refcol'] = (refcatalog['g'] - refcatalog['i'])[condition]
-
+        retCatalog['refcol'] = (refcatalog['gmag'] - refcatalog['imag'])[condition]
+        retCatalog['refcolerr'] = np.sqrt(refcatalog['gmagerr']**2 + refcatalog['imagerr']**2)[condition]
         retCatalog['refmag'] = refcatalog[referenceFilterName][condition]
-        retCatalog['ra'] = refcatalog['RA'][condition]
-        retCatalog['dec'] = refcatalog['DEC'][condition]
+        retCatalog['refmagerr'] =  refcatalog[f'{referenceFilterName}err'][condition]
+        retCatalog['ra'] = refcatalog['ra'][condition]
+        retCatalog['dec'] = refcatalog['dec'][condition]
         retCatalog['matchDistance'] = distance[condition]
         retCatalog['x'] = instCatalog['x'][condition]
         retCatalog['y'] = instCatalog['y'][condition]
-        # TODO: Read photometric error columns from reference and instrument catalogs, properly propagate error.
 
         return retCatalog
 
@@ -317,7 +316,7 @@ class PhotCalib():
 
             plt.xlim([-0.5, 3.0])
             plt.ylim([photzp - 0.5, photzp + 0.5])
-            plt.xlabel("(g-r)$_{\\rm{SDSS}}$ Reference")
+            plt.xlabel("(g-i)$_{\\rm{SDSS}}$ Reference")
             plt.ylabel("Reference Mag - Instrumental Mag  %s" % ( retCatalog['instfilter']))
             plt.title("Color correction %s " % (outbasename))
             plt.savefig("%s/%s_%s_color.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
@@ -387,7 +386,7 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
     _logger.info("Found %d files initially, but cleaned %d already measured images. Starting analysis of %d files" % (
         initialsize, len(rejects), len(inputlist)))
 
-    photzpStage = PhotCalib(args.refcat2db)
+    photzpStage = PhotCalib(args.refcat2_url)
     for image in inputlist:
         if rewritetoarchivename:
             fn = lcofilename_to_archivepath(image['filename'], args.rootdir)
@@ -416,8 +415,8 @@ def parseCommandLine():
 
     parser.add_argument('--log-level', dest='log_level', default='INFO', choices=['DEBUG', 'INFO'],
                         help='Set the log level')
-    parser.add_argument('--refcat2db', dest='refcat2db', default='/Catalogs/refcat2/refcat2.db',
-                        help='Directory of Atlas refcat2 catalog database')
+    parser.add_argument('--refcat2-url', dest='refcat2_url', default='http://phot-catalog.lco.gtn/',
+                        help='URL of Atlas refcat2 catalog database')
     parser.add_argument("--diagnosticplotsdir", dest='outputimageRootDir', default=None,
                         help='Output directory for diagnostic photometry plots. No plots generated if option is omitted. This is a time consuming task. ')
     parser.add_argument('--photodb', dest='imagedbPrefix', default=f'sqlite:///{os.path.expanduser("~/lcophotzp.db")}',

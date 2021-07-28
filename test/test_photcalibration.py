@@ -3,10 +3,11 @@ import math
 from astropy.table import Table
 import os.path
 
+REFCAT2_URL = 'http://phot-catalog.lco.gtn/'
 
 def do_photometrytestonFile(filename, reference_photzp, reference_colorterm, tmpdir):
     t = Table ([[filename],[-1],], names=['filename','frameid'])
-    p = photcal.PhotCalib(os.path.expanduser('/Catalogs/refcat2/refcat2.db'))
+    p = photcal.PhotCalib(REFCAT2_URL)
     for r in t:
         photzp, photzpsig, colorterm = p.analyzeImage(r, useaws=False, outputimageRootDir=tmpdir)
         print (filename, photzp, photzpsig, colorterm)
