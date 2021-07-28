@@ -129,7 +129,7 @@ class PhotCalib():
             return None
 
         # Query reference catalog TODO: paramterize FoV of query!
-        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.25)
+        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33)
         if refcatalog is None:
             _logger.warning("no reference catalog received.")
             return None
@@ -316,7 +316,7 @@ class PhotCalib():
 
             plt.xlim([-0.5, 3.0])
             plt.ylim([photzp - 0.5, photzp + 0.5])
-            plt.xlabel("(g-r)$_{\\rm{SDSS}}$ Reference")
+            plt.xlabel("(g-i)$_{\\rm{SDSS}}$ Reference")
             plt.ylabel("Reference Mag - Instrumental Mag  %s" % ( retCatalog['instfilter']))
             plt.title("Color correction %s " % (outbasename))
             plt.savefig("%s/%s_%s_color.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
