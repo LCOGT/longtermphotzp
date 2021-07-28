@@ -14,10 +14,10 @@ NDAYS="${NDAYS:-3}"
 export DATABASE="${DATABASE:-postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}}"
 echo $DATABASE
 
-photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype fa
-photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype fs
-photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype kb
-photcalibration --useaws --photodb $DATABASE --refcat2db $REFCAT2_DATABASE_FILE --mintexp 10 --lastNdays $NDAYS --cameratype ep
+photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype fa
+photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype fs
+photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype kb
+photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype ep
 
 
 longtermphotzp --database $DATABASE --outputdirectory /database --filter rp
