@@ -4,7 +4,7 @@ MAINTAINER Las Cumbres Observatory <webmaster@lco.global>
 WORKDIR /lco/throughput
 
 RUN apt-get update -y \
-        && apt-get install --no-install-recommends -y less vim parallel \
+        && apt-get install --no-install-recommends -y less vim \
         && apt-get clean -y \
         && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
