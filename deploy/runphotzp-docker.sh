@@ -9,7 +9,7 @@ DB_USER="${DB_USER:-lcogt-commissioning}"
 DB_PASS="${DB_PASS:-undefined}"
 
 NDAYS="${NDAYS:-3}"
-
+REFCAT2_URL=${REFCAT2_URL:-http://phot-catalog.lco.gtn/}
 # SQLAlchemy database connection string
 export DATABASE="${DATABASE:-postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}}"
 echo $DATABASE

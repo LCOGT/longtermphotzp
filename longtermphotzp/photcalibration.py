@@ -459,8 +459,6 @@ def parseCommandLine():
             day = today - datetime.timedelta(days=ii)
             args.date.append(day.strftime("%Y%m%d"))
         args.date = args.date[::-1]
-
-    args.refcat2db = os.path.expanduser(args.refcat2db)
     return args
 
 
