@@ -18,7 +18,7 @@ photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintex
 photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype fs
 photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype kb
 photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype ep
-
+photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype sq
 
 longtermphotzp --database $DATABASE --outputdirectory /database --filter rp
 longtermphotzp --database $DATABASE --outputdirectory /database --filter gp

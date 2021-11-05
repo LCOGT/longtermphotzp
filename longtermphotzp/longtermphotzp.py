@@ -37,7 +37,7 @@ colorterms = {}
 # List of all telescopes to evaluate.
 telescopedict = {
     'lsc': ['doma-1m0a', 'domb-1m0a', 'domc-1m0a', 'aqwa-0m4a', 'aqwb-0m4a'],
-    'coj': ['clma-2m0a', 'doma-1m0a', 'domb-1m0a', 'clma-0m4a', 'clma-0m4b'],
+    'coj': ['clma-2m0a', 'doma-1m0a', 'domb-1m0a', 'clma-0m4a', 'clma-0m4b', 'clma-0m4c'],
     'ogg': ['clma-2m0a', 'clma-0m4b', 'clma-0m4c'],
     'elp': ['doma-1m0a', 'domb-1m0a', 'aqwa-0m4a'],
     'cpt': ['doma-1m0a', 'domb-1m0a', 'domc-1m0a', 'aqwa-0m4a'],
@@ -60,6 +60,7 @@ telescopecleaning = {
     'lsc-aqwb-0m4a': [datetime.datetime(2018, 4, 17), datetime.datetime(2018, 9, 20), ],
     'coj-clma-0m4a': [datetime.datetime(2017, 6, 30), datetime.datetime(2019, 4, 4), ],
     'coj-clma-0m4b': [datetime.datetime(2017, 6, 30), datetime.datetime(2019, 4, 4), ],
+    'coj-clma-0m4c': [datetime.datetime(2021, 10, 15), ],
     'coj-clma-2m0a': [datetime.datetime(2018, 6, 20), ],
     'coj-doma-1m0a': [datetime.datetime(2018, 6, 18), datetime.datetime(2019, 4, 3), datetime.datetime(2019, 7, 17), ],
     'coj-domb-1m0a': [datetime.datetime(2018, 6, 10), datetime.datetime(2019, 3, 25), ],
