@@ -4,9 +4,10 @@ from scipy import optimize
 
 import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
 from longtermphotzp.aperturephot import redoAperturePhotometry
+from longtermphotzp.aperturephot import getnewtargetlist
 from longtermphotzp.atlasrefcat2 import atlas_refcat2
 from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
-
+from longtermphotzp.gaiaastrometryservicetools import astrometryServiceRefineWCSFromCatalog
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -84,7 +85,7 @@ class PhotCalib():
         retCatalog['domid'] = imageobject['SCI'].header['ENCID']
         retCatalog['telescope'] = imageobject['SCI'].header['TELID']
         retCatalog['FOCOBOFF'] = imageobject['SCI'].header['FOCOBOFF']
-        retCatalog['WCSERR'] =  imageobject['SCI'].header['WCSERR']
+        retCatalog['WCSERR'] =  imageobject['SCI'].header['WCSERR'] if 'WCSERR' in imageobject['SCI'].header else 0
 
         # Check if WCS is OK, otherwise we could not cross-match with catalog
         if retCatalog['WCSERR'] != 0:
@@ -96,7 +97,7 @@ class PhotCalib():
         if retCatalog['instfilter'] not in self.referencecatalog.FILTERMAPPING:
             _logger.info(
                 "Filter %s not viable for photometric calibration. Sorry" % (retCatalog['instfilter']))
-            return None_logger.info ("redoing aperture photometry")
+            return None
 
         # Check if exposure time is long enough
         if (retCatalog['exptime'] < mintexp):
@@ -114,7 +115,11 @@ class PhotCalib():
 
         # Load photometry catalog from image, and transform into RA/Dec coordinates
         try:
-            instCatalog = imageobject['CAT'].data
+            if args is not None and args.fromraw:
+                instCatalog = getnewtargetlist(imageobject['SCI'].data)
+
+            else:
+                instCatalog = imageobject['CAT'].data
             if (args is not None) and args.aperturephot:
 
                 redoAperturePhotometry (instCatalog, imageobject['SCI'].data, args.aperturephot[0],args.aperturephot[1],args.aperturephot[2])
@@ -127,10 +132,13 @@ class PhotCalib():
         # TODO: rerun astrometry.net with a higher order distortion model
 
         image_wcs = WCS(imageobject['SCI'].header)
+        if args is not None and args.fromraw:
+            _logger.info ("redoing WCS")
+            image_wcs = astrometryServiceRefineWCSFromCatalog(instCatalog, image_wcs)
         try:
             ras, decs = image_wcs.all_pix2world(instCatalog['x'], instCatalog['y'], 1)
-        except:
-            _logger.error("Failed to convert images coordinates to world coordinates. Giving up on file.")
+        except Exception:
+            _logger.exception("Failed to convert images coordinates to world coordinates. Giving up on file.")
             return None
 
         # Query reference catalog TODO: paramterize FoV of query!
@@ -251,17 +259,7 @@ class PhotCalib():
 
         # calculate color term
         try:
-            #old way:
-            # cond = (refcol > 0) & (refcol < 3) & (np.abs(magZP - photzp) < 0.75)
-            # colorparams = np.polyfit(refcol[cond], (magZP - photzp)[cond], 1)
-            # color_p = np.poly1d(colorparams)
-            # delta = np.abs(magZP - photzp - color_p(refcol))
-            # cond = (delta < 0.2)
-            # colorparams = np.polyfit(refcol[cond], (magZP - photzp)[cond], 1)
-            # color_p = np.poly1d(colorparams)
-            # colorterm = colorparams[0]
 
-            # the new way
             newcolorparam, new_cond = self.robustfit(magZP,refcol)
             colorterm = newcolorparam[0]
             photzp = newcolorparam[1]
@@ -355,6 +353,7 @@ class PhotCalib():
             plt.savefig("%s/%s_%s_residuals.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']), bbox_inches='tight')
             plt.close()
 
+
         if outputdb is not None:
             m = PhotZPMeasurement(name=imageName, dateobs=retCatalog['dateobs'].replace('T', ' '),
                                   site=retCatalog['siteid'], dome=retCatalog['domid'],
@@ -429,6 +428,7 @@ def parseCommandLine():
     parser.add_argument('--imagerootdir', dest='rootdir', default='/archive/engineering',
                         help="LCO archive root directory")
     parser.add_argument('--aperturephot' , nargs=3, type=float, help = "Force aperture phtoemtry with paramters obj aaoperture radius, inner and outer sky aperture radii")
+    parser.add_argument('--fromraw', action='store_true', help="process e00 data from scratch")
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
     parser.add_argument('--mintexp', dest='mintexp', default=10, type=float, help='Minimum exposure time to accept')
     parser.add_argument('--redo', action='store_true')
@@ -516,7 +516,9 @@ def photzpmain():
     if args.crawldirectory is not None:
         # Crawl files in a local directory
         print(f"Not tested {args.crawldirectory}")
-        inputlist = (glob.glob(f"{args.crawldirectory}/*[es]91.fits.fz"))
+
+        redlevel = "91" if not args.fromraw else "00"
+        inputlist = (glob.glob(f"{args.crawldirectory}/*[es]{redlevel}.fits.fz"))
         inputlist = Table([inputlist, [-1] * len(inputlist)], names=['filename', 'frameid'])
         imagedb = photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
         process_imagelist(inputlist, imagedb, args, rewritetoarchivename=False)

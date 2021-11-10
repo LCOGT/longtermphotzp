@@ -1,11 +1,22 @@
 from photutils.aperture import CircularAperture
 from photutils.aperture import aperture_photometry
 from photutils.aperture import CircularAnnulus
+from photutils.detection import DAOStarFinder
 from matplotlib import pyplot as plt
+from astropy.table import Table
 import numpy as np
 from astropy.stats import sigma_clipped_stats
 import logging
 _logger = logging.getLogger(__name__)
+
+
+def getnewtargetlist (imagedata):
+    _logger.info ("Redoing target list")
+    mean, median, std = sigma_clipped_stats(imagedata[200:-200,200:-200], sigma=3.0)
+    daofind = DAOStarFinder(fwhm=3, threshold = 5. * std)
+    sources = daofind (imagedata - median)
+    retTables = Table ( [sources['xcentroid'], sources['ycentroid'], sources ['flux']], names=['x','y','FLUX'])
+    return retTables
 
 def redoAperturePhotometry (catalog, imagedata, aperture, annulus_inner, annulus_outer):
     """ Recalculate the FLUX column off a fits / BANZAI CAT extension based on operature photometry. """
