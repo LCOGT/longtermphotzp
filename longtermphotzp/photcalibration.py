@@ -3,6 +3,7 @@ import matplotlib
 from scipy import optimize
 
 import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
+from longtermphotzp.aperturephot import redoAperturePhotometry
 from longtermphotzp.atlasrefcat2 import atlas_refcat2
 from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
 
@@ -48,7 +49,7 @@ class PhotCalib():
             pass
             # logging_tags = logs.image_config_to_tags(image, self.group_by_keywords)
 
-    def generateCrossmatchedCatalog(self, imageobject, mintexp=60):
+    def generateCrossmatchedCatalog(self, imageobject, mintexp=60, args = None):
         """ Load the banzai-generated photometry catalog from  'CAT' extension, queries PS1 catalog for image FoV, and
         returns a cross-matched catalog.
 
@@ -95,7 +96,7 @@ class PhotCalib():
         if retCatalog['instfilter'] not in self.referencecatalog.FILTERMAPPING:
             _logger.info(
                 "Filter %s not viable for photometric calibration. Sorry" % (retCatalog['instfilter']))
-            return None
+            return None_logger.info ("redoing aperture photometry")
 
         # Check if exposure time is long enough
         if (retCatalog['exptime'] < mintexp):
@@ -114,8 +115,12 @@ class PhotCalib():
         # Load photometry catalog from image, and transform into RA/Dec coordinates
         try:
             instCatalog = imageobject['CAT'].data
-        except:
-            _logger.warning("No extension \'CAT\' available, skipping.")
+            if (args is not None) and args.aperturephot:
+
+                redoAperturePhotometry (instCatalog, imageobject['SCI'].data, args.aperturephot[0],args.aperturephot[1],args.aperturephot[2])
+
+        except Exception:
+            _logger.exception("No extension \'CAT\' available, skipping.")
             return None
 
         # Transform the image catalog to RA / Dec based on the WCS solution in the header.
@@ -198,7 +203,7 @@ class PhotCalib():
 
 
     def analyzeImage(self, imageentry, outputdb=None,
-                     outputimageRootDir=None, mintexp=60, useaws=False):
+                     outputimageRootDir=None, mintexp=60, useaws=False, args = None):
         """
             Do full photometric zeropoint analysis on an image. This is the main entry point
 
@@ -223,7 +228,7 @@ class PhotCalib():
             _logger.warning("File {} could not be accessed: {}".format(filename, sys.exc_info()[0]))
             return 0, 0, 0
 
-        retCatalog = self.generateCrossmatchedCatalog(imageobject, mintexp=mintexp)
+        retCatalog = self.generateCrossmatchedCatalog(imageobject, mintexp=mintexp, args = args)
         imageobject.close()
         if (retCatalog is None) or (retCatalog['instmag'] is None) or (len(retCatalog['ra']) < 10):
             if retCatalog is None:
@@ -393,7 +398,7 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
             image = Table(np.asarray([fn, image['frameid']]), names=['filename', 'frameid'])
         _logger.info("processimagelist: send of to analyze image: \n{}".format(image))
         photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp,
-                                 useaws=args.useaws)
+                                 useaws=args.useaws, args=args)
 
 
 def lcofilename_to_archivepath(filename, rootpath):
@@ -423,6 +428,7 @@ def parseCommandLine():
                         help='Result output directory. .db file is written here')
     parser.add_argument('--imagerootdir', dest='rootdir', default='/archive/engineering',
                         help="LCO archive root directory")
+    parser.add_argument('--aperturephot' , nargs=3, type=float, help = "Force aperture phtoemtry with paramters obj aaoperture radius, inner and outer sky aperture radii")
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
     parser.add_argument('--mintexp', dest='mintexp', default=10, type=float, help='Minimum exposure time to accept')
     parser.add_argument('--redo', action='store_true')
