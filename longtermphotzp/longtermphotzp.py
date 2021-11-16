@@ -75,8 +75,10 @@ telescopecleaning = {
                       ],
     'cpt-domc-1m0a': [datetime.datetime(2017, 11, 15), datetime.datetime(2018, 9, 13), datetime.datetime(2018, 10, 24),
                       ],
-    'tfn-aqwa-0m4a': [datetime.datetime(2018, 9, 12), ],
-    'tfn-aqwa-0m4b': [datetime.datetime(2018, 9, 12), ],
+    'tfn-aqwa-0m4a': [datetime.datetime(2018, 9, 12), datetime.datetime(2021, 7, 16), ],
+    'tfn-aqwa-0m4b': [datetime.datetime(2018, 9, 12), datetime.datetime(2021, 7, 16), ],
+    'tfn-doma-1m0a': [datetime.datetime(2021, 11, 12),],
+    'tfn-domb-1m0a': [datetime.datetime(2021, 11, 12),],
 }
 
 # List of events when the telesocope mirror was changed.
