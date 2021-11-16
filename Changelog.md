@@ -1,6 +1,6 @@
 # Changelog
 
-Version 7.1.3
+Version 7.1.4
 
 * Multiple additions to force aperture photometry for debugging camera issues
 * Adding TFN mirror cleaning.  
