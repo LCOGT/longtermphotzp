@@ -1,4 +1,10 @@
 # Changelog
+
+Version 7.1.3
+
+* Multiple additions to force aperture photometry for debugging camera issues
+* Adding TFN mirror cleaning.  
+
 Version 7.1.0
 * Use a query to a aws postgress database instead of a locally mounted refcat2 mysql db.
 
