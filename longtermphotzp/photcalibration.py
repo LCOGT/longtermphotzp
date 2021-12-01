@@ -116,13 +116,21 @@ class PhotCalib():
         # Load photometry catalog from image, and transform into RA/Dec coordinates
         try:
             if args is not None and args.fromraw:
-                instCatalog = getnewtargetlist(imageobject['SCI'].data)
+
+
+                instCatalog = getnewtargetlist( imageobject['SCI'].data)
 
             else:
                 instCatalog = imageobject['CAT'].data
             if (args is not None) and args.aperturephot:
-
-                redoAperturePhotometry (instCatalog, imageobject['SCI'].data, args.aperturephot[0],args.aperturephot[1],args.aperturephot[2])
+                z = 350.
+                k = 1.2
+                ov=965.
+                zk = z**k
+                data =   ( (imageobject['SCI'].data -ov + z)**k - zk) #** (1/k)
+                data[data<0] = 0
+                data = data**(1/k)
+                redoAperturePhotometry (instCatalog, data, args.aperturephot[0],args.aperturephot[1],args.aperturephot[2])
 
         except Exception:
             _logger.exception("No extension \'CAT\' available, skipping.")
