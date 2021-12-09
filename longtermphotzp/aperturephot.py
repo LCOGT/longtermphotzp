@@ -11,7 +11,6 @@ _logger = logging.getLogger(__name__)
 
 
 def getnewtargetlist (imagedata):
-    _logger.info ("Redoing target list")
     mean, median, std = sigma_clipped_stats(imagedata[200:-200,200:-200], sigma=3.0)
     daofind = DAOStarFinder(fwhm=3, threshold = 5. * std)
     sources = daofind (imagedata - median)
@@ -20,7 +19,6 @@ def getnewtargetlist (imagedata):
 
 def redoAperturePhotometry (catalog, imagedata, aperture, annulus_inner, annulus_outer):
     """ Recalculate the FLUX column off a fits / BANZAI CAT extension based on operature photometry. """
-    _logger.info ("redoing aperture photometry")
     positions = [ (catalog['x'][ii], catalog['y'][ii]) for ii in range (len(catalog['x'])) ]
 
     apertures = CircularAperture(positions, r=aperture)
