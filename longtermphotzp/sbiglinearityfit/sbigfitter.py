@@ -1,25 +1,17 @@
-import datetime
+
 import logging
 import os.path
-
-import sep
-
 import scipy
 from astropy.io import fits
 import matplotlib.pyplot as plt
-import matplotlib
-from astropy.modeling import models, fitting
-
-matplotlib.use('Agg')
+import numpy as np
 
 import longtermphotzp.aperturephot as aperturephot
-import numpy as np
 from longtermphotzp.photcalibration import PhotCalib
 
-sqrtfunc = lambda x, gain, z, exp: ((gain * x) ** exp + z ** exp) ** (1 / exp) - z
+#sqrtfunc = lambda x, gain, z, exp: ((gain * x) ** exp + z ** exp) ** (1 / exp) - z
 
 _logger = logging.getLogger(__name__)
-
 plt.style.use('ggplot')
 
 def redo_phot_on_matched_catalog(imagedata, matchedcatalog, apertures):
@@ -27,9 +19,9 @@ def redo_phot_on_matched_catalog(imagedata, matchedcatalog, apertures):
     matchedcatalog['instmag'] = -2.5 * np.log10(matchedcatalog['FLUX'] / matchedcatalog['exptime'])
 
 
-def fitmerritfunction(x, imageobject, matchedcatlog, fwhm, pngname=None):
+def fitmerritfunction(x, imageobject, matchedcatlog, pngname=None):
     ''' x: vector of paramters
-        inputimage: pixel array
+        inputimage: pixel array  x[0] is z paramter * 1000 x[1] is k parameter
         inputcatlog: list of sources where to to photometry.
         '''
 
@@ -37,7 +29,8 @@ def fitmerritfunction(x, imageobject, matchedcatlog, fwhm, pngname=None):
     k = x[1]
     zk = z**k
     assert (z>=0)
-    assert (k>=0.5)
+    assert (k>=1.)
+
     rectifieddata = imageobject['SCI'].data.astype(float)
     rectifieddata[rectifieddata<0] = 0
     rectifieddata = (rectifieddata  + z) ** k - zk
@@ -48,13 +41,11 @@ def fitmerritfunction(x, imageobject, matchedcatlog, fwhm, pngname=None):
     redo_phot_on_matched_catalog(rectifieddata, matchedcatlog, [9,10,15])
     #redo_phot_on_matched_catalog(rectifieddata, matchedcatlog, [12,15,20])
 
+    # Select the brightest stars in the field
     brightest = np.min(matchedcatlog['refmag'])
-
     zp = matchedcatlog['refmag'] - matchedcatlog['instmag']
-    nbrightest = (matchedcatlog['refmag'] - brightest < 4)# & (np.abs (zp) - np.nanmedian (zp) < 1) & (matchedcatlog['refmag'] > 12)
+    nbrightest = (matchedcatlog['refmag'] - brightest < 4) & (np.abs (zp - np.nanmedian (zp)) < 1) #& (matchedcatlog['refmag'] > 12)
     myzp = np.nanmedian(zp[nbrightest])
-    deviation = np.nanstd (zp[nbrightest]-myzp)
-
     selzp = zp[nbrightest]
     selref = matchedcatlog['refmag'][nbrightest]
 
@@ -113,22 +104,23 @@ class SingleLinearityFitter():
         self.photcalib = PhotCalib('http://phot-catalog.lco.gtn/') if photcalib is None else photcalib
         self.matchedcatalog = self.photcalib.generateCrossmatchedCatalog(imageobject, mintexp=1)
 
-        fwhm = self.matchedcatalog['FWHM']
-        print (fwhm)
+
 
         x0 = [0.3, 1.05]
         bounds = ((0., 5.), ( 1., 3.))
 
         if pngstart is not None:
-            fitmerritfunction((0,1), self.imageobject,self.matchedcatalog,fwhm,pngname=f"{pngstart}_before.png")
-        result = scipy.optimize.minimize(fitmerritfunction, x0, (self.imageobject, self.matchedcatalog,fwhm),
+            fitmerritfunction((0,1), self.imageobject,self.matchedcatalog,pngname=f"{pngstart}_before.png")
+        result = scipy.optimize.minimize(fitmerritfunction, x0, (self.imageobject, self.matchedcatalog),
                                          bounds=bounds, method='SLSQP', options={'eps':0.05})
         #result = scipy.optimize.brute(fitmerritfunction, ((0,5), (1.,2.)), (self.imageobject, self.matchedcatalog),
                                          #)
 
         print(f"Fitting result:\n{result}")
         if pngstart is not None:
-            fitmerritfunction(result.x, self.imageobject,self.matchedcatalog,fwhm,pngname=f"{pngstart}_after.png")
+            fitmerritfunction(result.x, self.imageobject,self.matchedcatalog,pngname=f"{pngstart}_after.png")
+
+        # TODO: Safe the result into a database
 
 def test_fit(image):
     imageobject = fits.open(image)
@@ -140,9 +132,9 @@ def test_fit(image):
 logging.basicConfig(level=getattr(logging, 'INFO'),
                     format='%(asctime)s.%(msecs).03d %(levelname)7s: %(module)20s: %(message)s')
 
-#test_fit("test/data/tfn0m414-kb95-20211116-0030-e91.fits.fz")
-#test_fit("test/data/tfn0m414-kb95-20211116-0032-e91.fits.fz")
-#test_fit("test/data/tfn0m414-kb95-20211116-0033-e91.fits.fz")
-#test_fit("test/data/cpt0m407-kb87-20211109-0027-e91.fits.fz")
-#test_fit("test/data/lsc0m409-kb96-20191208-0207-e91.fits.fz" )
-test_fit ("test/data/cpt1m012-fa06-20200113-0102-e91.fits.fz")
+test_fit("test/data/tfn0m414-kb95-20211116-0030-e91.fits.fz")
+test_fit("test/data/tfn0m414-kb95-20211116-0032-e91.fits.fz")
+test_fit("test/data/tfn0m414-kb95-20211116-0033-e91.fits.fz")
+test_fit("test/data/cpt0m407-kb87-20211109-0027-e91.fits.fz")
+test_fit("test/data/lsc0m409-kb96-20191208-0207-e91.fits.fz" )
+#test_fit ("test/data/cpt1m012-fa06-20200113-0102-e91.fits.fz")
