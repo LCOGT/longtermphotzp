@@ -67,7 +67,7 @@ def make_elasticsearch(index, filters, queries=None, exclusion_filters=None, ran
     return s
 
 #['gp', 'rp', 'ip', 'zp', 'zs']
-def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, mintexp=30,
+def get_frames_for_photometry(dayobs = None, site=None, cameratype=None, camera=None, mintexp=30, object=None,
                               filterlist=['gp', 'rp', 'ip', 'zp', 'zs',], es_url='http://elasticsearch.lco.gtn:9200'):
     """ Queries for a list of processed LCO images that are viable to get a photometric zeropoint in the griz bands measured.
 
@@ -76,7 +76,7 @@ def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, m
      """
 
     # TODO: further preselect by number of sources to avoid overly crowded or empty fields
-    query_filters = [{'DAY-OBS': dayobs}, {'RLEVEL': 91}, {'WCSERR': 0}, {"OBSTYPE": "EXPOSE"}, {
+    query_filters = [ {'RLEVEL': 91}, {'WCSERR': 0}, {"OBSTYPE": "EXPOSE"}, {
         'FOCOBOFF': 0}]
     range_filters = [{'EXPTIME': {'gte': mintexp}}, ]
     terms_filters = [{'FILTER': filterlist}]
@@ -88,6 +88,10 @@ def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, m
         query_filters.append({'INSTRUME': camera})
     if cameratype is not None:
         prefix_filters.append({'INSTRUME': cameratype})
+    if object is not None:
+        query_filters.append ({'OBJECT': object})
+    if dayobs is not None:
+        query_filters.append ({'DAY-OBS': dayobs})
 
     queries = []
     records = make_elasticsearch('lco-fitsheaders', query_filters, queries, exclusion_filters=None, es_url=es_url,

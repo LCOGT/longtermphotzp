@@ -1,19 +1,19 @@
+
 import logging
 import os.path
-
-import matplotlib.pyplot as plt
-import numpy as np
 import scipy
 from astropy.io import fits
+import matplotlib.pyplot as plt
+import numpy as np
 
 import longtermphotzp.aperturephot as aperturephot
 from longtermphotzp.photcalibration import PhotCalib
 
-# sqrtfunc = lambda x, gain, z, exp: ((gain * x) ** exp + z ** exp) ** (1 / exp) - z
+#sqrtfunc = lambda x, gain, z, exp: ((gain * x) ** exp + z ** exp) ** (1 / exp) - z
+from longtermphotzp.sbiglinearityfit.sbiglinedbinterface import SBIGLINMeasurement, sbiglininterface
 
 _logger = logging.getLogger(__name__)
 plt.style.use('ggplot')
-
 
 def redo_phot_on_matched_catalog(imagedata, matchedcatalog, apertures):
     aperturephot.redoAperturePhotometry(matchedcatalog, imagedata, apertures[0], apertures[1], apertures[2])
@@ -28,32 +28,33 @@ def fitmerritfunction(x, imageobject, matchedcatlog, pngname=None):
 
     z = x[0] * 1000
     k = x[1]
-    zk = z ** k
-    assert (z >= 0)
-    assert (k >= 1.)
+    zk = z**k
+    assert (z>=0)
+    assert (k>=1.)
 
     rectifieddata = imageobject['SCI'].data.astype(float)
-    rectifieddata[rectifieddata < 0] = 0
-    rectifieddata = (rectifieddata + z) ** k - zk
+    rectifieddata[rectifieddata<0] = 0
+    rectifieddata = (rectifieddata  + z) ** k - zk
     rectifieddata[rectifieddata < 0] = 0
     rectifieddata = rectifieddata ** (1 / k)
 
-    redo_phot_on_matched_catalog(rectifieddata, matchedcatlog, [9, 10, 15])
+
+    redo_phot_on_matched_catalog(rectifieddata, matchedcatlog, [9,10,15])
+    #redo_phot_on_matched_catalog(rectifieddata, matchedcatlog, [12,15,20])
 
     # Select the brightest stars in the field
     brightest = np.min(matchedcatlog['refmag'])
     zp = matchedcatlog['refmag'] - matchedcatlog['instmag']
-    nbrightest = (matchedcatlog['refmag'] - brightest < 4) & (
-                np.abs(zp - np.nanmedian(zp)) < 1)  # & (matchedcatlog['refmag'] > 12)
+    nbrightest = (matchedcatlog['refmag'] - brightest < 5) & (np.abs (zp - np.nanmedian (zp)) < 1) #& (matchedcatlog['refmag'] > 12)
     myzp = np.nanmedian(zp[nbrightest])
     selzp = zp[nbrightest]
     selref = matchedcatlog['refmag'][nbrightest]
 
-    f = np.polyfit(selref, selzp, 1)
+    f=np.polyfit (selref,selzp,1)
     p = np.poly1d(f)
-    delta = np.abs(selzp - p(selref))
-    cond = (delta < 0.3) & (delta < 3 * np.std(delta))
-    f = np.polyfit(selref[cond], selzp[cond], 1)
+    delta = np.abs (selzp - p(selref))
+    cond = (delta < 0.3) & (delta < 3*np.std(delta))
+    f = np.polyfit(selref[cond], selzp[cond],1)
     p = np.poly1d(f)
 
     _logger.debug(f"{x} -> {myzp} +/- {f[0]}")
@@ -62,18 +63,18 @@ def fitmerritfunction(x, imageobject, matchedcatlog, pngname=None):
         plt.figure()
         plt.plot(matchedcatlog['refmag'], zp, ".", c='grey')
         plt.plot(matchedcatlog['refmag'][nbrightest], zp[nbrightest], '.')
-        x = np.arange(10, 20)
-        plt.plot(x, p(x))
-        plt.ylim([myzp - 1, myzp + 1])
+        x = np.arange(10,20)
+        plt.plot (x,p(x))
+        plt.ylim([myzp-1, myzp+1])
         plt.axhline(myzp)
-        plt.xlabel("reference magnitude")
-        plt.ylabel('reference mag - instrument mag')
+        plt.xlabel ("reference magnitude")
+        plt.ylabel ('reference mag - instrument mag')
 
-        plt.title(f"{pngname}\nk = {k:5.3f} z = {z:5.2f}  zp = {myzp:5.2f} ")
+        plt.title (f"{pngname}\nk = {k:5.3f} z = {z:5.2f}  zp = {myzp:5.2f} ")
         plt.savefig(pngname, bbox_inches='tight')
         plt.close()
 
-    return np.abs(f[0])
+    return np.abs (f[0])
 
 
 class SingleLinearityFitter():
@@ -87,8 +88,7 @@ class SingleLinearityFitter():
       (ii) run photometry on the input data
       (iii) match input catalog to reference catalog.
       (iv) derive the photometric zeropoint for 3-4 mag brightest stars.
-      (iii) calculate and return the slope of the refmag vs. zp relation for the brightest stars as
-            a proxy for the photometric non-linearity.
+      (iii) calculate and return the rms of the zero point measurement.
 
 
 
@@ -96,41 +96,73 @@ class SingleLinearityFitter():
 
     Create optional photzp plot for starting point and  best fit.
 
-    Log best fitting values in a database  for further trend analysis.
+    Log best fittifit_singleimageng values in a database  for further trend analysis.
 
     '''
 
-    def __init__(self, imageobject, photcalib=None, pngstart=None):
+    def __init__(self, imageobject, photcalib=None, pngstart=None, storageengine = None):
         self.imageobject = imageobject
         self.photcalib = PhotCalib('http://phot-catalog.lco.gtn/') if photcalib is None else photcalib
         self.matchedcatalog = self.photcalib.generateCrossmatchedCatalog(imageobject, mintexp=1)
 
-        if pngstart is not None:
-            fitmerritfunction((0, 1), self.imageobject, self.matchedcatalog, pngname=f"{pngstart}_before.png")
+        self.storageengine = storageengine
 
         x0 = [0.3, 1.05]
-        bounds = ((0., 5.), (1., 3.))
-        result = scipy.optimize.minimize(fitmerritfunction, x0, (self.imageobject, self.matchedcatalog),
-                                         bounds=bounds, method='SLSQP', options={'eps': 0.05})
+        bounds = ((0., 5.), ( 1., 3.))
 
-        print(f"Fitting result:\n{result}")
         if pngstart is not None:
-            fitmerritfunction(result.x, self.imageobject, self.matchedcatalog, pngname=f"{pngstart}_after.png")
+            fitmerritfunction((0,1), self.imageobject,self.matchedcatalog,pngname=f"{pngstart}_before.png")
+        result = scipy.optimize.minimize(fitmerritfunction, x0, (self.imageobject, self.matchedcatalog),
+                                         bounds=bounds, method='SLSQP', options={'eps':0.05})
+        #result = scipy.optimize.brute(fitmerritfunction, ((0,5), (1.,2.)), (self.imageobject, self.matchedcatalog),
+                                         #)
+
+        _logger.debug(f"Fitting result:\n{result}")
+        if pngstart is not None:
+            fitmerritfunction(result.x, self.imageobject,self.matchedcatalog,pngname=f"{pngstart}_after.png")
 
         # TODO: Safe the result into a database
 
+        if self.storageengine is not None:
+            dbentry = SBIGLINMeasurement (name=self.matchedcatalog['imagename'], dateobs = self.matchedcatalog['dateobs'],
+                                     site = self.matchedcatalog['siteid'], dome = self.matchedcatalog['domid'],
+                                     telescope = self.matchedcatalog['telescope'], camera = self.matchedcatalog['instrument'],
+                                     filter = self.matchedcatalog['instfilter'], exptime = self.matchedcatalog['exptime'],
+                                     seeing = self.matchedcatalog['seeing'], background = self.matchedcatalog['background'],
+                                     fit_z = result.x[0]*1000, fit_k = result.x[1], nstars = len(self.matchedcatalog['refmag']))
+            _logger.info (f"Adding to database {self.storageengine}: {dbentry}")
+            self.storageengine.addsbiglin(dbentry)
 
-def test_fit(image):
+
+def fit_singleimage(image, outputdirectory=None, storageengine=None):
     imageobject = fits.open(image)
-    f = SingleLinearityFitter(imageobject, pngstart=os.path.basename(image))
+
+    pngbasename = os.path.join(outputdirectory, os.path.basename(image)) if outputdirectory is not None else None
+
+    f = SingleLinearityFitter(imageobject, pngstart=pngbasename, storageengine=storageengine)
 
 
-logging.basicConfig(level=getattr(logging, 'INFO'),
+
+
+
+if __name__ == '__main__':
+
+
+    logging.basicConfig(level=getattr(logging, 'INFO'),
                     format='%(asctime)s.%(msecs).03d %(levelname)7s: %(module)20s: %(message)s')
 
-test_fit("test/data/tfn0m414-kb95-20211116-0030-e91.fits.fz")
-test_fit("test/data/tfn0m414-kb95-20211116-0032-e91.fits.fz")
-test_fit("test/data/tfn0m414-kb95-20211116-0033-e91.fits.fz")
-test_fit("test/data/cpt0m407-kb87-20211109-0027-e91.fits.fz")
-test_fit("test/data/lsc0m409-kb96-20191208-0207-e91.fits.fz")
-# test_fit ("test/data/cpt1m012-fa06-20200113-0102-e91.fits.fz")
+    database = os.environ['DATABASE']
+    storageengine = sbiglininterface(database)
+
+    #test_fit("test/data/tfn0m414-kb95-20211116-0030-e91.fits.fz")
+    #test_fit("test/data/tfn0m414-kb95-20211116-0032-e91.fits.fz")
+    #test_fit("test/data/tfn0m414-kb95-20211116-0033-e91.fits.fz")
+    #test_fit("test/data/cpt0m407-kb87-20211109-0027-e91.fits.fz")
+    #test_fit("test/data/lsc0m409-kb96-20191208-0207-e91.fits.fz" )
+    #test_fit ("test/data/cpt1m012-fa06-20200113-0102-e91.fits.fz")
+    #test_fit("kb55/elp0m411-kb55-20190615-0161-e91.fits.fz" )
+    #test_fit("kb55/elp0m411-kb55-20190615-0168-e91.fits.fz" )
+    #test_fit("kb55/elp0m411-kb55-20190615-0169-e91.fits.fz" )
+    fit_singleimage("kb23/tfn0m410-kb23-20190518-0191-e91.fits.fz", storageengine=storageengine)
+    fit_singleimage("kb23/tfn0m410-kb23-20190518-0153-e91.fits.fz", storageengine=storageengine)
+    fit_singleimage("kb23/tfn0m410-kb23-20190518-0154-e91.fits.fz", storageengine=storageengine)
