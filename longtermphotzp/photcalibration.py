@@ -86,7 +86,9 @@ class PhotCalib():
         retCatalog['telescope'] = imageobject['SCI'].header['TELID']
         retCatalog['FOCOBOFF'] = imageobject['SCI'].header['FOCOBOFF']
         retCatalog['WCSERR'] =  imageobject['SCI'].header['WCSERR'] if 'WCSERR' in imageobject['SCI'].header else 0
-
+        retCatalog['imagename'] = os.path.splitext(imageobject['SCI'].header['ORIGNAME'])[0]
+        retCatalog['seeing'] = imageobject['SCI'].header['L1FWHM']
+        retCatalog['background'] = imageobject['SCI'].header['L1MEDIAN']
         # Check if WCS is OK, otherwise we could not cross-match with catalog
         if retCatalog['WCSERR'] != 0:
             _logger.info(
@@ -361,7 +363,7 @@ class PhotCalib():
                                   telescope=retCatalog['telescope'], camera=retCatalog['instrument'],
                                   filter=retCatalog['instfilter'], airmass=retCatalog['airmass'],
                                   zp=photzp, colorterm=colorterm, zpsig=photzpsig)
-            outputdb.addphotzp(m)
+            outputdb.addsbiglin(m)
         else:
             _logger.warning("Not saving output for image %s " % imageName)
 
