@@ -124,22 +124,23 @@ e name already exists in database
 
         # TODO: This might consume too much memory.
         allrows = [
-            [e.name, e.dateobs, e.site, e.dome, e.telescope, e.camera, e.filter, e.airmass, e.zp, e.colorterm, e.zpsig]
+            [e.name, e.dateobs, e.site, e.dome, e.telescope, e.camera, e.filter, e.exptime, e.seeing, e.background, e.fit_z, e.fit_k, e.nstars]
             for e in q.all()]
 
         if len(allrows) == 0:
             return None
         allrows = np.asarray(allrows)
 
-        t = Table(allrows, names=['name', 'dateobs', 'site', 'dome', 'telescope', 'camera', 'filter', 'airmass', 'zp',
-                                  'colorterm', 'zpsig'])
+        t = Table(allrows, names=['name', 'dateobs', 'site', 'dome', 'telescope', 'camera', 'filter', 'exptime', 'seeing', 'background', 'fit_z', 'fit_k', 'nstars'])
         t['dateobs'] = t['dateobs'].astype(str)
         t['dateobs'] = astt.Time(t['dateobs'], scale='utc', format=None).to_datetime()
-        t['zp'] = t['zp'].astype(float)
-        t['airmass']['UNKNOWN' == t['airmass']] = 'nan'
-        t['airmass'] = t['airmass'].astype(float)
-        t['zpsig'] = t['zpsig'].astype(float)
-        t['colorterm'] = t['colorterm'].astype(float)
+        t['exptime'] = t['exptime'].astype(float)
+        t['seeing'] = t['seeing'].astype(float)
+        t['background'] = t['background'].astype(float)
+        t['fit_z'] = t['fit_z'].astype(float)
+        t['fit_k'] = t['fit_k'].astype(float)
+        t['nstars'] = t['nstars'].astype(float)
+
 
 
         return t
