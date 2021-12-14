@@ -105,6 +105,7 @@ class SingleLinearityFitter():
         self.photcalib = PhotCalib('http://phot-catalog.lco.gtn/') if photcalib is None else photcalib
         self.matchedcatalog = self.photcalib.generateCrossmatchedCatalog(imageobject, mintexp=1)
 
+
         self.storageengine = storageengine
 
         x0 = [0.3, 1.05]
@@ -112,18 +113,26 @@ class SingleLinearityFitter():
 
         if pngstart is not None:
             fitmerritfunction((0,1), self.imageobject,self.matchedcatalog,pngname=f"{pngstart}_before.png")
-        result = scipy.optimize.minimize(fitmerritfunction, x0, (self.imageobject, self.matchedcatalog),
+
+        if len (self.matchedcatalog['refmag']) > 20:
+            try:
+                result = scipy.optimize.minimize(fitmerritfunction, x0, (self.imageobject, self.matchedcatalog),
                                          bounds=bounds, method='SLSQP', options={'eps':0.05})
+            except:
+                result = None
+                _logger.warning ("Fitting did not succeed")
+        else:
+            result = None
         #result = scipy.optimize.brute(fitmerritfunction, ((0,5), (1.,2.)), (self.imageobject, self.matchedcatalog),
                                          #)
 
         _logger.debug(f"Fitting result:\n{result}")
-        if pngstart is not None:
+        if (pngstart is not None) & (result is not None):
             fitmerritfunction(result.x, self.imageobject,self.matchedcatalog,pngname=f"{pngstart}_after.png")
 
         # TODO: Safe the result into a database
 
-        if self.storageengine is not None:
+        if (self.storageengine is not None) & (result is not None):
             dbentry = SBIGLINMeasurement (name=self.matchedcatalog['imagename'], dateobs = self.matchedcatalog['dateobs'],
                                      site = self.matchedcatalog['siteid'], dome = self.matchedcatalog['domid'],
                                      telescope = self.matchedcatalog['telescope'], camera = self.matchedcatalog['instrument'],
