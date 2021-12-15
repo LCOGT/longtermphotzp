@@ -104,15 +104,15 @@ class SingleLinearityFitter():
         self.imageobject = imageobject
         self.photcalib = PhotCalib('http://phot-catalog.lco.gtn/') if photcalib is None else photcalib
         self.matchedcatalog = self.photcalib.generateCrossmatchedCatalog(imageobject, mintexp=1)
-
-
         self.storageengine = storageengine
 
         x0 = [0.3, 1.05]
         bounds = ((0., 5.), ( 1., 3.))
 
+        pngname = None
         if pngstart is not None:
-            fitmerritfunction((0,1), self.imageobject,self.matchedcatalog,pngname=f"{pngstart}_before.png")
+            pngname = f"{pngstart}_before.png"
+        photslopebefore = fitmerritfunction((0,1), self.imageobject,self.matchedcatalog,pngname=pngname)
 
         if len (self.matchedcatalog['refmag']) > 20:
             try:
@@ -127,8 +127,13 @@ class SingleLinearityFitter():
                                          #)
 
         _logger.debug(f"Fitting result:\n{result}")
-        if (pngstart is not None) & (result is not None):
-            fitmerritfunction(result.x, self.imageobject,self.matchedcatalog,pngname=f"{pngstart}_after.png")
+        pngname = None
+        photslopeafter = None
+
+        if (pngstart is not None):
+            pngname = f"{pngstart}_after.png"
+        if (result is not None):
+            photslopeafter = fitmerritfunction(result.x, self.imageobject,self.matchedcatalog,pngname=pngname)
 
         # TODO: Safe the result into a database
 
@@ -138,7 +143,8 @@ class SingleLinearityFitter():
                                      telescope = self.matchedcatalog['telescope'], camera = self.matchedcatalog['instrument'],
                                      filter = self.matchedcatalog['instfilter'], exptime = self.matchedcatalog['exptime'],
                                      seeing = self.matchedcatalog['seeing'], background = self.matchedcatalog['background'],
-                                     fit_z = result.x[0]*1000, fit_k = result.x[1], nstars = len(self.matchedcatalog['refmag']))
+                                     fit_z = result.x[0]*1000, fit_k = result.x[1], nstars = len(self.matchedcatalog['refmag']),
+                                          photslopebefore=photslopebefore, photslopeafter=photslopeafter)
             _logger.info (f"Adding to database {self.storageengine}: {dbentry}")
             self.storageengine.addsbiglin(dbentry)
 

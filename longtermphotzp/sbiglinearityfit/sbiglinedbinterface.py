@@ -50,12 +50,15 @@ class SBIGLINMeasurement(Base):
     exptime = Column(Float)
     seeing = Column(Float)
     background = Column(Float)
+    photslopebefore = Column(Float)
+    photslopeafter = Column(Float)
     fit_z = Column(Float)
     fit_k = Column(Float)
     nstars = Column(Integer)
 
     def __repr__(self):
-        return f'{self.name} {self.dateobs} {self.filter} {self.exptime} {self.fit_z: 6.3f} {self.fit_k: 5.3f}'
+        return f'{self.name} {self.dateobs} {self.filter} Texp:{self.exptime} Bckgrnd:{self.background} z:{self.fit_z: 6.3f} k:{self.fit_k: 5.3f}'
+
 
 class sbiglininterface:
     ''' Storage model for data:
@@ -124,14 +127,17 @@ e name already exists in database
 
         # TODO: This might consume too much memory.
         allrows = [
-            [e.name, e.dateobs, e.site, e.dome, e.telescope, e.camera, e.filter, e.exptime, e.seeing, e.background, e.fit_z, e.fit_k, e.nstars]
+            [e.name, e.dateobs, e.site, e.dome, e.telescope, e.camera, e.filter, e.exptime, e.seeing, e.background,
+             e.fit_z, e.fit_k, e.nstars, e.photslopebefore, e.photslopeafter]
             for e in q.all()]
 
         if len(allrows) == 0:
             return None
         allrows = np.asarray(allrows)
 
-        t = Table(allrows, names=['name', 'dateobs', 'site', 'dome', 'telescope', 'camera', 'filter', 'exptime', 'seeing', 'background', 'fit_z', 'fit_k', 'nstars'])
+        t = Table(allrows,
+                  names=['name', 'dateobs', 'site', 'dome', 'telescope', 'camera', 'filter', 'exptime', 'seeing',
+                         'background', 'fit_z', 'fit_k', 'nstars', 'photslopebefore', 'photslopeafter'])
         t['dateobs'] = t['dateobs'].astype(str)
         t['dateobs'] = astt.Time(t['dateobs'], scale='utc', format=None).to_datetime()
         t['exptime'] = t['exptime'].astype(float)
@@ -140,12 +146,10 @@ e name already exists in database
         t['fit_z'] = t['fit_z'].astype(float)
         t['fit_k'] = t['fit_k'].astype(float)
         t['nstars'] = t['nstars'].astype(float)
-
-
+        t['photslopebefore'] = t['photslopebefore'].astype(float)
+        t['photslopeafter'] = t['photslopeafter'].astype(float)
 
         return t
-
-
 
 
 if __name__ == '__main__':
