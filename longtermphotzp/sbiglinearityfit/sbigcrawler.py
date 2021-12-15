@@ -95,9 +95,7 @@ def crawlsinglecamera(args, storageengine):
 
             inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site, camera=args.camera, object=args.object,
                                                                      mintexp=args.mintexp, maxtexp=args.maxtexp)
-            print(inputlist)
-            np.random.shuffle(inputlist)
-            print(inputlist)
+
             _logger.info(f"Found {len(inputlist)} input images from site {site} date {date}")
             # Remove images that were already processed since that would be lame to redo.
             if not args.redo:

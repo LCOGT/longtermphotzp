@@ -111,4 +111,6 @@ if __name__ == '__main__':
     storageengine = sbiglininterface(os.environ['DATABASE'])
     analysecamera ('kb95', storageengine)
     analysecamera ('kb23', storageengine)
+    analysecamera ('kb96', storageengine)
+
     storageengine.close()

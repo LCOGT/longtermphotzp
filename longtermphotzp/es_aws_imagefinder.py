@@ -103,6 +103,7 @@ def get_frames_for_photometry(dayobs = None, site=None, cameratype=None, camera=
     if records is None:
         return None
     records_sanitized = np.asarray([[record['filename'], record['frameid']] for record in records])
+    np.random.shuffle(records_sanitized)
     records_sanitized = Table(records_sanitized, names=['filename', 'frameid'])
     return records_sanitized
 
