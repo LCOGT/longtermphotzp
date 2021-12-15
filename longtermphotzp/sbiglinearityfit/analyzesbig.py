@@ -112,5 +112,5 @@ if __name__ == '__main__':
     analysecamera ('kb95', storageengine)
     analysecamera ('kb23', storageengine)
     analysecamera ('kb96', storageengine)
-
+    analysecamera ('kb55', storageengine)
     storageengine.close()
