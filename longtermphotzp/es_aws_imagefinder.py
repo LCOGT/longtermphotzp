@@ -67,7 +67,7 @@ def make_elasticsearch(index, filters, queries=None, exclusion_filters=None, ran
     return s
 
 #['gp', 'rp', 'ip', 'zp', 'zs']
-def get_frames_for_photometry(dayobs = None, site=None, cameratype=None, camera=None, mintexp=30, object=None,
+def get_frames_for_photometry(dayobs = None, site=None, cameratype=None, camera=None, mintexp=30, maxtexp=None, object=None,
                               filterlist=['gp', 'rp', 'ip', 'zp', 'zs',], es_url='http://elasticsearch.lco.gtn:9200'):
     """ Queries for a list of processed LCO images that are viable to get a photometric zeropoint in the griz bands measured.
 
@@ -76,6 +76,8 @@ def get_frames_for_photometry(dayobs = None, site=None, cameratype=None, camera=
      """
 
     # TODO: further preselect by number of sources to avoid overly crowded or empty fields
+
+    assert (mintexp is not None)
     query_filters = [ {'RLEVEL': 91}, {'WCSERR': 0}, {"OBSTYPE": "EXPOSE"}, {
         'FOCOBOFF': 0}]
     range_filters = [{'EXPTIME': {'gte': mintexp}}, ]
@@ -92,7 +94,8 @@ def get_frames_for_photometry(dayobs = None, site=None, cameratype=None, camera=
         query_filters.append ({'OBJECT': object})
     if dayobs is not None:
         query_filters.append ({'DAY-OBS': dayobs})
-
+    if maxtexp is not None:
+        range_filters.append ({'EXPTIME': {'lte': maxtexp}})
     queries = []
     records = make_elasticsearch('lco-fitsheaders', query_filters, queries, exclusion_filters=None, es_url=es_url,
                                  range_filters=range_filters, prefix_filters=prefix_filters,

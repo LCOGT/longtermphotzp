@@ -2,8 +2,10 @@ import argparse
 import datetime
 import logging
 import os
+
 import numpy as np
-import  longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
+
+import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
 from longtermphotzp.sbiglinearityfit.sbigfitter import fit_singleimage, SingleLinearityFitter
 from longtermphotzp.sbiglinearityfit.sbiglinedbinterface import sbiglininterface
 
@@ -11,6 +13,7 @@ _logger = logging.getLogger(__name__)
 
 for _ in ("base", "elasticsearch", "urllib3"):
     logging.getLogger(_).setLevel(logging.CRITICAL)
+
 
 def parseCommandLine():
     """ Read command line parameters
@@ -28,12 +31,14 @@ def parseCommandLine():
                         help="LCO archive root directory")
     parser.add_argument('--png', default=None, help="Directory for diagnostic png plots")
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
-    parser.add_argument('--mintexp', dest='mintexp', default=10, type=float, help='Minimum exposure time to accept')
+    parser.add_argument('--mintexp', default=10, type=float, help='Minimum exposure time to accept')
+    parser.add_argument('--object', default=None, type=str, help='filter for OBJECT name, e.g., "auto focus"')
+    parser.add_argument('--maxtexp', default=None, type=float, help='Maximumexposure time to accept')
     parser.add_argument('--redo', action='store_true')
     parser.add_argument('--useaws', action='store_true',
                         help="Use LCO archive API to retrieve frame vs direct /archive file mount access")
     mutex = parser.add_mutually_exclusive_group()
-    mutex.add_argument('--date', dest='date', default=[None,], nargs='+', help='Specific date to process.')
+    mutex.add_argument('--date', dest='date', default=[None, ], nargs='+', help='Specific date to process.')
     mutex.add_argument('--lastNdays', type=int)
 
     cameragroup = parser.add_mutually_exclusive_group()
@@ -63,8 +68,7 @@ def parseCommandLine():
     return args
 
 
-
-def awsprocessimage (image, storageengine, outputdirectory = None):
+def awsprocessimage(image, storageengine, outputdirectory=None):
     filename = str(image['filename'])
     frameid = int(image['frameid'])
     imageName = os.path.basename(filename)
@@ -81,7 +85,6 @@ def awsprocessimage (image, storageengine, outputdirectory = None):
     f = SingleLinearityFitter(imageobject, pngstart=pngbasename, storageengine=storageengine)
 
 
-
 def crawlsinglecamera(args, storageengine):
     if args.site is not None:
         sites = [site for site in args.site.split(',')]
@@ -90,15 +93,18 @@ def crawlsinglecamera(args, storageengine):
     for date in args.date:
         for site in sites:
 
-            inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site, camera=args.camera, object="auto_focus",
-                                                                             mintexp=args.mintexp)
-            _logger.info (f"Found {len(inputlist)} input images from site {site} date {date}")
+            inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site, camera=args.camera, object=args.object,
+                                                                     mintexp=args.mintexp, maxtexp=args.maxtexp)
+            print(inputlist)
+            np.random.shuffle(inputlist)
+            print(inputlist)
+            _logger.info(f"Found {len(inputlist)} input images from site {site} date {date}")
             # Remove images that were already processed since that would be lame to redo.
             if not args.redo:
-                _logger.info ("removing duplicates")
+                _logger.info("removing duplicates")
                 rejects = []
                 for image in inputlist['filename']:
-                    if storageengine.exists( (image[0:-8]).replace('e91','e00')):
+                    if storageengine.exists((image[0:-8]).replace('e91', 'e00')):
                         rejects.append(image)
 
                 for r in rejects:
@@ -107,26 +113,23 @@ def crawlsinglecamera(args, storageengine):
                         row = row[0][0]
                         inputlist.remove_row(row)
             for image in inputlist:
-                awsprocessimage (image, storageengine, outputdirectory=args.png)
+                awsprocessimage(image, storageengine, outputdirectory=args.png)
 
 
-
-
-def sbigmain ():
-    args =  parseCommandLine()
+def sbigmain():
+    args = parseCommandLine()
 
     storageengine = sbiglininterface(args.database)
 
     if args.singlefile:
         try:
-            fit_singleimage (args.singlefile, outputdirectory=args.png, storageengine=storageengine)
+            fit_singleimage(args.singlefile, outputdirectory=args.png, storageengine=storageengine)
         except:
-            _logger.exception (f"Somthing went wrong while processing file {args.singlefile} ")
+            _logger.exception(f"Somthing went wrong while processing file {args.singlefile} ")
 
     if args.camera:
         # Yay baby, we are looking for all images from a single camera
-        crawlsinglecamera(args, storageengine=storageengine )
-
+        crawlsinglecamera(args, storageengine=storageengine)
 
     storageengine.close()
 
