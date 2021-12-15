@@ -57,7 +57,7 @@ class SBIGLINMeasurement(Base):
     nstars = Column(Integer)
 
     def __repr__(self):
-        return f'{self.name} {self.dateobs} {self.filter} Texp:{self.exptime} Bckgrnd:{self.background} z:{self.fit_z: 6.3f} k:{self.fit_k: 5.3f}'
+        return f'{self.name} {self.dateobs} {self.filter} Texp:{self.exptime} Bckgrnd:{self.background: 7.1f} z:{self.fit_z: 6.3f} k:{self.fit_k: 5.3f} before:{self.photslopebefore: 5.2f} after: {self.photslopeafter: 5.2f}'
 
 
 class sbiglininterface:
@@ -83,7 +83,6 @@ class sbiglininterface:
 
     def addsbiglin(self, sbiglinmeasurementObject, commit=True):
 
-        _logger.debug("addphotzp: %s" % str(sbiglinmeasurementObject))
 
         existingEntry = self.exists(sbiglinmeasurementObject.name)
         if existingEntry:
