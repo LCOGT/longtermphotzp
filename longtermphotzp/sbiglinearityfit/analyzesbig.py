@@ -18,6 +18,9 @@ def analysecamera (camera, storageengine):
 
     records = storageengine.readRecords(camera = camera)
 
+
+    records = records[( records['nstars']>=50) & (records['photslopebefore']!= records['photslopeafter'])]
+
     change = datetime.datetime(2018, 6, 1)
 
     before = records['dateobs'] < change
@@ -45,6 +48,8 @@ def analysecamera (camera, storageengine):
     plt.plot (records ['dateobs'], records['photslopebefore'], '.')
     dateformat(starttime, endtime)
     plt.xlabel ("DATE-OBS")
+    plt.ylim([-0.01,0.3])
+    plt.ylabel("photzp slope [mag/mag]")
 
     plt.savefig (f"{camera}_timeline_photslopebefore.png")
 
@@ -78,6 +83,7 @@ def analysecamera (camera, storageengine):
     plt.plot (records ['background'][after], records['photslopebefore'][after], '.', label='after')
     plt.legend()
     plt.xlim([0,500])
+    plt.ylim([-0.01,0.3])
 
     plt.savefig (f"{camera}_background_photslope.png")
     plt.close()
@@ -90,6 +96,7 @@ def analysecamera (camera, storageengine):
     plt.plot (records ['background'][after], records['photslopeafter'][after], '.', label='after')
     plt.legend()
     plt.xlim([0,500])
+    plt.ylim([-0.01,0.3])
 
     plt.savefig (f"{camera}_background_photslopeafter.png")
     plt.close()
