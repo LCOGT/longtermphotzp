@@ -50,14 +50,18 @@ def fitmerritfunction(x, imageobject, matchedcatlog, pngname=None):
     selzp = zp[nbrightest]
     selref = matchedcatlog['refmag'][nbrightest]
 
-    f=np.polyfit (selref,selzp,1)
-    p = np.poly1d(f)
-    delta = np.abs (selzp - p(selref))
-    cond = (delta < 0.3) & (delta < 3*np.std(delta))
-    f = np.polyfit(selref[cond], selzp[cond],1)
-    p = np.poly1d(f)
+    try:
+        f=np.polyfit (selref,selzp,1)
+        p = np.poly1d(f)
+        delta = np.abs (selzp - p(selref))
+        cond = (delta < 0.3) & (delta < 3*np.std(delta))
+        f = np.polyfit(selref[cond], selzp[cond],1)
+        p = np.poly1d(f)
 
-    _logger.debug(f"{x} -> {myzp} +/- {f[0]}")
+        _logger.debug(f"{x} -> {myzp} +/- {f[0]}")
+    except:
+        _logger.warning("Slope fitting did run into exception")
+        return None
 
     if pngname is not None:
         plt.figure()
