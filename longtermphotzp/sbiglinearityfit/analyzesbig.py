@@ -40,6 +40,14 @@ def analysecamera (camera, storageengine):
     plt.ylim([0.9,2])
     plt.savefig (f"{camera}_timeline_k.png")
 
+    plt.figure ()
+    plt.title (f"{camera} Pre-correction slope in photzp")
+    plt.plot (records ['dateobs'], records['photslopebefore'], '.')
+    dateformat(starttime, endtime)
+    plt.xlabel ("DATE-OBS")
+
+    plt.savefig (f"{camera}_timeline_photslopebefore.png")
+
 
     plt.figure ()
     plt.title (f"{camera} fit parameter z")
@@ -63,6 +71,29 @@ def analysecamera (camera, storageengine):
     plt.close()
 
 
+    plt.figure ()
+    plt.xlabel ("background level [e-]")
+    plt.title (f"{camera} initial slope in photzp")
+    plt.plot (records ['background'][before], records['photslopebefore'][before], '.', label='before')
+    plt.plot (records ['background'][after], records['photslopebefore'][after], '.', label='after')
+    plt.legend()
+    plt.xlim([0,500])
+
+    plt.savefig (f"{camera}_background_photslope.png")
+    plt.close()
+
+
+    plt.figure ()
+    plt.xlabel ("background level [e-]")
+    plt.title (f"{camera} post correction slope in photzp")
+    plt.plot (records ['background'][before], records['photslopeafter'][before], '.', label='before')
+    plt.plot (records ['background'][after], records['photslopeafter'][after], '.', label='after')
+    plt.legend()
+    plt.xlim([0,500])
+
+    plt.savefig (f"{camera}_background_photslopeafter.png")
+    plt.close()
+
 
 
 
@@ -72,3 +103,5 @@ def analysecamera (camera, storageengine):
 if __name__ == '__main__':
     storageengine = sbiglininterface(os.environ['DATABASE'])
     analysecamera ('kb95', storageengine)
+    analysecamera ('kb23', storageengine)
+    storageengine.close()
