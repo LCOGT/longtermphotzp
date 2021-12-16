@@ -19,7 +19,7 @@ def analysecamera (camera, storageengine):
     records = storageengine.readRecords(camera = camera)
 
 
-    records = records[( records['nstars']>=50) & (records['photslopebefore']!= records['photslopeafter'])]
+    records = records[( records['nstars']>=10) & (records['photslopebefore']!= records['photslopeafter'])]
 
     change = datetime.datetime(2018, 6, 1)
 
@@ -33,7 +33,7 @@ def analysecamera (camera, storageengine):
     plt.ylim([0,1000])
     dateformat(starttime, endtime)
     plt.savefig (f"{camera}_timeline_z.png")
-
+    plt.close()
 
     plt.figure ()
     plt.title (f"{camera} fit parameter k")
@@ -42,6 +42,7 @@ def analysecamera (camera, storageengine):
     plt.xlabel ("DATE-OBS")
     plt.ylim([0.9,2])
     plt.savefig (f"{camera}_timeline_k.png")
+    plt.close()
 
     plt.figure ()
     plt.title (f"{camera} Pre-correction slope in photzp")
@@ -52,7 +53,19 @@ def analysecamera (camera, storageengine):
     plt.ylabel("photzp slope [mag/mag]")
 
     plt.savefig (f"{camera}_timeline_photslopebefore.png")
+    plt.close()
 
+    plt.figure ()
+    plt.title (f"{camera} Background level [e-]")
+    plt.semilogy (records ['dateobs'], records['background'], '.')
+    dateformat(starttime, endtime)
+    plt.xlabel ("DATE-OBS")
+    plt.ylim([0,2000])
+
+    plt.ylabel("L1MEDIAN Beckground [e-]")
+
+    plt.savefig (f"{camera}_timeline_background.png")
+    plt.close()
 
     plt.figure ()
     plt.title (f"{camera} fit parameter z")
@@ -63,14 +76,15 @@ def analysecamera (camera, storageengine):
     plt.plot (records ['background'][after], records['fit_z'][after], '.', label='after')
     plt.legend()
     plt.savefig (f"{camera}_background_z.png")
+    plt.close()
 
     plt.figure ()
     plt.xlabel ("background level [e-]")
     plt.title (f"{camera} fit parameter k")
-    plt.plot (records ['background'][before], records['fit_k'][before], '.', label='before')
-    plt.plot (records ['background'][after], records['fit_k'][after], '.', label='after')
+    plt.semilogx(records ['background'][before], records['fit_k'][before], '.', label='before')
+    plt.semilogx (records ['background'][after], records['fit_k'][after], '.', label='after')
     plt.legend()
-    plt.xlim([0,500])
+    plt.xlim([0,2000])
     plt.ylim([0.9,2])
     plt.savefig (f"{camera}_background_k.png")
     plt.close()
@@ -78,13 +92,12 @@ def analysecamera (camera, storageengine):
 
     plt.figure ()
     plt.xlabel ("background level [e-]")
-    plt.title (f"{camera} initial slope in photzp")
-    plt.plot (records ['background'][before], records['photslopebefore'][before], '.', label='before')
-    plt.plot (records ['background'][after], records['photslopebefore'][after], '.', label='after')
+    plt.title (f"{camera} pre correction slope in photzp")
+    plt.semilogx (records ['background'][before], records['photslopebefore'][before], '.', label='before')
+    plt.semilogx (records ['background'][after], records['photslopebefore'][after], '.', label='after')
     plt.legend()
-    plt.xlim([0,500])
+    plt.xlim([0,2000])
     plt.ylim([-0.01,0.3])
-
     plt.savefig (f"{camera}_background_photslope.png")
     plt.close()
 
@@ -92,25 +105,23 @@ def analysecamera (camera, storageengine):
     plt.figure ()
     plt.xlabel ("background level [e-]")
     plt.title (f"{camera} post correction slope in photzp")
-    plt.plot (records ['background'][before], records['photslopeafter'][before], '.', label='before')
-    plt.plot (records ['background'][after], records['photslopeafter'][after], '.', label='after')
+    plt.semilogx (records ['background'][before], records['photslopeafter'][before], '.', label='before')
+    plt.semilogx (records ['background'][after], records['photslopeafter'][after], '.', label='after')
     plt.legend()
-    plt.xlim([0,500])
+    plt.xlim([0,2000])
     plt.ylim([-0.01,0.3])
-
     plt.savefig (f"{camera}_background_photslopeafter.png")
     plt.close()
 
 
 
-
-
-
-
 if __name__ == '__main__':
     storageengine = sbiglininterface(os.environ['DATABASE'])
-    analysecamera ('kb95', storageengine)
+
     analysecamera ('kb23', storageengine)
+    analysecamera ('kb26', storageengine)
+    analysecamera ('kb95', storageengine)
     analysecamera ('kb96', storageengine)
-    analysecamera ('kb55', storageengine)
+    analysecamera ('kb97', storageengine)
+    #analysecamera ('kb55', storageengine)
     storageengine.close()
