@@ -1,5 +1,8 @@
 # Changelog
 
+version 7.1.5
+* Add detailed C02 snow cleaning histroy from LSC
+
 Version 7.1.4
 
 * Multiple additions to force aperture photometry for debugging camera issues
