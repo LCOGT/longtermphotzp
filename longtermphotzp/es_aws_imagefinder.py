@@ -24,14 +24,14 @@ def make_opensearch(index, filters, queries=None, exclusion_filters=None, range_
     index : str
             Name of index to search
     filters : list of dicts
-              Each dict has a criterion for an ElasticSearch "filter"
+              Each dict has a criterion for an OpenSearch "filter"
     queries : list of dicts
               Each dict has a "type" and "query" entry. The 'query' entry is a dict that has a criterion for an
               ElasticSearch "query"
     exclusion_filters : list of dicts
-                        Each dict has a criterion for an ElasticSearch "exclude"
+                        Each dict has a criterion for an OpenSearch "exclude"
     range_filters: list of dicts
-                   Each dict has a criterion an ElasticSearch "range filter"
+                   Each dict has a criterion an OpenSearch "range filter"
     prefix_filters:
     terms_filters:
     os_url : str
@@ -71,9 +71,11 @@ def make_opensearch(index, filters, queries=None, exclusion_filters=None, range_
 
 def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, mintexp=30,
                               filterlist=['gp', 'rp', 'ip', 'zp', 'zs'], os_url='https://opensearch.lco.global'):
-    """ Queries for a list of processed LCO images that are viable to get a photometric zeropoint in the griz bands measured.
+    """ Queries for a list of processed LCO images that are viable to get a photometric zeropoint in the griz bands
+        measured.
 
-        Selection criteria are by DAY-OBS, site, by camaera type (fs,fa,kb), what filters to use, and minimum exposure time.
+        Selection criteria are by DAY-OBS, site, by camera type (fs,fa,kb), what filters to use, and minimum exposure
+        time.
         Only day-obs is a mandatory fields, we do not want to query the entire archive at once.
      """
 

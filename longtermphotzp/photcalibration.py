@@ -369,7 +369,7 @@ class PhotCalib():
 
 def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchivename=True, inputlistIsArchiveID=False):
     """ Invoke the per image processing for a list of files, but check for duplication. """
-    # get list of files of interest from elasticsearch
+    # get list of files of interest from OpenSearch
     initialsize = len(inputlist)
     rejects = []
     if not args.redo:
