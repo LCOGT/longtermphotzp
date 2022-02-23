@@ -1,6 +1,6 @@
 import logging
-from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search
+from opensearchpy import OpenSearch
+from opensearch_dsl import Search
 from astropy.table import Table
 import numpy as np
 import requests
@@ -13,9 +13,9 @@ _logger = logging.getLogger(__name__)
 ARCHIVE_API_TOKEN = os.getenv('ARCHIVE_API_TOKEN', '')
 
 
-def make_elasticsearch(index, filters, queries=None, exclusion_filters=None, range_filters=None, prefix_filters=None,
-                       terms_filters=None,
-                       es_url='http://elasticsearch.lco.gtn:9200'):
+def make_opensearch(index, filters, queries=None, exclusion_filters=None, range_filters=None, prefix_filters=None,
+                    terms_filters=None,
+                    os_url='https://opensearch.lco.global'):
     """
     Make an ElasticSearch query
 
@@ -24,21 +24,23 @@ def make_elasticsearch(index, filters, queries=None, exclusion_filters=None, ran
     index : str
             Name of index to search
     filters : list of dicts
-              Each dict has a criterion for an ElasticSearch "filter"
+              Each dict has a criterion for an OpenSearch "filter"
     queries : list of dicts
               Each dict has a "type" and "query" entry. The 'query' entry is a dict that has a criterion for an
               ElasticSearch "query"
     exclusion_filters : list of dicts
-                        Each dict has a criterion for an ElasticSearch "exclude"
+                        Each dict has a criterion for an OpenSearch "exclude"
     range_filters: list of dicts
-                   Each dict has a criterion an ElasticSearch "range filter"
-    es_url : str
-             URL of the ElasticSearch host
+                   Each dict has a criterion an OpenSearch "range filter"
+    prefix_filters:
+    terms_filters:
+    os_url : str
+             URL of the OpenSearch host
 
     Returns
     -------
-    search : elasticsearch_dsl.Search
-             The ElasticSearch object
+    search : opensearch_dsl.Search
+             The OpenSearch object
     """
     if queries is None:
         queries = []
@@ -50,8 +52,8 @@ def make_elasticsearch(index, filters, queries=None, exclusion_filters=None, ran
         terms_filters = []
     if prefix_filters is None:
         prefix_filters = []
-    es = Elasticsearch(es_url)
-    s = Search(using=es, index=index)
+    opensearch = OpenSearch(os_url)
+    s = Search(using=opensearch, index=index)
     for f in filters:
         s = s.filter('term', **f)
     for f in terms_filters:
@@ -66,12 +68,14 @@ def make_elasticsearch(index, filters, queries=None, exclusion_filters=None, ran
         s = s.query(q['type'], **q['query'])
     return s
 
-#['gp', 'rp', 'ip', 'zp', 'zs']
-def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, mintexp=30,
-                              filterlist=['gp', 'rp', 'ip', 'zp', 'zs',], es_url='http://elasticsearch.lco.gtn:9200'):
-    """ Queries for a list of processed LCO images that are viable to get a photometric zeropoint in the griz bands measured.
 
-        Selection criteria are by DAY-OBS, site, by camaera type (fs,fa,kb), what filters to use, and minimum exposure time.
+def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, mintexp=30,
+                              filterlist=['gp', 'rp', 'ip', 'zp', 'zs'], os_url='https://opensearch.lco.global'):
+    """ Queries for a list of processed LCO images that are viable to get a photometric zeropoint in the griz bands
+        measured.
+
+        Selection criteria are by DAY-OBS, site, by camera type (fs,fa,kb), what filters to use, and minimum exposure
+        time.
         Only day-obs is a mandatory fields, we do not want to query the entire archive at once.
      """
 
@@ -90,9 +94,9 @@ def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, m
         prefix_filters.append({'INSTRUME': cameratype})
 
     queries = []
-    records = make_elasticsearch('lco-fitsheaders', query_filters, queries, exclusion_filters=None, es_url=es_url,
-                                 range_filters=range_filters, prefix_filters=prefix_filters,
-                                 terms_filters=terms_filters).scan()
+    records = make_opensearch('lco-fitsheaders', query_filters, queries, exclusion_filters=None, os_url=os_url,
+                              range_filters=range_filters, prefix_filters=prefix_filters,
+                              terms_filters=terms_filters).scan()
     if records is None:
         return None
     records_sanitized = np.asarray([[record['filename'], record['frameid']] for record in records])
@@ -103,8 +107,8 @@ def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, m
 def download_from_archive(frameid):
     """
     Download a file from the LCO archive by frame id.
-    :param frameid: Archive API frame ID
-    :return: Astropy HDUList
+    param frameid: Archive API frame ID
+    return: Astropy HDUList
     """
     url = f'https://archive-api.lco.global/frames/{frameid}'
     _logger.info("Downloading image frameid {} from URL: {}".format(frameid, url))

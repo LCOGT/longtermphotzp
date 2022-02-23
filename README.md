@@ -2,13 +2,13 @@
 
 This repository hosts the tools to provide a long term telescope throughput monitoring service. The components are:
 
- * python code to cross-match source catalogs from BANZAI-reduced iamges with the PANSTARRS catalog and derive a photoemtric zeropoint. The zeropoint is written into a database.
- * python code to analyze the content of the zeropoint data base and create a number of plots .
+ * python code to cross-match source catalogs from BANZAI-reduced images with the PANSTARRS catalog and derive a photometric zeropoint. The zeropoint is written into a database.
+ * python code to analyze the content of the zeropoint database and create a number of plots .
  
  Dependencies:
  * read-only access to LCO archive mount at /archive
  * read-only access to a local copy of the Atlas refcat2 catalog
-   * This is accessible on chanunpa at /net/fsfs.lco.gtn/data/AstroCatalogs/Atlas-refcat2/
+   * This is available at fsfs.lco.gtn:/data/AstroCatalogs/Atlas-refcat2/
  * read/write access to a directory that will contain 
    * The database file itself
    * mirror throughput model files, trend plots (pngs), and a html file gluing it all together. 
