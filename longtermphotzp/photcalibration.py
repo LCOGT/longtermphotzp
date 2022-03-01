@@ -435,6 +435,7 @@ def parseCommandLine():
     parser.add_argument('--preview', dest='processstatus', default='processed', action='store_const', const='preview')
     parser.add_argument('--useaws', action='store_true',
                         help="Use LCO archive API to retrieve frame vs direct /archive file mount access")
+    parser.add_argument('--filters', default=['gp','rp','ip','zp'], nargs='+')
     mutex = parser.add_mutually_exclusive_group()
     mutex.add_argument('--date', dest='date', default=[], nargs='+', help='Specific date to process.')
     mutex.add_argument('--lastNdays', type=int)
@@ -485,7 +486,7 @@ def photzpmain():
             for site in sites:
                 for cameratype in cameratypes:
                     inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site, cameratype=cameratype,
-                                                                             mintexp=args.mintexp)
+                                                                             mintexp=args.mintexp, filterlist=args.filters)
                     if inputlist is None:
                         _logger.info("None list returned for date {}. Nothing to do here.".format(date))
                         continue
@@ -499,7 +500,7 @@ def photzpmain():
         elif args.camera is not None:
             # crawl for a specific camera
             inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site=None, camera=args.camera,
-                                                                     mintexp=args.mintexp)
+                                                                     mintexp=args.mintexp,filterlist=args.filters)
             if inputlist is None:
                 _logger.info("None list returned for date {}. Nothing to do here.".format(date))
                 continue
