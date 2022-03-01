@@ -142,7 +142,7 @@ class PhotCalib():
             return None
 
         # Query reference catalog TODO: paramterize FoV of query!
-        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33)
+        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33, generateJohnson= ( retCatalog['instfilter'] in atlas_refcat2.JohnsonCousin_filters))
         if refcatalog is None:
             _logger.warning("no reference catalog received.")
             return None
@@ -241,11 +241,11 @@ class PhotCalib():
         if (retCatalog is None) or (retCatalog['instmag'] is None) or (len(retCatalog['ra']) < 10):
             if retCatalog is None:
                 _logger.info(f"No matched catalog was returned for image {imageName}")
-                return
+                return 0,0,0
 
             if len(retCatalog['ra']) < 10:
                 _logger.info("%s: Catalog returned, but is has less than 10 stars. Ignoring. " % (imageentry))
-            return
+            return 0,0,0
 
         # calculate the per star zeropoint
         magZP = retCatalog['refmag'] - retCatalog['instmag']

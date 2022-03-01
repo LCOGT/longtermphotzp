@@ -9,7 +9,7 @@ def do_photometrytestonFile(filename, reference_photzp, reference_colorterm, tmp
     t = Table ([[filename],[-1],], names=['filename','frameid'])
     p = photcal.PhotCalib(REFCAT2_URL)
     for r in t:
-        photzp, photzpsig, colorterm = p.analyzeImage(r, useaws=False, outputimageRootDir=tmpdir)
+        photzp, photzpsig, colorterm = p.analyzeImage(r, useaws=False, outputimageRootDir=tmpdir, mintexp=0)
         print (filename, photzp, photzpsig, colorterm)
 
     assert math.fabs (photzp - reference_photzp) < 0.1, f"Test for correct photomertic zeropoint of {filename}"
@@ -23,3 +23,6 @@ def test_photcalibration(tmpdir):
     do_photometrytestonFile(f"{startdir}/data/cpt1m012-fa06-20200113-0102-e91.fits.fz", 23.1,-0.008, tmpdir=tmpdir)
     do_photometrytestonFile(f"{startdir}/data/ogg2m001-ep04-20201006-0097-e91.fits.fz", 25.15, 0.063, tmpdir=tmpdir)
 
+    ### Johnson Cousins filters:
+    do_photometrytestonFile(f"{startdir}/data/elp1m008-fa05-20200130-0083-e91.fits.fz", 23.16, -0.04, tmpdir=tmpdir)
+    do_photometrytestonFile(f"{startdir}/data/elp1m008-fa05-20200130-0084-e91.fits.fz", 23.26, -0.018, tmpdir=tmpdir)

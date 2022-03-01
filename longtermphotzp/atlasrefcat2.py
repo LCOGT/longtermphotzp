@@ -1,5 +1,7 @@
 import math
 import os
+
+import numpy
 import requests
 
 import numpy as np
@@ -18,6 +20,10 @@ class atlas_refcat2:
     FILTERMAPPING['ip'] = {'refMag': 'imag', 'colorTerm': 0.0, 'airmassTerm': 0.08, 'defaultZP': 0.0}
     FILTERMAPPING['zp'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.05, 'defaultZP': 0.0}
     FILTERMAPPING['zs'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.05, 'defaultZP': 0.0}
+    FILTERMAPPING['B'] = {'refMag':  'B'   , 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
+    FILTERMAPPING['V'] = {'refMag':  'V'   , 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
+    FILTERMAPPING['R'] = {'refMag':  'R'   , 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
+    FILTERMAPPING['I'] = {'refMag':  'I'   , 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
 
     ###  PS to SDSS color transformations according to  Finkbeiner 2016
     ###  http://iopscience.iop.org/article/10.3847/0004-637X/822/2/66/meta#apj522061s2-4 Table 2
@@ -33,7 +39,7 @@ class atlas_refcat2:
     ps1colorterms['imag'] = [+0.01170, -0.00400, +0.00066, -0.00058][::-1]
     ps1colorterms['zmag'] = [-0.01062, +0.07529, -0.03592, +0.00890][::-1]
 
-    JohnsonCousin = ['B','V','R','I']
+    JohnsonCousin_filters = ['B', 'V', 'R', 'I']
 
     def __init__(self, refcat2_url):
         self.refcat2_url = refcat2_url
@@ -48,16 +54,18 @@ class atlas_refcat2:
         # 1,2 -> sdss color to use
         # 3 -> color term
         # 4 -> zero point
-        transformations ['B'] = ['gp', 'gp', 'rp', 0.312, 0.219]
-        transformations ['V'] = ['gp', 'gp', 'rp', -0.573, -0.016]
-        transformations ['R'] = ['rp', 'rp', 'ip', 1.12, 0.06]
-        transformations ['I'] = ['ip', 'ip', 'zp', 0.394, 0.002]
+        transformations ['B'] = ['gmag', 'gmag', 'rmag', 0.312, 0.219]
+        transformations ['V'] = ['gmag', 'gmag', 'rmag', -0.573, -0.016]
+        transformations ['R'] = ['rmag', 'rmag', 'imag', 1.12, 0.06]
+        transformations ['I'] = ['imag', 'imag', 'zmag', 0.394, 0.002]
 
         for filter in transformations:
-            table[filter] = table [filter[0]] + (table[filter[1] - table[filter[2]]]) * filter[3] + filter[4]
-
+            info = transformations[filter]
+            table.add_column(numpy.NaN, name=filter)
+            table.add_column(numpy.NaN, name=f'{filter}err')
+            table[filter] = table [info[0]] + (table[info[1]] - table[info[2]]) * info[3] + info[4]
+            table[f'{filter}err'] = 0
         return table
-
 
 
     def PStoSDSS(self, table):
@@ -75,7 +83,7 @@ class atlas_refcat2:
 
         return table
 
-    def get_reference_catalog(self, ra, dec, radius):
+    def get_reference_catalog(self, ra, dec, radius, generateJohnson = False):
         " Read region of interest from the catalog"
         try:
             response = requests.get(self.refcat2_url + 'radius', params={'ra': ra, 'dec': dec, 'radius': radius})
@@ -86,5 +94,8 @@ class atlas_refcat2:
             return None
 
         table = self.PStoSDSS(table)
+
+        if generateJohnson:
+            table = self.SDSS2Johnson(table)
 
         return table
