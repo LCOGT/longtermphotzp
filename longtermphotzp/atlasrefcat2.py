@@ -48,16 +48,18 @@ class atlas_refcat2:
         return True
 
     def SDSS2Johnson (self, table):
-        """ Based on Jordi, Grebel, & Ammon 2006 A&A 460, 339 """
+        """ Based on Jordi, Grebel, & Ammon 2005  http://www.sdss3.org/dr8/algorithms/sdssUBVRITransform.php
+        """
+
         transformations={}
         # 0 -> sdss base mag
         # 1,2 -> sdss color to use
         # 3 -> color term
         # 4 -> zero point
-        transformations ['B'] = ['gmag', 'gmag', 'rmag', 0.312, 0.219]
-        transformations ['V'] = ['gmag', 'gmag', 'rmag', -0.573, -0.016]
-        transformations ['R'] = ['rmag', 'rmag', 'imag', 1.12, 0.06]
-        transformations ['I'] = ['imag', 'imag', 'zmag', 0.394, 0.002]
+        transformations ['B'] = ['gmag', 'gmag', 'rmag', 0.313, 0.219]
+        transformations ['V'] = ['gmag', 'gmag', 'rmag', -0.565, -0.016]
+        transformations ['R'] = ['rmag', 'rmag', 'imag', -0.153, -0.117]
+        transformations ['I'] = ['imag', 'imag', 'zmag', -0.386, -0.397]
 
         for filter in transformations:
             info = transformations[filter]
