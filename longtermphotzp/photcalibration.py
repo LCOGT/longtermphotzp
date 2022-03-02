@@ -374,7 +374,7 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
     rejects = []
     if not args.redo:
         for image in inputlist['filename']:
-            if db.exists(image):
+            if (db is not None) and db.exists(image):
                 rejects.append(image)
 
         for r in rejects:
@@ -495,7 +495,8 @@ def photzpmain():
                                                                                                          cameratype,
                                                                                                          site, date))
                     process_imagelist(inputlist, imagedb, args)
-                    imagedb.close()
+                    if imagedb is not None:
+                        imagedb.close()
 
         elif args.camera is not None:
             # crawl for a specific camera
@@ -508,7 +509,8 @@ def photzpmain():
                 "Processing image list N={} for camera {} at for date {}".format(len(inputlist), args.camera, date))
             imagedb = photdbinterface(args.imagedbPrefix)
             process_imagelist(inputlist, imagedb, args)
-            imagedb.close()
+            if imagedb is not None:
+                imagedb.close()
 
 
 
@@ -521,9 +523,10 @@ def photzpmain():
         redlevel = "91" if not args.fromraw else "00"
         inputlist = (glob.glob(f"{args.crawldirectory}/*[es]{redlevel}.fits.fz"))
         inputlist = Table([inputlist, [-1] * len(inputlist)], names=['filename', 'frameid'])
-        imagedb = photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
+        imagedb = None # photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
         process_imagelist(inputlist, imagedb, args, rewritetoarchivename=False)
-        imagedb.close()
+        if imagedb is not None:
+            imagedb.close()
 
     sys.exit(0)
 
