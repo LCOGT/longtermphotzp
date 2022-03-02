@@ -591,7 +591,6 @@ def fittrendtomirrormodel(dates, zps, start, end, order=1, plot=False):
     return poly
 
 
-colorterms = {'B': {'lsc-doma-1m0a': -0.0478101358969656, 'lsc-domb-1m0a': np.nan, 'lsc-domc-1m0a': -0.00305442225883582, 'lsc-aqwa-0m4a': np.nan, 'lsc-aqwb-0m4a': np.nan, 'coj-clma-2m0a': np.nan, 'coj-doma-1m0a': -0.022394007604895003, 'coj-domb-1m0a': -0.013271980856311299, 'coj-clma-0m4a': np.nan, 'coj-clma-0m4b': np.nan, 'coj-clma-0m4c': np.nan, 'ogg-clma-2m0a': np.nan, 'ogg-clma-0m4b': np.nan, 'ogg-clma-0m4c': np.nan, 'elp-doma-1m0a': -0.043359558657864, 'elp-domb-1m0a': -0.0275058986593095, 'elp-aqwa-0m4a': np.nan, 'cpt-doma-1m0a': -0.08192293340665666, 'cpt-domb-1m0a': -0.0481737402056597, 'cpt-domc-1m0a': -0.031169971981177002, 'cpt-aqwa-0m4a': np.nan, 'tfn-aqwa-0m4a': np.nan, 'tfn-aqwa-0m4b': np.nan, 'tfn-doma-1m0a': -0.04945351278582795, 'tfn-domb-1m0a': -0.0492091074170952}}
 
 def plot_all_color_terms (context, colorterms, type='1m0'):
     filter = next(iter(colorterms))
@@ -599,13 +598,16 @@ def plot_all_color_terms (context, colorterms, type='1m0'):
     data = list(myterms.items())
     data = np.array(data).T
 
-    xTicks = data[0]
+
+    good = ['1m0' in x for x in data[0]]
+    xTicks = data[0] [good]
+    y =  (data[1].astype(float))[good]
     x = np.arange(len(xTicks)) +1
-    y = data[1].astype(float)
-    print (xTicks,x,y)
     plt.xticks(x, xTicks, rotation=45)
     plt.plot (x,y,'*')
     plt.ylim ([-0.2,0.2])
+    plt.title(f"1m0a Color terms {filter} vs (g-r)")
+    plt.ylabel("Color term")
 
     with io.BytesIO() as fileobj:
         # create the plot into an in-memory Fileobj
@@ -765,8 +767,7 @@ def longtermphotzp():
     args = parseCommandLine()
 
 
-    plot_all_color_terms(args, colorterms)
-    exit(0)
+
 
     if args.site is not None:
         crawlsites = [args.site, ]
@@ -795,6 +796,8 @@ def longtermphotzp():
     if args.createsummaryplots:
         filenames += plotallmirrormodels(args, type=['2m0', '1m0'])
         filenames += plotallmirrormodels(args, type=['0m4'], range=[20, 23])
+
+    plot_all_color_terms(args, colorterms)
 
     # Make a fancy HTML page
     if args.renderhtml:
