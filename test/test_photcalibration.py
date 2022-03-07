@@ -24,5 +24,5 @@ def test_photcalibration(tmpdir):
     do_photometrytestonFile(f"{startdir}/data/ogg2m001-ep04-20201006-0097-e91.fits.fz", 25.15, 0.063, tmpdir=tmpdir)
 
     ### Johnson Cousins filters:
-    do_photometrytestonFile(f"{startdir}/data/elp1m008-fa05-20200130-0083-e91.fits.fz", 23.16, -0.04, tmpdir=tmpdir)
-    do_photometrytestonFile(f"{startdir}/data/elp1m008-fa05-20200130-0084-e91.fits.fz", 23.26, -0.018, tmpdir=tmpdir)
+    do_photometrytestonFile(f"{startdir}/data/elp1m008-fa05-20200130-0083-e91.fits.fz", 22.95, -0.265, tmpdir=tmpdir)
+    do_photometrytestonFile(f"{startdir}/data/elp1m008-fa05-20200130-0084-e91.fits.fz", 23.30, 0.358, tmpdir=tmpdir)

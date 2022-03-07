@@ -142,7 +142,7 @@ class PhotCalib():
             return None
 
         # Query reference catalog TODO: paramterize FoV of query!
-        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33, generateJohnson= ( retCatalog['instfilter'] in atlas_refcat2.JohnsonCousin_filters))
+        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33,)# generateJohnson= ( retCatalog['instfilter'] in atlas_refcat2.JohnsonCousin_filters))
         if refcatalog is None:
             _logger.warning("no reference catalog received.")
             return None
@@ -196,7 +196,7 @@ class PhotCalib():
 
     def robustfit (self, deltamag, refcol):
         #Initial preselection based on absoute values
-        cond = (refcol > 0) & (refcol < 3) & (np.abs( (deltamag - np.median (deltamag))) < 0.75)
+        cond = (refcol > 0) & (refcol < 2.5) & (np.abs( (deltamag - np.median (deltamag))) < 0.5)
         colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
         color_p = np.poly1d(colorparams)
         delta = np.abs(deltamag - color_p(refcol))
@@ -318,7 +318,7 @@ class PhotCalib():
                 plt.legend()
 
             plt.xlim([-0.5, 3.0])
-            plt.ylim([photzp - 0.5, photzp + 0.5])
+            plt.ylim([photzp - 0.75, photzp + 0.75])
             plt.xlabel("(g-i)$_{\\rm{SDSS}}$ Reference")
             plt.ylabel("Reference Mag - Instrumental Mag  %s" % ( retCatalog['instfilter']))
             plt.title("Color correction %s " % (outbasename))
