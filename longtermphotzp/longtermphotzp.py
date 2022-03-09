@@ -24,7 +24,7 @@ from longtermphotzp.photdbinterface import photdbinterface
 assert sys.version_info >= (3, 5)
 _logger = logging.getLogger(__name__)
 
-airmasscorrection = {'gp': 0.17, 'rp': 0.09, 'ip': 0.06, 'zp': 0.05, }
+airmasscorrection = {'gp': 0.17, 'rp': 0.09, 'ip': 0.06, 'zp': 0.05, 'B': 0.0, 'V':0.0, 'R':0.0, 'I': 0.0}
 
 # TODO: make this a parameter.
 starttime = datetime.datetime(2016, 1, 1)
@@ -46,7 +46,7 @@ telescopedict = {
     #  'bpl': ['doma-1m0a']
 }
 
-# TODO: either migrate into separate file or find a better source, e.g., store in db, or query maintenace data base.
+# TODO: either migrate into separate file or find a better source, e.g., store in db, or query maintenance data base.
 
 telescopecleaning = {
     'lsc-doma-1m0a': [datetime.datetime(2018, 4, 5), datetime.datetime(2018, 5, 30), datetime.datetime(2018, 7, 24),
@@ -405,13 +405,15 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     meancolorterm = np.median(colortermselect)
     plt.plot(dateselect, colortermselect, 'o', markersize=2, c="blue",
              label="color term [low sigma] %s " % select_filter)
-    plt.axhline(y=meancolorterm, color='r', linestyle='-')
-    _logger.info("Color term in filter %s : % 5.3f" % (select_filter, meancolorterm))
 
+
+    plt.axhline(y=meancolorterm, color='r', linestyle='-', label=f"median color term: {meancolorterm:5.2f}")
+    _logger.info("Color term in filter %s : % 5.3f" % (select_filter, meancolorterm))
+    plt.legend()
     # store the color terms
     if select_filter not in colorterms:
         colorterms[select_filter] = {}
-    colorterms[select_filter][instrument] = meancolorterm
+    colorterms[select_filter][f'{select_site}-{select_telescope}'] = meancolorterm
 
     dateformat(mystarttime, endtime)
     plt.ylim([-0.2, 0.2])
@@ -430,6 +432,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     # thats it, some day please refactor(select_filter, this into smaller chunks.
 
     return filenames
+
 
 
 def plot_referencethoughput(start, end, select_filter, select_telescope):
@@ -588,6 +591,36 @@ def fittrendtomirrormodel(dates, zps, start, end, order=1, plot=False):
     return poly
 
 
+
+def plot_all_color_terms (context, colorterms, type='1m0'):
+    filter = next(iter(colorterms))
+    myterms = colorterms[filter]
+    data = list(myterms.items())
+    data = np.array(data).T
+
+
+    good = ['1m0' in x for x in data[0]]
+    xTicks = data[0] [good]
+    y =  (data[1].astype(float))[good]
+    x = np.arange(len(xTicks)) +1
+    plt.xticks(x, xTicks, rotation=45)
+    plt.plot (x,y,'*')
+    plt.ylim ([-0.2,0.2])
+    plt.title(f"1m0a Color terms {filter} vs (g-r)")
+    plt.ylabel("Color term")
+
+    with io.BytesIO() as fileobj:
+        # create the plot into an in-memory Fileobj
+        plt.gcf().set_size_inches(12, 6)
+        plt.savefig(fileobj, format='png', bbox_inches='tight')
+        plt.close()
+
+        # save the plot onto stable storage
+        filename = 'colorterms_{}.png'.format( context.filter)
+
+        write_to_storage_backend(context.imagedbPrefix, filename, fileobj.getvalue())
+
+
 def plotallmirrormodels(context, type=['2m0a', '1m0a'], range=[22.5, 25.5], cacheddb=None):
     '''
     Fetch mirror model from database for a selected class of telescopes, and
@@ -708,7 +741,7 @@ def parseCommandLine():
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
     parser.add_argument('--telescope', default=None,
                         help='Telescope id. written inform enclosure-telescope, e.g., "domb-1m0a"')
-    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['gp', 'rp', 'ip', 'zp'])
+    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['gp', 'rp', 'ip', 'zp','B','R','V','I'])
     parser.add_argument('--pertelescopeplots', type=bool, default=True)
     parser.add_argument('--createsummaryplots', type=bool, default=True)
     parser.add_argument('--renderhtml', type=bool, default=True)
@@ -732,6 +765,9 @@ def longtermphotzp():
 
     filenames = []
     args = parseCommandLine()
+
+
+
 
     if args.site is not None:
         crawlsites = [args.site, ]
@@ -761,12 +797,17 @@ def longtermphotzp():
         filenames += plotallmirrormodels(args, type=['2m0', '1m0'])
         filenames += plotallmirrormodels(args, type=['0m4'], range=[20, 23])
 
+    plot_all_color_terms(args, colorterms)
+
     # Make a fancy HTML page
     if args.renderhtml:
         renderHTMLPage(args, filenames)
 
+
+    print (colorterms)
     sys.exit(0)
 
 
 if __name__ == '__main__':
     longtermphotzp()
+

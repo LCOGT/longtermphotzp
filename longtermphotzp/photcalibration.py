@@ -142,7 +142,7 @@ class PhotCalib():
             return None
 
         # Query reference catalog TODO: paramterize FoV of query!
-        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33)
+        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33,)# generateJohnson= ( retCatalog['instfilter'] in atlas_refcat2.JohnsonCousin_filters))
         if refcatalog is None:
             _logger.warning("no reference catalog received.")
             return None
@@ -196,7 +196,7 @@ class PhotCalib():
 
     def robustfit (self, deltamag, refcol):
         #Initial preselection based on absoute values
-        cond = (refcol > 0) & (refcol < 3) & (np.abs( (deltamag - np.median (deltamag))) < 0.75)
+        cond = (refcol > 0) & (refcol < 2.5) & (np.abs( (deltamag - np.median (deltamag))) < 0.5)
         colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
         color_p = np.poly1d(colorparams)
         delta = np.abs(deltamag - color_p(refcol))
@@ -241,11 +241,11 @@ class PhotCalib():
         if (retCatalog is None) or (retCatalog['instmag'] is None) or (len(retCatalog['ra']) < 10):
             if retCatalog is None:
                 _logger.info(f"No matched catalog was returned for image {imageName}")
-                return
+                return 0,0,0
 
             if len(retCatalog['ra']) < 10:
                 _logger.info("%s: Catalog returned, but is has less than 10 stars. Ignoring. " % (imageentry))
-            return
+            return 0,0,0
 
         # calculate the per star zeropoint
         magZP = retCatalog['refmag'] - retCatalog['instmag']
@@ -318,7 +318,7 @@ class PhotCalib():
                 plt.legend()
 
             plt.xlim([-0.5, 3.0])
-            plt.ylim([photzp - 0.5, photzp + 0.5])
+            plt.ylim([photzp - 0.75, photzp + 0.75])
             plt.xlabel("(g-i)$_{\\rm{SDSS}}$ Reference")
             plt.ylabel("Reference Mag - Instrumental Mag  %s" % ( retCatalog['instfilter']))
             plt.title("Color correction %s " % (outbasename))
@@ -374,7 +374,7 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
     rejects = []
     if not args.redo:
         for image in inputlist['filename']:
-            if db.exists(image):
+            if (db is not None) and db.exists(image):
                 rejects.append(image)
 
         for r in rejects:
@@ -435,6 +435,7 @@ def parseCommandLine():
     parser.add_argument('--preview', dest='processstatus', default='processed', action='store_const', const='preview')
     parser.add_argument('--useaws', action='store_true',
                         help="Use LCO archive API to retrieve frame vs direct /archive file mount access")
+    parser.add_argument('--filters', default=['gp','rp','ip','zp'], nargs='+')
     mutex = parser.add_mutually_exclusive_group()
     mutex.add_argument('--date', dest='date', default=[], nargs='+', help='Specific date to process.')
     mutex.add_argument('--lastNdays', type=int)
@@ -485,7 +486,7 @@ def photzpmain():
             for site in sites:
                 for cameratype in cameratypes:
                     inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site, cameratype=cameratype,
-                                                                             mintexp=args.mintexp)
+                                                                             mintexp=args.mintexp, filterlist=args.filters)
                     if inputlist is None:
                         _logger.info("None list returned for date {}. Nothing to do here.".format(date))
                         continue
@@ -494,12 +495,13 @@ def photzpmain():
                                                                                                          cameratype,
                                                                                                          site, date))
                     process_imagelist(inputlist, imagedb, args)
-                    imagedb.close()
+                    if imagedb is not None:
+                        imagedb.close()
 
         elif args.camera is not None:
             # crawl for a specific camera
             inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site=None, camera=args.camera,
-                                                                     mintexp=args.mintexp)
+                                                                     mintexp=args.mintexp,filterlist=args.filters)
             if inputlist is None:
                 _logger.info("None list returned for date {}. Nothing to do here.".format(date))
                 continue
@@ -507,7 +509,8 @@ def photzpmain():
                 "Processing image list N={} for camera {} at for date {}".format(len(inputlist), args.camera, date))
             imagedb = photdbinterface(args.imagedbPrefix)
             process_imagelist(inputlist, imagedb, args)
-            imagedb.close()
+            if imagedb is not None:
+                imagedb.close()
 
 
 
@@ -520,9 +523,10 @@ def photzpmain():
         redlevel = "91" if not args.fromraw else "00"
         inputlist = (glob.glob(f"{args.crawldirectory}/*[es]{redlevel}.fits.fz"))
         inputlist = Table([inputlist, [-1] * len(inputlist)], names=['filename', 'frameid'])
-        imagedb = photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
+        imagedb = None # photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
         process_imagelist(inputlist, imagedb, args, rewritetoarchivename=False)
-        imagedb.close()
+        if imagedb is not None:
+            imagedb.close()
 
     sys.exit(0)
 

@@ -70,7 +70,7 @@ def make_opensearch(index, filters, queries=None, exclusion_filters=None, range_
 
 
 def get_frames_for_photometry(dayobs, site=None, cameratype=None, camera=None, mintexp=30,
-                              filterlist=['gp', 'rp', 'ip', 'zp', 'zs'], os_url='https://opensearch.lco.global'):
+                              filterlist=['gp', 'rp', 'ip', 'zp', 'zs','B','V','R','I'], os_url='https://opensearch.lco.global'):
     """ Queries for a list of processed LCO images that are viable to get a photometric zeropoint in the griz bands
         measured.
 

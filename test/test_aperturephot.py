@@ -18,7 +18,7 @@ def do_getnewtargetlist (filename):
 def test_aperturephot():
     startdir = os.path.dirname(os.path.abspath(__file__))
 
-    do_getnewtargetlist(f"{startdir}/data/cpt0m407-kb87-20211109-0027-e00.fits.fz")
+    #do_getnewtargetlist(f"{startdir}/data/cpt0m407-kb87-20211109-0027-e00.fits.fz")
     do_aperturephot(f"{startdir}/data/lsc0m412-kb26-20211102-0100-e91.fits.fz", 10,12,14)
 
 
