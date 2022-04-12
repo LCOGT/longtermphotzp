@@ -24,6 +24,10 @@ longtermphotzp --database $DATABASE --outputdirectory /database --filter rp
 longtermphotzp --database $DATABASE --outputdirectory /database --filter gp
 longtermphotzp --database $DATABASE --outputdirectory /database --filter ip
 longtermphotzp --database $DATABASE --outputdirectory /database --filter zp
+longtermphotzp --database $DATABASE --outputdirectory /database --filter B
+longtermphotzp --database $DATABASE --outputdirectory /database --filter V
+longtermphotzp --database $DATABASE --outputdirectory /database --filter R
+longtermphotzp --database $DATABASE --outputdirectory /database --filter I
 
 # Exit successfully. None of the above commands take success/failure into
 # account, so we don't care here either...

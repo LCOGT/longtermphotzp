@@ -1,4 +1,6 @@
 # Changelog
+Version 8.1.0
+* Include Jonson Cousins photometry
 
 version 8.0.0
 * Switch from ElasticSearch to OpenSearch
