@@ -196,11 +196,11 @@ class PhotCalib():
 
     def robustfit (self, deltamag, refcol):
         #Initial preselection based on absoute values
-        cond = (refcol > 0) & (refcol < 2.5) & (np.abs( (deltamag - np.median (deltamag))) < 0.5)
+        cond = (refcol > 0) & (refcol < 2.0) & (np.abs( (deltamag - np.median (deltamag))) < 5 * np.std (deltamag))
         colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
         color_p = np.poly1d(colorparams)
         delta = np.abs(deltamag - color_p(refcol))
-        cond = (delta < 0.2) & (delta < 2 * np.std (delta))
+        cond = (delta < 0.5) & (delta < 2 * np.std (delta))
         colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
         color_p = np.poly1d(colorparams)
         new_colorterm = colorparams[0]

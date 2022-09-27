@@ -15,6 +15,7 @@ class atlas_refcat2:
     '''
 
     FILTERMAPPING = {}
+    FILTERMAPPING['up'] = {'refMag': 'umag', 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
     FILTERMAPPING['gp'] = {'refMag': 'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
     FILTERMAPPING['rp'] = {'refMag': 'rmag', 'colorTerm': 0.0, 'airmassTerm': 0.12, 'defaultZP': 0.0}
     FILTERMAPPING['ip'] = {'refMag': 'imag', 'colorTerm': 0.0, 'airmassTerm': 0.09, 'defaultZP': 0.0}
@@ -34,6 +35,7 @@ class atlas_refcat2:
     ## shown in paper. Reverse after the fact to avoid confusion when looking at paper
 
     ps1colorterms = {}
+    ps1colorterms['umag'] = [+0.04438, -2.26095, -0.13387, +0.27099][::-1]
     ps1colorterms['gmag'] = [-0.01808, -0.13595, +0.01941, -0.00183][::-1]
     ps1colorterms['rmag'] = [-0.01836, -0.03577, +0.02612, -0.00558][::-1]
     ps1colorterms['imag'] = [+0.01170, -0.00400, +0.00066, -0.00058][::-1]
@@ -81,7 +83,11 @@ class atlas_refcat2:
             pscolor = table['gmag'] - table['imag']
             for filter in self.ps1colorterms:
                 colorcorrection = np.polyval(self.ps1colorterms[filter], pscolor)
-                table[filter] -= colorcorrection
+                if filter == "umag":
+                    table['umag'] = table['gmag'] - colorcorrection
+                    table['umagerr'] = table['gmagerr']
+                else:
+                    table[filter] -= colorcorrection
 
         return table
 
