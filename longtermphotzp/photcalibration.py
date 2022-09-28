@@ -354,7 +354,7 @@ class PhotCalib():
             plt.close()
 
 
-        if outputdb is not None:
+        if (outputdb is not None) & (photzp is not None):
             m = PhotZPMeasurement(name=imageName, dateobs=retCatalog['dateobs'].replace('T', ' '),
                                   site=retCatalog['siteid'], dome=retCatalog['domid'],
                                   telescope=retCatalog['telescope'], camera=retCatalog['instrument'],
