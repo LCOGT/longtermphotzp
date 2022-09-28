@@ -741,7 +741,7 @@ def parseCommandLine():
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
     parser.add_argument('--telescope', default=None,
                         help='Telescope id. written inform enclosure-telescope, e.g., "domb-1m0a"')
-    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['gp', 'rp', 'ip', 'zp','B','R','V','I'])
+    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['up', 'gp', 'rp', 'ip', 'zp','B','R','V','I'])
     parser.add_argument('--pertelescopeplots', type=bool, default=True)
     parser.add_argument('--createsummaryplots', type=bool, default=True)
     parser.add_argument('--renderhtml', type=bool, default=True)
