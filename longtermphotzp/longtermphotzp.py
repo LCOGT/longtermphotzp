@@ -273,6 +273,8 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
 
         if '0m4' in select_telescope:  # 0.4m sbigs
             ymax = 22.5
+            if  'up' in filter:
+                ymax = 18
             photzpmaxnoise = 0.5
 
     # Calculate air-mass corrected photometric zeropoint; corrected to airmass of 1
