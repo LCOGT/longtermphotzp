@@ -354,13 +354,17 @@ class PhotCalib():
             plt.close()
 
 
-        if (outputdb is not None) & (photzp is not None):
-            m = PhotZPMeasurement(name=imageName, dateobs=retCatalog['dateobs'].replace('T', ' '),
+        if (outputdb is not None):
+            try:
+                m = PhotZPMeasurement(name=imageName, dateobs=retCatalog['dateobs'].replace('T', ' '),
                                   site=retCatalog['siteid'], dome=retCatalog['domid'],
                                   telescope=retCatalog['telescope'], camera=retCatalog['instrument'],
                                   filter=retCatalog['instfilter'], airmass=retCatalog['airmass'],
                                   zp=photzp, colorterm=colorterm, zpsig=photzpsig)
-            outputdb.addphotzp(m)
+                outputdb.addphotzp(m)
+            except:
+                _logger.exception("Could not save output to database")
+
         else:
             _logger.warning("Not saving output for image %s " % imageName)
 
