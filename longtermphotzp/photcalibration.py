@@ -270,6 +270,7 @@ class PhotCalib():
             _logger.warning("could not fit a color term. ")
             color_p = None
             colorterm = 0
+            photzp = None
 
 
         # if requested, generate all sorts of diagnostic plots
