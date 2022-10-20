@@ -78,6 +78,7 @@ class PhotCalib():
 
         retCatalog['exptime'] = imageobject['SCI'].header['EXPTIME']
         retCatalog['instfilter'] = imageobject['SCI'].header['FILTER']
+        retCatalog['saturate'] = imageobject['SCI'].header['SATURATE']
         retCatalog['airmass'] = imageobject['SCI'].header['AIRMASS']
         retCatalog['dateobs'] = imageobject['SCI'].header['DATE-OBS']
         retCatalog['instrument'] = imageobject['SCI'].header['INSTRUME']
@@ -176,11 +177,13 @@ class PhotCalib():
         retCatalog['refcolerr'] = np.sqrt(refcatalog['gmagerr']**2 + refcatalog['imagerr']**2)[condition]
         retCatalog['refmag'] = refcatalog[referenceFilterName][condition]
         retCatalog['refmagerr'] =  refcatalog[f'{referenceFilterName}err'][condition]
+        retCatalog['reffilter'] = referenceFilterName
         retCatalog['ra'] = refcatalog['ra'][condition]
         retCatalog['dec'] = refcatalog['dec'][condition]
         retCatalog['matchDistance'] = distance[condition]
         retCatalog['x'] = instCatalog['x'][condition]
         retCatalog['y'] = instCatalog['y'][condition]
+        retCatalog['peak'] = instCatalog['peak'][condition]
 
         return retCatalog
 
@@ -288,21 +291,22 @@ class PhotCalib():
             plt.xlabel("Reference catalog mag")
             plt.ylabel("Reference Mag - Instrumental Mag (%s)" % (retCatalog['instfilter']))
             plt.title("Photometric zeropoint %s %5.2f" % (outbasename, photzp))
-            plt.savefig("%s/%s_%s_zp.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
+            plt.savefig("%s/%s_%s_zp.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']),
+                        bbox_inches='tight')
             plt.close()
 
-            ### Zeropoint plot, but based on instrumental magnitudes.
-            # plt.figure()
-            # plt.plot(retCatalog['instmagzero'][~new_cond], (magZP - color_p(refcol) + photzp)[~new_cond], 'x', color='grey')
-            # plt.plot(retCatalog['instmagzero'][new_cond], (magZP - color_p(refcol)+photzp)[new_cond], '.', color='red')
-            # plt.xlim([-20, -7.5])
-            # plt.ylim([photzp - 0.5, photzp + 0.5])
-            # plt.axhline(y=photzp, color='r', linestyle='-')
-            # plt.xlabel("Instrumental Magnitude, not exp time corrected")
-            # plt.ylabel("Reference Mag - Instrumental Mag (%s)" % (retCatalog['instfilter']))
-            # plt.title("Photometric zeropoint %s %5.2f" % (outbasename, photzp))
-            # plt.savefig("%s/%s_%s_zp_inst.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
-            # plt.close()
+            ### Plot Peak value vs absolute mag.
+            plt.figure()
+            plt.plot(refmag[new_cond], retCatalog['peak'][new_cond], '.', color='black')
+
+            plt.xlim([10, 20])
+            plt.ylim([0, retCatalog['saturate']])
+            plt.xlabel(f"Reference magnitude {retCatalog['reffilter']}")
+            plt.ylabel("Peak above background level [e-] (%s)" % (retCatalog['instfilter']))
+            plt.title(f"Peak {outbasename}, texp = {retCatalog['exptime']:6.2f} ")
+            plt.savefig("%s/%s_%s_refmag_peak.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']),
+                        bbox_inches='tight')
+            plt.close()
 
 
 
@@ -323,7 +327,7 @@ class PhotCalib():
             plt.xlabel("(g-i)$_{\\rm{SDSS}}$ Reference")
             plt.ylabel("Reference Mag - Instrumental Mag  %s" % ( retCatalog['instfilter']))
             plt.title("Color correction %s " % (outbasename))
-            plt.savefig("%s/%s_%s_color.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']))
+            plt.savefig("%s/%s_%s_color.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']), bbox_inches='tight')
             plt.close()
 
             ### x/y/r variations in photometric zeropoint
