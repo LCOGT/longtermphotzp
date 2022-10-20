@@ -17,16 +17,16 @@ class atlas_refcat2:
     '''
 
     FILTERMAPPING = {}
-    FILTERMAPPING['up'] = {'refMag': 'umag', 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
-    FILTERMAPPING['gp'] = {'refMag': 'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.20, 'defaultZP': 0.0}
-    FILTERMAPPING['rp'] = {'refMag': 'rmag', 'colorTerm': 0.0, 'airmassTerm': 0.12, 'defaultZP': 0.0}
-    FILTERMAPPING['ip'] = {'refMag': 'imag', 'colorTerm': 0.0, 'airmassTerm': 0.09, 'defaultZP': 0.0}
-    FILTERMAPPING['zp'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.08, 'defaultZP': 0.0}
-    FILTERMAPPING['zs'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.05, 'defaultZP': 0.0}
-    FILTERMAPPING['B'] = {'refMag':  'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.27, 'defaultZP': 0.0}
-    FILTERMAPPING['V'] = {'refMag':  'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.15, 'defaultZP': 0.0}
-    FILTERMAPPING['R'] = {'refMag':  'rmag', 'colorTerm': 0.0, 'airmassTerm': 0.11, 'defaultZP': 0.0}
-    FILTERMAPPING['I'] = {'refMag':  'imag', 'colorTerm': 0.0, 'airmassTerm': 0.07, 'defaultZP': 0.0}
+    FILTERMAPPING['up'] = {'refMag': 'umag', 'colorTerm': 0.0, 'airmassTerm': 0.59, 'defaultZP': 0.0}
+    FILTERMAPPING['gp'] = {'refMag': 'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.14, 'defaultZP': 0.0}
+    FILTERMAPPING['rp'] = {'refMag': 'rmag', 'colorTerm': 0.0, 'airmassTerm': 0.08, 'defaultZP': 0.0}
+    FILTERMAPPING['ip'] = {'refMag': 'imag', 'colorTerm': 0.0, 'airmassTerm': 0.06, 'defaultZP': 0.0}
+    FILTERMAPPING['zp'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.04, 'defaultZP': 0.0}
+    FILTERMAPPING['zs'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.04, 'defaultZP': 0.0}
+    FILTERMAPPING['B'] = {'refMag':  'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.23, 'defaultZP': 0.0}
+    FILTERMAPPING['V'] = {'refMag':  'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.12, 'defaultZP': 0.0}
+    FILTERMAPPING['R'] = {'refMag':  'rmag', 'colorTerm': 0.0, 'airmassTerm': 0.09, 'defaultZP': 0.0}
+    FILTERMAPPING['I'] = {'refMag':  'imag', 'colorTerm': 0.0, 'airmassTerm': 0.04, 'defaultZP': 0.0}
 
     ###  PS to SDSS color transformations according to  Finkbeiner 2016
     ###  http://iopscience.iop.org/article/10.3847/0004-637X/822/2/66/meta#apj522061s2-4 Table 2

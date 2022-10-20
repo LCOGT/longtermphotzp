@@ -143,7 +143,7 @@ class PhotCalib():
             return None
 
         # Query reference catalog TODO: paramterize FoV of query!
-        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33,)# generateJohnson= ( retCatalog['instfilter'] in atlas_refcat2.JohnsonCousin_filters))
+        refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33, generateJohnson= ( retCatalog['instfilter'] in atlas_refcat2.JohnsonCousin_filters))
         if refcatalog is None:
             _logger.warning("no reference catalog received.")
             return None
