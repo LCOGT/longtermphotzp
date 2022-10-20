@@ -24,7 +24,6 @@ def test_photcalibration(tmpdir):
     do_photometrytestonFile(f"{startdir}/data/ogg2m001-ep04-20201006-0097-e91.fits.fz", 25.13, 0.088, tmpdir=tmpdir)
 
     ### extrapolated u band
-    do_photometrytestonFile(f"{startdir}/data/ogg0m404-sq30-20220926-0077-s91.fits.fz", 17.47, 0.574, tmpdir=tmpdir)
     do_photometrytestonFile(f"{startdir}/data/ogg0m404-kb82-20220413-0070-s91.fits.fz", 16.11, 1.6, tmpdir=tmpdir)
 
     ### Johnson Cousins filters:

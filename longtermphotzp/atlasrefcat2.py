@@ -6,6 +6,8 @@ import requests
 
 import numpy as np
 from astropy.table import Table
+from astroquery.sdss import SDSS
+from astropy import coordinates as coords
 import logging
 _logger = logging.getLogger(__name__)
 
