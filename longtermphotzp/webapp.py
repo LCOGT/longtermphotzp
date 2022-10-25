@@ -85,7 +85,7 @@ def indexhtml(filter=None):
         'generate_presigned_url': generate_presigned_url,
         'timestamp': get_last_update_time_from_object(),
         'info': build_site_info_dict(filter),
-        'filter': filter if filter in ['gp', 'rp', 'ip', 'zp', 'B', 'V', 'R', 'I'] else 'rp',
+        'filter': filter if filter in ['up', 'gp', 'rp', 'ip', 'zp', 'B', 'V', 'R', 'I'] else 'rp',
     }
     return render_template('index.html', **params)
 

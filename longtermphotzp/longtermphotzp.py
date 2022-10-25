@@ -24,7 +24,7 @@ from longtermphotzp.photdbinterface import photdbinterface
 assert sys.version_info >= (3, 5)
 _logger = logging.getLogger(__name__)
 
-airmasscorrection = {'up': 0.25, 'gp': 0.17, 'rp': 0.09, 'ip': 0.06, 'zp': 0.05, 'B': 0.0, 'V':0.0, 'R':0.0, 'I': 0.0}
+airmasscorrection = {'up': 0.59, 'gp': 0.14, 'rp': 0.08, 'ip': 0.06, 'zp': 0.04, 'B': 0.23, 'V':0.12, 'R':0.09, 'I': 0.04}
 
 # TODO: make this a parameter.
 starttime = datetime.datetime(2016, 1, 1)
