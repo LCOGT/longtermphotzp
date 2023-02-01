@@ -42,7 +42,7 @@ class atlas_refcat2:
     ps1colorterms['rmag'] = [-0.01836, -0.03577, +0.02612, -0.00558][::-1]
     ps1colorterms['imag'] = [+0.01170, -0.00400, +0.00066, -0.00058][::-1]
     ps1colorterms['zmag'] = [-0.01062, +0.07529, -0.03592, +0.00890][::-1]
-
+    #ps1colorterms['ymag'] = [0.08924, −0.20878, 0.10360, −0.02441][::-1]
     JohnsonCousin_filters = ['B', 'V', 'R', 'I']
 
     def __init__(self, refcat2_url):
