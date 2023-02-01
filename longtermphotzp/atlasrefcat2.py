@@ -26,6 +26,7 @@ class atlas_refcat2:
     FILTERMAPPING['B'] = {'refMag':  'B', 'colorTerm': 0.0, 'airmassTerm': 0.23, 'defaultZP': 0.0}
     FILTERMAPPING['V'] = {'refMag':  'V', 'colorTerm': 0.0, 'airmassTerm': 0.12, 'defaultZP': 0.0}
     FILTERMAPPING['R'] = {'refMag':  'R', 'colorTerm': 0.0, 'airmassTerm': 0.09, 'defaultZP': 0.0}
+    FILTERMAPPING['Rc'] = {'refMag':  'R', 'colorTerm': 0.0, 'airmassTerm': 0.09, 'defaultZP': 0.0}
     FILTERMAPPING['I'] = {'refMag':  'I', 'colorTerm': 0.0, 'airmassTerm': 0.04, 'defaultZP': 0.0}
 
     ###  PS to SDSS color transformations according to  Finkbeiner 2016
