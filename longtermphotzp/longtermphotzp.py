@@ -24,7 +24,7 @@ from longtermphotzp.photdbinterface import photdbinterface
 assert sys.version_info >= (3, 5)
 _logger = logging.getLogger(__name__)
 
-airmasscorrection = {'up': 0.59, 'gp': 0.14, 'rp': 0.08, 'ip': 0.06, 'zp': 0.04, 'B': 0.23, 'V':0.12, 'R':0.09, 'I': 0.04}
+airmasscorrection = {'up': 0.59, 'gp': 0.14, 'rp': 0.08, 'ip': 0.06, 'zp': 0.04, 'B': 0.23, 'V':0.12, 'R':0.09, 'Rc':0.09, 'I': 0.04}
 
 # TODO: make this a parameter.
 starttime = datetime.datetime(2016, 1, 1)
@@ -274,7 +274,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
         if '0m4' in select_telescope:  # 0.4m sbigs
             ymax = 22.5
             if  'up' in select_filter:
-                ymax = 18
+                ymax = 20
             photzpmaxnoise = 0.5
 
     # Calculate air-mass corrected photometric zeropoint; corrected to airmass of 1
@@ -743,7 +743,7 @@ def parseCommandLine():
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
     parser.add_argument('--telescope', default=None,
                         help='Telescope id. written inform enclosure-telescope, e.g., "domb-1m0a"')
-    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['up', 'gp', 'rp', 'ip', 'zp','B','R','V','I'])
+    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['up', 'gp', 'rp', 'ip', 'zp','B','Rc','V','I'])
     parser.add_argument('--pertelescopeplots', type=bool, default=True)
     parser.add_argument('--createsummaryplots', type=bool, default=True)
     parser.add_argument('--renderhtml', type=bool, default=True)
