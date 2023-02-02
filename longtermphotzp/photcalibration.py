@@ -450,7 +450,7 @@ def parseCommandLine():
     parser.add_argument('--preview', dest='processstatus', default='processed', action='store_const', const='preview')
     parser.add_argument('--useaws', action='store_true',
                         help="Use LCO archive API to retrieve frame vs direct /archive file mount access")
-    parser.add_argument('--filters', default=['up', 'gp','rp','ip','zp'], nargs='+')
+    parser.add_argument('--filters', default=['up', 'gp','rp','ip','zp','B', 'V', 'Rc', 'I'], nargs='+')
     mutex = parser.add_mutually_exclusive_group()
     mutex.add_argument('--date', dest='date', default=[], nargs='+', help='Specific date to process.')
     mutex.add_argument('--lastNdays', type=int)
