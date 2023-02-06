@@ -23,6 +23,8 @@ class atlas_refcat2:
     FILTERMAPPING['ip'] = {'refMag': 'imag', 'colorTerm': 0.0, 'airmassTerm': 0.06, 'defaultZP': 0.0}
     FILTERMAPPING['zp'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.04, 'defaultZP': 0.0}
     FILTERMAPPING['zs'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.04, 'defaultZP': 0.0}
+    FILTERMAPPING['Y'] = {'refMag': 'ymag', 'colorTerm': 0.0, 'airmassTerm': 0.03, 'defaultZP': 0.0}
+    FILTERMAPPING['U'] = {'refMag':  'U', 'colorTerm': 0.0, 'airmassTerm': 0.54, 'defaultZP': 0.0}
     FILTERMAPPING['B'] = {'refMag':  'B', 'colorTerm': 0.0, 'airmassTerm': 0.23, 'defaultZP': 0.0}
     FILTERMAPPING['V'] = {'refMag':  'V', 'colorTerm': 0.0, 'airmassTerm': 0.12, 'defaultZP': 0.0}
     FILTERMAPPING['R'] = {'refMag':  'R', 'colorTerm': 0.0, 'airmassTerm': 0.09, 'defaultZP': 0.0}
@@ -43,8 +45,8 @@ class atlas_refcat2:
     ps1colorterms['rmag'] = [-0.01836, -0.03577, +0.02612, -0.00558][::-1]
     ps1colorterms['imag'] = [+0.01170, -0.00400, +0.00066, -0.00058][::-1]
     ps1colorterms['zmag'] = [-0.01062, +0.07529, -0.03592, +0.00890][::-1]
-    #ps1colorterms['ymag'] = [0.08924, −0.20878, 0.10360, −0.02441][::-1]
-    JohnsonCousin_filters = ['B', 'V', 'R', 'I']
+    ps1colorterms['ymag'] = [+0.08924, -0.20878, 0.10360,  -0.02441][::-1]
+    JohnsonCousin_filters = ['B', 'V', 'R', 'I', 'U']
 
     def __init__(self, refcat2_url):
         self.refcat2_url = refcat2_url
@@ -61,10 +63,11 @@ class atlas_refcat2:
         # 1,2 -> sdss color to use
         # 3 -> color term
         # 4 -> zero point
-        transformations ['B'] = ['gmag', 'gmag', 'rmag', 0.313, 0.219]
-        transformations ['V'] = ['gmag', 'gmag', 'rmag', -0.565, -0.016]
-        transformations ['R'] = ['rmag', 'rmag', 'imag', -0.153, -0.117]
-        transformations ['I'] = ['imag', 'imag', 'zmag', -0.386, -0.397]
+        transformations['B'] = ['gmag', 'gmag', 'rmag',  0.313,  0.219]
+        transformations['V'] = ['gmag', 'gmag', 'rmag', -0.565, -0.016]
+        transformations['R'] = ['rmag', 'rmag', 'imag', -0.153, -0.117]
+        transformations['I'] = ['imag', 'imag', 'zmag', -0.386, -0.397]
+        transformations['U'] = ['B'   , 'umag', 'gmag', +0.79,  -0.93]
 
         for filter in transformations:
             info = transformations[filter]
@@ -89,6 +92,9 @@ class atlas_refcat2:
                 if filter == "umag":
                     table['umag'] = table['gmag'] - colorcorrection
                     table['umagerr'] = table['gmagerr']
+                elif filter == 'ymag':
+                    table['ymag'] = table['zmag'] - colorcorrection
+                    table['ymagerr'] = table['zmagerr']
                 else:
                     table[filter] -= colorcorrection
 

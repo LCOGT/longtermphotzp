@@ -224,14 +224,14 @@ class PhotCalib():
         """
             Do full photometric zeropoint analysis on an image. This is the main entry point
 
-            param iamgeentry: Table row to caontain 'filename' and 'frameid'
+            param imageentry: Table row to caontain 'filename' and 'frameid'
         """
 
         # The filename may or may not be the full path to the image
         filename = str(imageentry['filename'])
         frameid = int(imageentry['frameid'])
         imageName = os.path.basename(filename)
-        _logger.info(f'\n\nImage {filename} {frameid} iamgeName for DB is {imageName}\n\n')
+        _logger.info(f'\n\nImage {filename} {frameid} imageName for DB is {imageName}\n\n')
 
         # Read banzai star catalog
         try:
@@ -450,7 +450,7 @@ def parseCommandLine():
     parser.add_argument('--preview', dest='processstatus', default='processed', action='store_const', const='preview')
     parser.add_argument('--useaws', action='store_true',
                         help="Use LCO archive API to retrieve frame vs direct /archive file mount access")
-    parser.add_argument('--filters', default=['up', 'gp','rp','ip','zp','B', 'V', 'Rc', 'I'], nargs='+')
+    parser.add_argument('--filters', default=['up', 'gp','rp','ip','zp', 'Y', 'B', 'V', 'R', 'I'], nargs='+')
     mutex = parser.add_mutually_exclusive_group()
     mutex.add_argument('--date', dest='date', default=[], nargs='+', help='Specific date to process.')
     mutex.add_argument('--lastNdays', type=int)
