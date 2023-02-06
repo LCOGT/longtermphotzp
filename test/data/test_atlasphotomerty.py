@@ -7,7 +7,7 @@ def test_fetchcatalog():
     referencecatalog = refcat2.atlas_refcat2(REFCAT2_URL)
     cat = referencecatalog.get_reference_catalog(10,10,0.1)
     assert len(cat) == 65
-    assert len (cat.columns) == 14
+    assert len (cat.columns) == 16
 
 def test_johnsoncousinsconversion():
     referencecatalog = refcat2.atlas_refcat2(REFCAT2_URL)
@@ -15,7 +15,7 @@ def test_johnsoncousinsconversion():
 
     print ("\n", cat)
     assert len(cat) == 65
-    assert len (cat.columns) == 14 + 2*len(referencecatalog.JohnsonCousin_filters)
+    assert len (cat.columns) == 16 + 2*len(referencecatalog.JohnsonCousin_filters)
 
 
 
