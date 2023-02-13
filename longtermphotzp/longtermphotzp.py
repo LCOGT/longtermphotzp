@@ -139,29 +139,36 @@ mirrorreplacmenet = {
 
     'lsc-doma-1m0a': [datetime.datetime(2016, 6, 1),
                       datetime.datetime(2016, 10, 15),
-                      datetime.datetime(2018, 9, 14), ],
+                      datetime.datetime(2018, 9, 14),
+                      datetime.datetime(2022, 10, 10),], # mirror wash only
     'lsc-domb-1m0a': [datetime.datetime(2016, 4, 1),
-                      datetime.datetime(2018, 9, 14), ],
+                      datetime.datetime(2018, 9, 14),
+                      datetime.datetime(2022, 10, 10),], # mirror wash only
     'lsc-domc-1m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2017, 8, 31),
-                      datetime.datetime(2018, 9, 14), ],
+                      datetime.datetime(2018, 9, 14),
+                      datetime.datetime(2022, 10, 10),], # mirror wash only
 
     'cpt-doma-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2016, 11, 1),
                       datetime.datetime(2018, 10, 24),
                       datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
+                      datetime.datetime(2023, 1, 15), # wet mirror wash
                       ],
     'cpt-domb-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 10, 24),
                       datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
+                      datetime.datetime(2023, 1, 15), # wet mirror wash
                       ],
     'cpt-domc-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 10, 24),
                       datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
+                      datetime.datetime(2023, 1, 15), # wet mirror wash
                       ],
 }
 
-telescopereferencethroughput = {'rp': {"1m0": 23.8, "2m0": 25.35}}
+telescopereferencethroughput = {'rp': {"1m0": 23.8, "2m0": 25.35, '0m4': 21.5},
+                                'up': {"1m0": 22.45, "2m0": 21.4, '0m4': 16.11},}
 
 
 def aws_enabled():
@@ -248,6 +255,8 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     if select_filter is not None:
         if (select_filter == 'zp') or (select_filter == 'zs'):
             selection = selection &  ( (data['filter'] == 'zs') | (data['filter'] == 'zp'))
+        elif  (select_filter == 'R') or (select_filter == 'Rc'):
+            selection = selection &  ( (data['filter'] == 'Rc') | (data['filter'] == 'R'))
         else:
             selection = selection & (data['filter'] == select_filter)
     if instrument is not None:
