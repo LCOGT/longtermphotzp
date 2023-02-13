@@ -70,10 +70,10 @@ class atlas_refcat2:
         transformations['U'] = ['B'   , 'umag', 'gmag', +0.79,  -0.93]
 
         for filter in transformations:
-            info = transformations[filter]
+            transformation = transformations[filter]
             table.add_column(numpy.NaN, name=filter)
             table.add_column(numpy.NaN, name=f'{filter}err')
-            table[filter] = table [info[0]] + (table[info[1]] - table[info[2]]) * info[3] + info[4]
+            table[filter] = table [transformation[0]] + (table[transformation[1]] - table[transformation[2]]) * transformation[3] + transformation[4]
             table[f'{filter}err'] = 0
         return table
 
