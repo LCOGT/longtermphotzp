@@ -1,4 +1,8 @@
 # Changelog
+Version 8.1.4
+* Added more filters for extrapolation.
+* Added new mirror washes / recoating events. 
+
 Version 8.1.0
 * Include Jonson Cousins photometry
 
