@@ -168,11 +168,11 @@ class PhotCalib():
         # Calculate instrumental magnitude from PSF instrument photometry
         instmag = -2.5 * np.log10(instCatalog['FLUX'][condition] / retCatalog['exptime'])
 
-        instmagzero = -2.5 * np.log10(instCatalog['FLUX'][condition])
+        #instmagzero = -2.5 * np.log10(instCatalog['FLUX'][condition])
 
         # Calculate the magnitude difference between reference and inst catalog
         retCatalog['instmag'] = instmag
-        retCatalog['instmagzero'] = instmagzero
+        retCatalog['instflux'] = instCatalog['FLUX'][condition]
         retCatalog['refcol'] = (refcatalog['gmag'] - refcatalog['imag'])[condition]
         retCatalog['refcolerr'] = np.sqrt(refcatalog['gmagerr']**2 + refcatalog['imagerr']**2)[condition]
         retCatalog['refmag'] = refcatalog[referenceFilterName][condition]
@@ -263,7 +263,7 @@ class PhotCalib():
 
         # First guess
         cleandata = self.reject_outliers(magZP, 3)
-        firstguess_photzp = np.median(cleandata)
+        #firstguess_photzp = np.median(cleandata)
         photzpsig = np.std(cleandata)
 
         # calculate color term
@@ -311,6 +311,19 @@ class PhotCalib():
             plt.ylabel("Peak above background level [e-] (%s)" % (retCatalog['instfilter']))
             plt.title(f"Peak {outbasename}, texp = {retCatalog['exptime']:6.2f} ")
             plt.savefig("%s/%s_%s_refmag_peak.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']),
+                        bbox_inches='tight')
+            plt.close()
+
+            ### Plot Counts value vs absolute mag.
+            plt.figure()
+            plt.plot(refmag[new_cond], retCatalog['instflux'][new_cond], '.', color='black')
+            plt.gca().ticklabel_format(useOffset=False, style='plain')
+            plt.xlim([5, 20])
+            #plt.ylim([0, retCatalog['saturate']])
+            plt.xlabel(f"Reference magnitude {retCatalog['reffilter']}")
+            plt.ylabel("Total counts from object  [e-] (%s)" % (retCatalog['instfilter']))
+            plt.title(f"Total Counts {outbasename}, texp = {retCatalog['exptime']:6.2f} ")
+            plt.savefig("%s/%s_%s_refmag_counts.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']),
                         bbox_inches='tight')
             plt.close()
 
