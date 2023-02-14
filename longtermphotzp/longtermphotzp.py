@@ -169,8 +169,17 @@ mirrorreplacmenet = {
                       ],
 }
 
-telescopereferencethroughput = {'rp': {"1m0": 23.8, "2m0": 25.35, '0m4': 21.5},
-                                'up': {"1m0": 22.45, "2m0": 21.4, '0m4': 16.11},}
+telescopereferencethroughput = {'up':{"1m0": 22.45, "2m0": 21.4,  '0m4': 16.11},
+                                'gp':{"1m0": 24.3,  "2m0": 25.4,  '0m4': 21.8},
+                                'rp':{"1m0": 23.8,  "2m0": 25.35, '0m4': 21.5},
+                                'ip':{"1m0": 23.5,  "2m0": 25.5,  '0m4': 20.75},
+                                'zp':{"1m0": 22.2,  "2m0": 24.3,  '0m4': 19.4},
+                                'Y': {"1m0": 20.40, "2m0": 21.4,  '0m4': 17.8},
+                                'U': {"1m0": 21.4,  "2m0": 21.3,  '0m4': 18.0},
+                                'B': {"1m0": 23.5,  "2m0": 24.4,  '0m4': 21.4},
+                                'V': {"1m0": 23.5,  "2m0": 24.6,  '0m4': 21.4},
+                                'R': {"1m0": 23.8,  "2m0": 24.9,  '0m4': 21.2},
+                                'I': {"1m0": 23.2,  "2m0": 24.1,  '0m4': 20.3},}
 
 
 def aws_enabled():
@@ -261,6 +270,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
             selection = selection &  ( (data['filter'] == 'Rc') | (data['filter'] == 'R'))
         else:
             selection = selection & (data['filter'] == select_filter)
+
     if instrument is not None:
         selection = selection & (data['camera'] == instrument)
 
@@ -287,6 +297,9 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
             if  'up' in select_filter:
                 ymax = 20
             photzpmaxnoise = 0.5
+
+        if select_filter in telescopereferencethroughput:
+            ymax = telescopereferencethroughput[select_filter][select_telescope[-4:-1]] +1
 
     # Calculate air-mass corrected photometric zeropoint; corrected to airmass of 1
     zp_air = zpselect + airmasscorrection[select_filter] * airmasselect - airmasscorrection[select_filter]
@@ -461,9 +474,6 @@ def plot_referencethoughput(start, end, select_filter, select_telescope):
         goodvalue = telescopereferencethroughput[select_filter][select_telescope]
         rect = Rectangle((start, goodvalue), end - start, -0.2, color='#A0FFA0A0')
         plt.axes().add_patch(rect)
-
-        # plt.axhline(telescopereferencethroughput[select_filter][select_telescope])
-
 
 def findUpperEnvelope(dateobs, datum, ymax=24.2):
     """
@@ -779,9 +789,6 @@ def longtermphotzp():
     filenames = []
     args = parseCommandLine()
 
-
-
-
     if args.site is not None:
         crawlsites = [args.site, ]
     else:
@@ -815,7 +822,6 @@ def longtermphotzp():
     # Make a fancy HTML page
     if args.renderhtml:
         renderHTMLPage(args, filenames)
-
 
     print (colorterms)
     sys.exit(0)
