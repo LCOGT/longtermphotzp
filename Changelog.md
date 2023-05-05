@@ -1,4 +1,8 @@
 # Changelog
+Version 8.1.6
+* Python and dependencies update to python3.11
+
+
 Version 8.1.4
 * Added more filters for extrapolation.
 * Added new mirror washes / recoating events. 
