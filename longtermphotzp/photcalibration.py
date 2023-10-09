@@ -163,7 +163,7 @@ class PhotCalib():
 
         # Define a reasonable condition on what is a good match on good photometry
         condition = (distance < 5) & (instCatalog['FLUX'] > 0) & (refcatalog[referenceFilterName] > 0) & (
-                refcatalog[referenceFilterName] < 26)
+                refcatalog[referenceFilterName] < 26) & (instCatalog['magerr'] < 0.02)
 
         # Calculate instrumental magnitude from PSF instrument photometry
         instmag = -2.5 * np.log10(instCatalog['FLUX'][condition] / retCatalog['exptime'])
@@ -257,6 +257,7 @@ class PhotCalib():
             return 0,0,0
 
         # calculate the per star zeropoint
+
         magZP = retCatalog['refmag'] - retCatalog['instmag']
         refmag = retCatalog['refmag']
         refcol = retCatalog['refcol']
@@ -310,8 +311,8 @@ class PhotCalib():
             plt.xlabel(f"Reference magnitude {retCatalog['reffilter']}")
             plt.ylabel("Peak above background level [e-] (%s)" % (retCatalog['instfilter']))
             plt.title(f"Peak {outbasename}, texp = {retCatalog['exptime']:6.2f} ")
-            plt.savefig("%s/%s_%s_refmag_peak.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']),
-                        bbox_inches='tight')
+            #plt.savefig("%s/%s_%s_refmag_peak.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']),
+            #            bbox_inches='tight')
             plt.close()
 
             ### Plot Counts value vs absolute mag.
@@ -323,8 +324,8 @@ class PhotCalib():
             plt.xlabel(f"Reference magnitude {retCatalog['reffilter']}")
             plt.ylabel("Total counts from object  [e-] (%s)" % (retCatalog['instfilter']))
             plt.title(f"Total Counts {outbasename}, texp = {retCatalog['exptime']:6.2f} ")
-            plt.savefig("%s/%s_%s_refmag_counts.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']),
-                        bbox_inches='tight')
+            #plt.savefig("%s/%s_%s_refmag_counts.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']),
+            #            bbox_inches='tight')
             plt.close()
 
 
@@ -463,7 +464,7 @@ def parseCommandLine():
     parser.add_argument('--preview', dest='processstatus', default='processed', action='store_const', const='preview')
     parser.add_argument('--useaws', action='store_true',
                         help="Use LCO archive API to retrieve frame vs direct /archive file mount access")
-    parser.add_argument('--filters', default=['up', 'gp','rp','ip','zp', 'Y', 'U', 'B', 'V', 'R', 'Rc', 'I'], nargs='+')
+    parser.add_argument('--filters', default=['up', 'gp','rp','ip','zp', 'zs', 'Y', 'U', 'B', 'V', 'R', 'Rc', 'I'], nargs='+')
     mutex = parser.add_mutually_exclusive_group()
     mutex.add_argument('--date', dest='date', default=[], nargs='+', help='Specific date to process.')
     mutex.add_argument('--lastNdays', type=int)
@@ -551,7 +552,7 @@ def photzpmain():
         redlevel = "91" if not args.fromraw else "00"
         inputlist = (glob.glob(f"{args.crawldirectory}/*[es]{redlevel}.fits.fz"))
         inputlist = Table([inputlist, [-1] * len(inputlist)], names=['filename', 'frameid'])
-        imagedb = None # photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
+        imagedb = photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
         process_imagelist(inputlist, imagedb, args, rewritetoarchivename=False)
         if imagedb is not None:
             imagedb.close()
