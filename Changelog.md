@@ -1,7 +1,10 @@
 # Changelog
+
+Version 8.1.7
+* Restrict measurements to targets with magerr <= 0.02 to get better results. 
+
 Version 8.1.6
 * Python and dependencies update to python3.11
-
 
 Version 8.1.4
 * Added more filters for extrapolation.
