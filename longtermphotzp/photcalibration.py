@@ -142,9 +142,13 @@ class PhotCalib():
             _logger.exception("Failed to convert images coordinates to world coordinates. Giving up on file.")
             return None
 
+        if not 'magerr' in instCatalog.dtype.names:
+            _logger.exception("magerr field is not defined. how strange. ")
+            return None
+
         # Query reference catalog TODO: paramterize FoV of query!
         refcatalog = self.referencecatalog.get_reference_catalog(ra, dec, 0.33, generateJohnson= ( retCatalog['instfilter'] in atlas_refcat2.JohnsonCousin_filters))
-        if refcatalog is None:
+        if (refcatalog is None):
             _logger.warning("no reference catalog received.")
             return None
 
