@@ -115,6 +115,7 @@ mirrorreplacmenet = {
                       datetime.datetime(2017, 10, 20),
                       datetime.datetime(2019, 6, 16),# this was a mirror wash only
                       datetime.datetime(2020, 9, 27), # Transition to Muscat3
+                      datetime.datetime(2021, 3, 15), # Transition to Muscat3 ep01 -> ep05
                       ],
 
     'elp-doma-1m0a': [datetime.datetime(2016, 4, 1),
