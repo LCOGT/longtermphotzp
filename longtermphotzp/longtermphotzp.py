@@ -1,6 +1,7 @@
 #!/bin/env python
 
 import matplotlib
+import numpy
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -24,7 +25,7 @@ from longtermphotzp.photdbinterface import photdbinterface
 assert sys.version_info >= (3, 5)
 _logger = logging.getLogger(__name__)
 
-airmasscorrection = {'up': 0.59, 'gp': 0.14, 'rp': 0.08, 'ip': 0.06, 'zp': 0.04, 'Y':0.03, 'U': 0.54, 'B': 0.23, 'V':0.12, 'R':0.09, 'Rc':0.09, 'I': 0.04}
+airmasscorrection = {'up': 0.59, 'gp': 0.14, 'rp': 0.08, 'ip': 0.06, 'zp': 0.04, 'zs': 0.04, 'Y':0.03, 'U': 0.54, 'B': 0.23, 'V':0.12, 'R':0.09, 'Rc':0.09, 'I': 0.04}
 
 # TODO: make this a parameter.
 starttime = datetime.datetime(2016, 1, 1)
@@ -129,7 +130,9 @@ mirrorreplacmenet = {
     'coj-clma-2m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2018, 6, 20),
                       datetime.datetime(2021, 2, 20),
-                      datetime.datetime(2022, 10, 15),],
+                      datetime.datetime(2022, 10, 15),
+                      datetime.datetime(2023, 10, 18), # Muscat 4 installation
+                      ],
 
     'coj-doma-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 6, 18),
@@ -208,7 +211,7 @@ def write_to_storage_backend(directory, filename, data):
             return True
 
 
-def getCombineddataByTelescope(site, telescope, context, instrument=None, cacheddb=None):
+def getCombineddataByTelescope(site, telescope, context, instrument=None, filter = None, cacheddb=None):
     """
     Concatenate all zeropoint data for a site, and select by telescope and instrument.
     :param site:
@@ -222,10 +225,10 @@ def getCombineddataByTelescope(site, telescope, context, instrument=None, cached
         db = photdbinterface(context.database)
     else:
         db = cacheddb
-    _logger.debug("Getting all photometry data for %s %s %s" % (site, telescope, instrument))
+    _logger.info("Getting all photometry data for %s %s %s" % (site, telescope, instrument))
     dome, tel = telescope.split("-")
 
-    results = db.readRecords(site, dome, tel, instrument)
+    results = db.readRecords(site, dome, tel, instrument, filter=filter)
     if cacheddb is None:
         db.close()
     return results
@@ -252,7 +255,15 @@ def dateformat(starttime, endtime):
 
 def plotlongtermtrend(select_site, select_telescope, select_filter, context, instrument=None, cacheddb=None):
     filenames = []
-    data = getCombineddataByTelescope(select_site, select_telescope, context, instrument, cacheddb=cacheddb)
+    filters = None
+    if select_filter is not None:
+        if (select_filter == 'zp') or (select_filter == 'zs'):
+            filters = ['zs','zp']
+        else:
+            filters= [select_filter,]
+
+
+    data = getCombineddataByTelescope(select_site, select_telescope, context, instrument, filter=filters, cacheddb=cacheddb)
 
     mystarttime = starttime
     # if (select_site == 'elp') and (select_telescope=='doma-1m0a'):
@@ -265,12 +276,11 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
 
     if select_filter is not None:
         if (select_filter == 'zp') or (select_filter == 'zs'):
-            selection = selection &  ( (data['filter'] == 'zs') | (data['filter'] == 'zp'))
+            selection = selection &  numpy.logical_or( (data['filter'] == 'zs') , (data['filter'] == 'zp'))
         elif  (select_filter == 'R') or (select_filter == 'Rc'):
             selection = selection &  ( (data['filter'] == 'Rc') | (data['filter'] == 'R'))
         else:
             selection = selection & (data['filter'] == select_filter)
-
     if instrument is not None:
         selection = selection & (data['camera'] == instrument)
 
@@ -764,7 +774,7 @@ def parseCommandLine():
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
     parser.add_argument('--telescope', default=None,
                         help='Telescope id. written inform enclosure-telescope, e.g., "domb-1m0a"')
-    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['up', 'gp', 'rp', 'ip', 'zp','Y', 'U', 'B','R','V','I'])
+    parser.add_argument('--filter', default='rp', help='Which filter to process.', choices=['up', 'gp', 'rp', 'ip', 'zp','zs', 'Y', 'U', 'B','R','V','I'])
     parser.add_argument('--pertelescopeplots', type=bool, default=True)
     parser.add_argument('--createsummaryplots', type=bool, default=True)
     parser.add_argument('--renderhtml', type=bool, default=True)

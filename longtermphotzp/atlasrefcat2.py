@@ -19,9 +19,13 @@ class atlas_refcat2:
     FILTERMAPPING = {}
     FILTERMAPPING['up'] = {'refMag': 'umag', 'colorTerm': 0.0, 'airmassTerm': 0.59, 'defaultZP': 0.0}
     FILTERMAPPING['gp'] = {'refMag': 'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.14, 'defaultZP': 0.0}
+    FILTERMAPPING['g_narrow'] = {'refMag': 'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.14, 'defaultZP': 0.0}
     FILTERMAPPING['rp'] = {'refMag': 'rmag', 'colorTerm': 0.0, 'airmassTerm': 0.08, 'defaultZP': 0.0}
+    FILTERMAPPING['Na_D'] = {'refMag': 'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.14, 'defaultZP': 0.0}
     FILTERMAPPING['ip'] = {'refMag': 'imag', 'colorTerm': 0.0, 'airmassTerm': 0.06, 'defaultZP': 0.0}
+    FILTERMAPPING['i_narrow'] = {'refMag': 'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.14, 'defaultZP': 0.0}
     FILTERMAPPING['zp'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.04, 'defaultZP': 0.0}
+    FILTERMAPPING['z_narrow'] = {'refMag': 'gmag', 'colorTerm': 0.0, 'airmassTerm': 0.14, 'defaultZP': 0.0}
     FILTERMAPPING['zs'] = {'refMag': 'zmag', 'colorTerm': 0.0, 'airmassTerm': 0.04, 'defaultZP': 0.0}
     FILTERMAPPING['Y'] = {'refMag': 'ymag', 'colorTerm': 0.0, 'airmassTerm': 0.03, 'defaultZP': 0.0}
     FILTERMAPPING['U'] = {'refMag':  'U', 'colorTerm': 0.0, 'airmassTerm': 0.54, 'defaultZP': 0.0}

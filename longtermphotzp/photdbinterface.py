@@ -115,7 +115,7 @@ class photdbinterface:
         _logger.info("Closing data base session")
         self.session.close()
 
-    def readRecords(self, site=None, dome=None, telescope=None, camera=None):
+    def readRecords(self, site=None, dome=None, telescope=None, camera=None, filter = None):
         """  Read the photometry records from the database, optionally filtered by site, dome, telescope, and camera.
 
         """
@@ -129,6 +129,8 @@ class photdbinterface:
             q = q.filter(PhotZPMeasurement.telescope == telescope)
         if camera is not None:
             q = q.filter(PhotZPMeasurement.camera == camera)
+        if filter is not None:
+            q = q.filter(PhotZPMeasurement.filter.in_(filter))
 
         # TODO: This might consume too much memory.
         allrows = [
@@ -148,6 +150,10 @@ class photdbinterface:
         t['airmass'] = t['airmass'].astype(float)
         t['zpsig'] = t['zpsig'].astype(float)
         t['colorterm'] = t['colorterm'].astype(float)
+
+
+        _logger.info (f"Filter set:  {set (t['filter'])}")
+        _logger.info (f"Camera set:  {set (t['camera'])}")
 
         if 'fl06' in t['camera']:
             # fl06 was misconfigured with a wrong gain, which trickles down through the banzai processing.
