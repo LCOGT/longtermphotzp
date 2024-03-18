@@ -93,14 +93,18 @@ class atlas_refcat2:
             pscolor = table['gmag'] - table['imag']
             for filter in self.ps1colorterms:
                 colorcorrection = np.polyval(self.ps1colorterms[filter], pscolor)
-                if filter == "umag":
-                    table['umag'] = table['gmag'] - colorcorrection
-                    table['umagerr'] = table['gmagerr']
-                elif filter == 'ymag':
-                    table['ymag'] = table['zmag'] - colorcorrection
-                    table['ymagerr'] = table['zmagerr']
-                else:
-                    table[filter] -= colorcorrection
+                try:
+                    if filter == "umag":
+                        table['umag'] = table['gmag'] - colorcorrection
+                        table['umagerr'] = table['gmagerr']
+                    elif filter == 'ymag':
+                        table['ymag'] = table['zmag'] - colorcorrection
+                        table['ymagerr'] = table['zmagerr']
+                    else:
+                        table[filter] -= colorcorrection
+                except Exception as e:
+                    _logger.exception(f"problem with filter correction in filter {filter} {table}: {e}")
+                    return None
 
         return table
 

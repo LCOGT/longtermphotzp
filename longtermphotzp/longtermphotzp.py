@@ -171,6 +171,12 @@ mirrorreplacmenet = {
                       datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
                       datetime.datetime(2023, 1, 15), # wet mirror wash
                       ],
+
+    'lsc-aqwa-0m4a' : [datetime.datetime(2024, 3, 14),
+                       ], # delta rho replacement
+    'lsc-aqwb-0m4a' : [datetime.datetime(2024, 3, 14),
+                       ], # delta rho replacement
+
 }
 
 telescopereferencethroughput = {'up':{"1m0": 22.45, "2m0": 21.4,  '0m4': 16.11},
