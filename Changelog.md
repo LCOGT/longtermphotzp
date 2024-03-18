@@ -3,6 +3,10 @@
 Version 8.1.7
 * Restrict measurements to targets with magerr <= 0.02 to get better results. 
 
+Version 8.1.10
+* Bugfix
+* Add lsc delta rho addition date
+
 Version 8.1.6
 * Python and dependencies update to python3.11
 
