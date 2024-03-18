@@ -9,8 +9,8 @@ from astropy.table import Table
 from astroquery.sdss import SDSS
 from astropy import coordinates as coords
 import logging
+import sys
 _logger = logging.getLogger(__name__)
-
 
 class atlas_refcat2:
     ''' Interface to query consolidated sqlite3 db file that was generated from Tonry (2018) refcat2
@@ -44,12 +44,14 @@ class atlas_refcat2:
     ## shown in paper. Reverse after the fact to avoid confusion when looking at paper
 
     ps1colorterms = {}
+    # Order is important since later we will transform to SDSS in place;
     ps1colorterms['umag'] = [+0.04438, -2.26095, -0.13387, +0.27099][::-1]
+    ps1colorterms['ymag'] = [+0.08924, -0.20878, 0.10360,  -0.02441][::-1]
     ps1colorterms['gmag'] = [-0.01808, -0.13595, +0.01941, -0.00183][::-1]
     ps1colorterms['rmag'] = [-0.01836, -0.03577, +0.02612, -0.00558][::-1]
     ps1colorterms['imag'] = [+0.01170, -0.00400, +0.00066, -0.00058][::-1]
     ps1colorterms['zmag'] = [-0.01062, +0.07529, -0.03592, +0.00890][::-1]
-    ps1colorterms['ymag'] = [+0.08924, -0.20878, 0.10360,  -0.02441][::-1]
+
     JohnsonCousin_filters = ['B', 'V', 'R', 'I', 'U']
 
     def __init__(self, refcat2_url):
@@ -92,6 +94,7 @@ class atlas_refcat2:
         if table is not None:
             pscolor = table['gmag'] - table['imag']
             for filter in self.ps1colorterms:
+                _logger.info (f"Morphoing filter: {filter}")
                 colorcorrection = np.polyval(self.ps1colorterms[filter], pscolor)
                 try:
                     if filter == "umag":
@@ -103,7 +106,7 @@ class atlas_refcat2:
                     else:
                         table[filter] -= colorcorrection
                 except Exception as e:
-                    _logger.exception(f"problem with filter correction in filter {filter} {table}: {e}")
+                    _logger.exception(f"problem with filter correction in filter {filter}: {e}")
                     return None
 
         return table
@@ -113,7 +116,9 @@ class atlas_refcat2:
         try:
             response = requests.get(self.refcat2_url + 'radius', params={'ra': ra, 'dec': dec, 'radius': radius})
             response.raise_for_status()
-            table = Table(response.json())
+
+            dtype=[np.float32] * 12
+            table = Table(response.json(), dtype=dtype)
         except Exception as e:
             _logger.exception(f"While trying to read from refcat2: {e}")
             return None

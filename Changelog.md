@@ -1,4 +1,6 @@
 # Changelog
+8.1.12
+* Bugfixes
 
 Version 8.1.7
 * Restrict measurements to targets with magerr <= 0.02 to get better results. 

@@ -26,6 +26,9 @@ def test_photcalibration(tmpdir):
     ### extrapolated u band
     do_photometrytestonFile(f"{startdir}/data/ogg0m404-kb82-20220413-0070-s91.fits.fz", 16.04, 1.685, tmpdir=tmpdir)
 
-    ### Johnson Cousins filters, referenced to the johnson-transformed sdss photometry:
+    ### Johnson Cousins filters, referenced to the johnson-transformed sdss photometrÏy:
     do_photometrytestonFile(f"{startdir}/data/elp1m008-fa05-20200130-0083-e91.fits.fz", 23.17, -0.047, tmpdir=tmpdir)
     do_photometrytestonFile(f"{startdir}/data/elp1m008-fa05-20200130-0084-e91.fits.fz", 23.27, -0.013, tmpdir=tmpdir)
+
+    ### Delta Rho & QHY600
+    do_photometrytestonFile(f"{startdir}/data/ogg0m455-sq30-20240317-0123-e91.fits.fz", 20.99, -0.004, tmpdir=tmpdir)
