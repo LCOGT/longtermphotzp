@@ -1,9 +1,15 @@
 # Changelog
-3.1.14
-revert to python 3.10 image
-8.1.13
-version number synchronisation
-8.1.12
+
+Version 8.1.15
+* update mirror wash / delta rho installation dates.
+
+Version 8.1.14
+* revert to python 3.10 image
+
+Version 8.1.13
+* version number synchronisation
+
+Version 8.1.12
 * Bugfixes
 
 Version 8.1.7

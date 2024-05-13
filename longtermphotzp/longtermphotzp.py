@@ -111,6 +111,11 @@ telescopecleaning = {
 # in practice, program will attempt to do a fit between dates listed here. so it does not matter what triggered
 # the new slope calculation
 mirrorreplacmenet = {
+
+    'ogg-clma-0m4b': [datetime.datetime(2024, 2, 1),],
+
+    'ogg-clma-0m4c': [datetime.datetime(2022, 7, 1),],
+
     'ogg-clma-2m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2017, 10, 20),
                       datetime.datetime(2019, 6, 16),# this was a mirror wash only
@@ -118,14 +123,18 @@ mirrorreplacmenet = {
                       datetime.datetime(2021, 3, 15), # Transition to Muscat3 ep01 -> ep05
                       ],
 
+    'elp-aqwa-0m4a': [datetime.datetime(2023, 6, 1),],
+
     'elp-doma-1m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2018, 4, 5),
                       datetime.datetime(2019, 5, 22),  # mirror wash
                       datetime.datetime(2019, 10, 20),  # mirror wash
                       datetime.datetime(2020, 8, 22),  # mirror wash
+                      datetime.datetime(2022, 7, 1),  # mirror wash
                       ],
     'elp-domb-1m0a': [datetime.datetime(2019, 10, 20),  # mirror wash
                       datetime.datetime(2020, 8, 19),  # mirror wash
+                      datetime.datetime(2022, 7, 1),  # mirror wash
                       ],
 
     'coj-clma-2m0a': [datetime.datetime(2016, 4, 1),
@@ -135,6 +144,10 @@ mirrorreplacmenet = {
                       datetime.datetime(2023, 10, 18), # Muscat 4 installation
                       ],
 
+    'coj-clma-0m4a': [datetime.datetime(2023, 10, 1),],
+
+    'coj-clma-0m4b': [datetime.datetime(2023, 10, 1),],
+
     'coj-doma-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 6, 18),
                       datetime.datetime(2020, 2, 20), ],
@@ -143,17 +156,23 @@ mirrorreplacmenet = {
                       datetime.datetime(2020, 2, 26),
                       ],
 
+    'lsc-aqwa-0m4a': [datetime.datetime(2024, 3, 15),],
+
+    'lsc-aqwb-0m4a': [datetime.datetime(2024, 3, 15),],
+
     'lsc-doma-1m0a': [datetime.datetime(2016, 6, 1),
                       datetime.datetime(2016, 10, 15),
                       datetime.datetime(2018, 9, 14),
-                      datetime.datetime(2022, 10, 10),], # mirror wash only
+                      datetime.datetime(2022, 11, 1),], # mirror wash only
     'lsc-domb-1m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2018, 9, 14),
-                      datetime.datetime(2022, 10, 10),], # mirror wash only
+                      datetime.datetime(2022, 11, 1),], # mirror wash only
     'lsc-domc-1m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2017, 8, 31),
                       datetime.datetime(2018, 9, 14),
-                      datetime.datetime(2022, 10, 10),], # mirror wash only
+                      datetime.datetime(2022, 11, 1),], # mirror wash only
+
+    'cpt-aqwa-0m4a': [datetime.datetime(2023, 5, 1),],
 
     'cpt-doma-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2016, 11, 1),
@@ -172,10 +191,19 @@ mirrorreplacmenet = {
                       datetime.datetime(2023, 1, 15), # wet mirror wash
                       ],
 
-    'lsc-aqwa-0m4a' : [datetime.datetime(2024, 3, 14),
+    'tfn-aqwa-0m4a' : [datetime.datetime(2023, 11, 1),
                        ], # delta rho replacement
-    'lsc-aqwb-0m4a' : [datetime.datetime(2024, 3, 14),
+    'tfn-aqwa-0m4b' : [datetime.datetime(2023, 11, 1),
                        ], # delta rho replacement
+    'tfn-doma-1m0a' : [datetime.datetime(2021, 5, 1),
+                       datetime.datetime(2023, 11, 15),
+                       ], # delta rho replacement
+    'tfn-domb-1m0a' : [datetime.datetime(2021, 5, 1),
+                       datetime.datetime(2023, 11, 15),
+                       ], # delta rho replacement
+
+
+
 
 }
 
