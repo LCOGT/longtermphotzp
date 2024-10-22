@@ -1,4 +1,7 @@
 # Changelog
+Version 8.1.16
+* fix Muscat narrow band association
+* .gitignore cleanup
 
 Version 8.1.15
 * update mirror wash / delta rho installation dates.

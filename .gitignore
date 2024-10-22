@@ -3,3 +3,6 @@ venv
 *.iml
 /definedb.sh
 /definesbigdb.sh
+*.pyc
+*.egg-info
+dist
