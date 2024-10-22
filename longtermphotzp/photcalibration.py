@@ -228,7 +228,7 @@ class PhotCalib():
         """
             Do full photometric zeropoint analysis on an image. This is the main entry point
 
-            param imageentry: Table row to caontain 'filename' and 'frameid'
+            param image entry: Table row to contain 'filename' and 'frameid'
         """
 
         # The filename may or may not be the full path to the image
