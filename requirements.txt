@@ -2,7 +2,7 @@ astropy==5.3.3
 attrs==21.4.0
 boto3==1.21.5
 botocore==1.24.5
-certifi==2021.10.8
+certifi==2023.7.22
 charset-normalizer==2.0.12
 click==8.0.4
 cycler==0.11.0
