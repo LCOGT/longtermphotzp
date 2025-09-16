@@ -1,4 +1,8 @@
 # Changelog
+
+Version 8.1.17
+* remove kb, fs cameras from crawler as they are no longer used at LCO
+
 Version 8.1.16
 * fix Muscat narrow band association
 * .gitignore cleanup
