@@ -15,8 +15,6 @@ export DATABASE="${DATABASE:-postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_
 echo $DATABASE
 
 photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype fa
-photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype fs
-photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype kb
 photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype ep
 photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype sq
 
