@@ -40,7 +40,7 @@ telescopedict = {
     'lsc': ['doma-1m0a', 'domb-1m0a', 'domc-1m0a', 'aqwa-0m4a', 'aqwb-0m4a'],
     'coj': ['clma-2m0a', 'doma-1m0a', 'domb-1m0a', 'clma-0m4a', 'clma-0m4b', 'clma-0m4c'],
     'ogg': ['clma-2m0a', 'clma-0m4b', 'clma-0m4c'],
-    'elp': ['doma-1m0a', 'domb-1m0a', 'aqwa-0m4a'],
+    'elp': ['doma-1m0a', 'domb-1m0a', 'aqwa-0m4a', 'aqwb-0m4a', 'aqwb-0m4b'],
     'cpt': ['doma-1m0a', 'domb-1m0a', 'domc-1m0a', 'aqwa-0m4a'],
     'tfn': ['aqwa-0m4a', 'aqwa-0m4b', 'doma-1m0a', 'domb-1m0a'],
     #  'sqa': ['doma-0m8a'],
