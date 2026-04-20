@@ -1,7 +1,7 @@
 import astropy
 import matplotlib
 from scipy import optimize
-
+import numpy as np
 import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
 from longtermphotzp.aperturephot import redoAperturePhotometry
 from longtermphotzp.aperturephot import getnewtargetlist
@@ -10,7 +10,9 @@ from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
 from longtermphotzp.gaiaastrometryservicetools import astrometryServiceRefineWCSFromCatalog
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+#Nasty workaround to a bug in sqlalchemy / psycopg
 
+np.set_printoptions(legacy="1.25")
 plt.style.use('ggplot')
 
 import numpy as np
@@ -232,8 +234,11 @@ class PhotCalib():
         """
 
         # The filename may or may not be the full path to the image
-        filename = str(imageentry['filename'])
-        frameid = int(imageentry['frameid'])
+        if len(imageentry['filename']) > 0:
+            filename = str(imageentry['filename'][0])
+            frameid =  int(imageentry['frameid'][0])
+        else:
+            return
         imageName = os.path.basename(filename)
         _logger.info(f'\n\nImage {filename} {frameid} imageName for DB is {imageName}\n\n')
 

@@ -77,8 +77,8 @@ class atlas_refcat2:
 
         for filter in transformations:
             transformation = transformations[filter]
-            table.add_column(numpy.NaN, name=filter)
-            table.add_column(numpy.NaN, name=f'{filter}err')
+            table.add_column(numpy.nan, name=filter)
+            table.add_column(numpy.nan, name=f'{filter}err')
             table[filter] = table [transformation[0]] + (table[transformation[1]] - table[transformation[2]]) * transformation[3] + transformation[4]
             table[f'{filter}err'] = 0
         return table

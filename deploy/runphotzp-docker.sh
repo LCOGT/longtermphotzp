@@ -11,7 +11,7 @@ DB_PASS="${DB_PASS:-undefined}"
 NDAYS="${NDAYS:-3}"
 export REFCAT2_URL=${REFCAT2_URL:-http://phot-catalog.lco.gtn/}
 # SQLAlchemy database connection string
-export DATABASE="${DATABASE:-postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}}"
+export DATABASE="${DATABASE:-postgresql+psycopg://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}}"
 echo $DATABASE
 
 photcalibration --useaws --photodb $DATABASE --refcat2-url $REFCAT2_URL --mintexp 10 --lastNdays $NDAYS --cameratype fa

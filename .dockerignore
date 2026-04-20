@@ -1,0 +1,19 @@
+# Exclude all Git-related files and directories
+.git/
+.gitignore
+.gitattributes
+.github/
+.gitlab-ci.yml
+.gitmodules
+
+# Exclude Git LFS files if present
+.git-lfs/
+
+# Exclude any Git-related configuration files
+.gitconfig
+.git-credentials
+test
+build
+.pytest_cache
+tmp
+test.db

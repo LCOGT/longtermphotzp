@@ -21,8 +21,8 @@ from matplotlib.patches import Rectangle
 import matplotlib.dates as mdates
 
 from longtermphotzp.photdbinterface import photdbinterface
+np.set_printoptions(legacy="1.25")
 
-assert sys.version_info >= (3, 5)
 _logger = logging.getLogger(__name__)
 
 airmasscorrection = {'up': 0.59, 'gp': 0.14, 'rp': 0.08, 'ip': 0.06, 'zp': 0.04, 'zs': 0.04, 'Y':0.03, 'U': 0.54, 'B': 0.23, 'V':0.12, 'R':0.09, 'Rc':0.09, 'I': 0.04}
@@ -803,9 +803,9 @@ def parseCommandLine():
     parser.add_argument('--log_level', dest='log_level', default='INFO', choices=['DEBUG', 'INFO'],
                         help='Set the debug level')
 
-    parser.add_argument('--outputdirectory', dest='imagedbPrefix', default='~/lcozpplots',
+    parser.add_argument('--outputdirectory', dest='imagedbPrefix', default='./lcozpplots',
                         help='Directory containing photometryc databases')
-    parser.add_argument('--database', default='~/lcozpplots/lcophotzp.db')
+    parser.add_argument('--database', default='sqlite:///lcophotzp.db')
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
     parser.add_argument('--telescope', default=None,
                         help='Telescope id. written inform enclosure-telescope, e.g., "domb-1m0a"')
