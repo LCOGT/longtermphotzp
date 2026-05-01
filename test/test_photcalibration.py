@@ -8,9 +8,9 @@ REFCAT2_URL = 'http://phot-catalog.lco.gtn/'
 def do_photometrytestonFile(filename, reference_photzp, reference_colorterm, tmpdir):
     t = Table ([[filename],[-1],], names=['filename','frameid'])
     p = photcal.PhotCalib(REFCAT2_URL)
-    for r in t:
-        photzp, photzpsig, colorterm = p.analyzeImage(r, useaws=False, outputimageRootDir=tmpdir, mintexp=0)
-        print (filename, photzp, photzpsig, colorterm)
+    
+    photzp, photzpsig, colorterm = p.analyzeImage(t, useaws=False, outputimageRootDir=tmpdir, mintexp=0)
+    print (filename, photzp, photzpsig, colorterm)
 
     assert math.fabs (photzp - reference_photzp) < 0.1, f"Test for correct photomertic zeropoint of {filename}"
     assert math.fabs (colorterm - reference_colorterm) < 0.01, f"Test for correct colorterm of {filename}"

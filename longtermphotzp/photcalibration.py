@@ -99,17 +99,17 @@ class PhotCalib():
         # Check if filter is supported
         if retCatalog['instfilter'] not in self.referencecatalog.FILTERMAPPING:
             _logger.info(
-                "Filter %s not viable for photometric calibration. Sorry" % (retCatalog['instfilter']))
+                f"Filter {retCatalog['instfilter']} not viable for photometric calibration. Sorry")
             return None
 
         # Check if exposure time is long enough
         if (retCatalog['exptime'] < mintexp):
-            _logger.info("Exposure %s time is deemed too short, ignoring" % (retCatalog['exptime']))
+            _logger.info(f"Exposure {retCatalog['exptime']} time is deemed too short, ignoring")
             return None
 
         # verify there is no deliberate defocus
         if (retCatalog['FOCOBOFF'] is not None) and (retCatalog['FOCOBOFF'] != 0):
-            _logger.info("Exposure is deliberately defocussed by %s, ignoring" % (retCatalog['FOCOBOFF']))
+            _logger.info(f"Exposure is deliberately defocussed by {retCatalog['FOCOBOFF']}, ignoring")
             return None
 
         # Get the instrumental filter and the matching reference catalog filter names.
@@ -235,8 +235,14 @@ class PhotCalib():
 
         # The filename may or may not be the full path to the image
         if len(imageentry['filename']) > 0:
-            filename = str(imageentry['filename'][0])
-            frameid =  int(imageentry['frameid'][0])
+            try:  
+                row = imageentry[0]
+
+                filename = str(row['filename'])
+                frameid =  int(row['frameid'])
+            except Exception as e:
+                _logger.warning(f'Error occurred while processing image entry\n {imageentry}\n {row}\n error was {e}')
+                return
         else:
             return
         imageName = os.path.basename(filename)
@@ -248,10 +254,10 @@ class PhotCalib():
                 _logger.debug("Use AWS")
                 imageobject = es_aws_imagefinder.download_from_archive(frameid)
             else:
-                _logger.info("Loading from file system: {}".format(filename))
+                _logger.info(f"Loading from file system: {filename}")
                 imageobject = fits.open(filename)
         except:
-            _logger.warning("File {} could not be accessed: {}".format(filename, sys.exc_info()[0]))
+            _logger.warning(f"File {filename} could not be accessed: {sys.exc_info()[0]}")
             return 0, 0, 0
 
         retCatalog = self.generateCrossmatchedCatalog(imageobject, mintexp=mintexp, args = args)
@@ -262,7 +268,7 @@ class PhotCalib():
                 return 0,0,0
 
             if len(retCatalog['ra']) < 10:
-                _logger.info("%s: Catalog returned, but is has less than 10 stars. Ignoring. " % (imageentry))
+                _logger.info(f"{imageentry}: Catalog returned, but is has less than 10 stars. Ignoring. ")
             return 0,0,0
 
         # calculate the per star zeropoint
@@ -283,7 +289,7 @@ class PhotCalib():
             colorterm = newcolorparam[0]
             photzp = newcolorparam[1]
             color_p = np.poly1d(newcolorparam)
-            print (f"New zeropoint, color term: {photzp}, {colorterm}")
+            _logger.debug (f"New zeropoint, color term: {photzp}, {colorterm}")
 
         except:
             _logger.warning("could not fit a color term. ")
@@ -355,8 +361,8 @@ class PhotCalib():
             plt.ylim([photzp - 0.75, photzp + 0.75])
             plt.xlabel("(g-i)$_{\\rm{SDSS}}$ Reference")
             plt.ylabel("Reference Mag - Instrumental Mag  %s" % ( retCatalog['instfilter']))
-            plt.title("Color correction %s " % (outbasename))
-            plt.savefig("%s/%s_%s_color.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']), bbox_inches='tight')
+            plt.title(f"Color correction {outbasename}")
+            plt.savefig(f"{outputimageRootDir}/{outbasename}_{retCatalog['instfilter']}_color.png", bbox_inches='tight')
             plt.close()
 
             ### x/y/r variations in photometric zeropoint
@@ -492,7 +498,7 @@ def parseCommandLine():
 
     if args.outputimageRootDir is not None:
         args.outputimageRootDir = os.path.expanduser(args.outputimageRootDir)
-        print("Writing db to directory: %s" % args.outputimageRootDir)
+        _logger.debug("Writing db to directory: %s" % args.outputimageRootDir)
 
     if args.crawldirectory is not None:
         args.crawldirectory = os.path.expanduser(args.crawldirectory)
@@ -515,9 +521,9 @@ def photzpmain():
     else:
         sites = ('lsc', 'cpt', 'ogg', 'coj', 'tfn', 'elp')
 
-    print('DATES: ', args.date)
+    _logger.info('DATES: ', args.date)
     for date in args.date:
-        _logger.info("Processing DAY-OBS {}".format(date))
+        _logger.info(f"Processing DAY-OBS {date}")
         if args.cameratype is not None:
             # crawl by camera type
             cameratypes = [x for x in args.cameratype.split(',')]
@@ -526,12 +532,10 @@ def photzpmain():
                     inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site, cameratype=cameratype,
                                                                              mintexp=args.mintexp, filterlist=args.filters)
                     if inputlist is None:
-                        _logger.info("None list returned for date {}. Nothing to do here.".format(date))
+                        _logger.info(f"None list returned for date {date}. Nothing to do here.")
                         continue
                     imagedb = photdbinterface(args.imagedbPrefix)
-                    _logger.info("Processing image list N={} for type {} at site  {} for date {}".format(len(inputlist),
-                                                                                                         cameratype,
-                                                                                                         site, date))
+                    _logger.info(f"Processing image list N={len(inputlist)} for type {cameratype} at site  {site} for date {date}")
                     process_imagelist(inputlist, imagedb, args)
                     if imagedb is not None:
                         imagedb.close()
@@ -541,10 +545,10 @@ def photzpmain():
             inputlist = es_aws_imagefinder.get_frames_for_photometry(date, site=None, camera=args.camera,
                                                                      mintexp=args.mintexp,filterlist=args.filters)
             if inputlist is None:
-                _logger.info("None list returned for date {}. Nothing to do here.".format(date))
+                _logger.info(f"None list returned for date {date}. Nothing to do here.")
                 continue
             _logger.info(
-                "Processing image list N={} for camera {} at for date {}".format(len(inputlist), args.camera, date))
+                f"Processing image list N={len(inputlist)} for camera {args.camera} at for date {date}")
             imagedb = photdbinterface(args.imagedbPrefix)
             process_imagelist(inputlist, imagedb, args)
             if imagedb is not None:

@@ -94,7 +94,7 @@ class atlas_refcat2:
         if table is not None:
             pscolor = table['gmag'] - table['imag']
             for filter in self.ps1colorterms:
-                _logger.info (f"Morphoing filter: {filter}")
+                _logger.debug (f"Morphoing filter: {filter}")
                 colorcorrection = np.polyval(self.ps1colorterms[filter], pscolor)
                 try:
                     if filter == "umag":
