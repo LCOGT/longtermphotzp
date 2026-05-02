@@ -30,7 +30,9 @@ from astropy import units as u
 import datetime
 
 _logger = logging.getLogger(__name__)
-__author__ = 'dharbeck'
+
+import warnings
+warnings.simplefilter("ignore")
 
 
 class PhotCalib():
