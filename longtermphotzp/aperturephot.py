@@ -30,7 +30,7 @@ def redoAperturePhotometry (catalog, imagedata, aperture, annulus_inner, annulus
     for mask in sky_apertures_masks:
         annulus_data = mask.multiply (imagedata)
         annulus_data_1d = annulus_data[mask.data>0]
-        _, median_sigclip, _ = sigma_clipped_stats(annulus_data_1d)
+        _, median_sigclip, _ = sigma_clipped_stats(annulus_data_1d, sigma=3.0)
         bkg_median.append (median_sigclip)
     bkg_median = np.array (bkg_median)
 

@@ -1,4 +1,5 @@
 import astropy
+from astropy import logger
 import matplotlib
 from scipy import optimize
 import numpy as np
@@ -6,6 +7,7 @@ import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
 from longtermphotzp.aperturephot import redoAperturePhotometry
 from longtermphotzp.aperturephot import getnewtargetlist
 from longtermphotzp.atlasrefcat2 import atlas_refcat2
+from longtermphotzp.logging_config import setup_logging
 from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
 from longtermphotzp.gaiaastrometryservicetools import astrometryServiceRefineWCSFromCatalog
 matplotlib.use('Agg')
@@ -239,11 +241,10 @@ class PhotCalib():
         if len(imageentry['filename']) > 0:
             try:  
                 row = imageentry[0]
-
                 filename = str(row['filename'])
                 frameid =  int(row['frameid'])
             except Exception as e:
-                _logger.warning(f'Error occurred while processing image entry\n {imageentry}\n {row}\n error was {e}')
+                _logger.warning(f'Error occurred while processing image entry\n {imageentry}\n {filename}\ {frameid} \n error was {e}')
                 return
         else:
             return
@@ -309,7 +310,7 @@ class PhotCalib():
             plt.figure()
             plt.plot(refmag[~new_cond], (magZP - color_p(refcol) + photzp)[~new_cond], 'x', color='grey')
             plt.plot(refmag[new_cond], (magZP - color_p(refcol)+photzp)[new_cond], '.', color='red')
-            plt.xlim([10, 22])
+            plt.xlim([8, 25])
             plt.ylim([photzp - 0.5, photzp + 0.5])
             plt.axhline(y=photzp, color='r', linestyle='-')
             plt.xlabel("Reference catalog mag")
@@ -418,6 +419,7 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
     # get list of files of interest from OpenSearch
     initialsize = len(inputlist)
     rejects = []
+    #_logger.info(f"Input table info: {inputlist.info() } with {len(inputlist)} entries")
     if not args.redo:
         for image in inputlist['filename']:
             if (db is not None) and db.exists(image):
@@ -436,12 +438,15 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
     _logger.info("Found %d files initially, but cleaned %d already measured images. Starting analysis of %d files" % (
         initialsize, len(rejects), len(inputlist)))
 
+    
     photzpStage = PhotCalib(args.refcat2_url)
     for image in inputlist:
         if rewritetoarchivename:
             fn = lcofilename_to_archivepath(image['filename'], args.rootdir)
-            image = Table(np.asarray([fn, image['frameid']]), names=['filename', 'frameid'])
-        _logger.info("processimagelist: send of to analyze image: \n{}".format(image))
+        else:
+            fn = image['filename']
+        image = Table(np.asarray([fn, image['frameid']]), names=['filename', 'frameid'])
+        _logger.info(f"processimagelist(): send of to analyze image: {image['filename'][0]} {image['frameid'][0]}")
         photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp,
                                  useaws=args.useaws, args=args)
 
@@ -473,7 +478,7 @@ def parseCommandLine():
                         help='Result output directory. .db file is written here')
     parser.add_argument('--imagerootdir', dest='rootdir', default='/archive/engineering',
                         help="LCO archive root directory")
-    parser.add_argument('--aperturephot' , nargs=3, type=float, help = "Force aperture phtoemtry with paramters obj aaoperture radius, inner and outer sky aperture radii")
+    parser.add_argument('--aperturephot' , nargs=3, type=float, help = "Force aperture phtoemtry with paramters obj aperture radius, inner and outer sky aperture radii")
     parser.add_argument('--fromraw', action='store_true', help="process e00 data from scratch")
     parser.add_argument('--site', dest='site', default=None, help='sites code for camera')
     parser.add_argument('--mintexp', dest='mintexp', default=10, type=float, help='Minimum exposure time to accept')
@@ -494,9 +499,8 @@ def parseCommandLine():
                              help="process all reduced image in specific directoy")
 
     args = parser.parse_args()
+    setup_logging(args.log_level)
 
-    logging.basicConfig(level=getattr(logging, args.log_level.upper()),
-                        format='%(asctime)s.%(msecs).03d %(levelname)7s: %(module)20s: %(message)s')
 
     if args.outputimageRootDir is not None:
         args.outputimageRootDir = os.path.expanduser(args.outputimageRootDir)
@@ -523,7 +527,7 @@ def photzpmain():
     else:
         sites = ('lsc', 'cpt', 'ogg', 'coj', 'tfn', 'elp')
 
-    _logger.info('DATES: ', args.date)
+    _logger.debug(f'DATES: {args.date}')
     for date in args.date:
         _logger.info(f"Processing DAY-OBS {date}")
         if args.cameratype is not None:
@@ -565,8 +569,10 @@ def photzpmain():
         print(f"Not tested {args.crawldirectory}")
 
         redlevel = "91" if not args.fromraw else "00"
-        inputlist = (glob.glob(f"{args.crawldirectory}/*[es]{redlevel}.fits.fz"))
-        inputlist = Table([inputlist, [-1] * len(inputlist)], names=['filename', 'frameid'])
+        inputlist = glob.glob(f"{args.crawldirectory}/*[es]{redlevel}.fits.fz")
+        namelist = np.asarray( [x for x in inputlist], dtype=str)
+        idlist = np.asarray( [-1 for x in inputlist], dtype=int)
+        inputlist = Table([namelist, idlist], names=['filename', 'frameid'])
         imagedb = photdbinterface("sqlite:///%s/%s" % (args.crawldirectory, 'imagezp.db'))
         process_imagelist(inputlist, imagedb, args, rewritetoarchivename=False)
         if imagedb is not None:

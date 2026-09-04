@@ -77,11 +77,11 @@ class photdbinterface:
 
     def __init__(self, dburl):
         if dburl not in photdbinterface.engines:
-            _logger.info(f"Creating new database engine for url {dburl}")
+            _logger.debug(f"Creating new database engine for url {dburl}")
             myengine = create_engine(dburl, echo=False)
             photdbinterface.engines[dburl] = myengine
         else:
-            _logger.info(f"Reusing  database engine for url {dburl}")
+            _logger.debug(f"Reusing  database engine for url {dburl}")
             myengine = photdbinterface.engines[dburl]
 
         PhotZPMeasurement.__table__.create(bind=myengine, checkfirst=True)
@@ -112,7 +112,7 @@ class photdbinterface:
 
     def close(self):
         """ Close the database safely"""
-        _logger.info("Closing data base session")
+        _logger.debug("Closing data base session")
         self.session.close()
 
     def readRecords(self, site=None, dome=None, telescope=None, camera=None, filter = None):
