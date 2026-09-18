@@ -7,6 +7,7 @@ import longtermphotzp.es_aws_imagefinder as es_aws_imagefinder
 from longtermphotzp.aperturephot import redoAperturePhotometry
 from longtermphotzp.aperturephot import getnewtargetlist
 from longtermphotzp.atlasrefcat2 import atlas_refcat2
+from longtermphotzp.sdss_astroquery import sdss_refcat2
 from longtermphotzp.logging_config import setup_logging
 from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
 from longtermphotzp.gaiaastrometryservicetools import astrometryServiceRefineWCSFromCatalog
@@ -44,8 +45,8 @@ class PhotCalib():
     # default and see where it goes.
     referencecatalog = None
 
-    def __init__(self, refcat2_url):
-        self.referencecatalog = atlas_refcat2(refcat2_url)
+    def __init__(self, refcat2_url, use_sdss=False):
+        self.referencecatalog = sdss_refcat2() if use_sdss else atlas_refcat2(refcat2_url)
 
     def do_stage(self, images):
         """ future hook for BANZAI pipeline integration
@@ -170,10 +171,10 @@ class PhotCalib():
 
         # Measure the distance between matched pairs. Important to down-select viable pairs.
         distance = cReference.separation(cInstrument[idx]).arcsecond
-
-        # Define a reasonable condition on what is a good match on good photometry
+        print (instCatalog.dtype.names)
+        # Define a reasonable condition on what is a good match on good photometry; S/N > 20
         condition = (distance < 5) & (instCatalog['FLUX'] > 0) & (refcatalog[referenceFilterName] > 0) & (
-                refcatalog[referenceFilterName] < 26)  # & (instCatalog['magerr'] < 0.02)
+                refcatalog[referenceFilterName] < 26)   &  (instCatalog['flux'] / instCatalog['fluxerr'] > 20)
 
         # Calculate instrumental magnitude from PSF instrument photometry
         instmag = -2.5 * np.log10(instCatalog['FLUX'][condition] / retCatalog['exptime'])
@@ -208,22 +209,24 @@ class PhotCalib():
 
 
     def robustfit (self, deltamag, refcol):
-        #Initial preselection based on absoute values
+        #Initial preselection based on absolute values
         cond = (refcol > -0.5) & (refcol < 2.0) & (np.abs( (deltamag - np.median (deltamag))) < 5 * np.std (deltamag))
-        colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
-        color_p = np.poly1d(colorparams)
-        delta = deltamag - color_p(refcol)
-        cond = (refcol > -0.5) & (refcol < 3) & (np.abs (delta) < 0.5) & (np.abs (delta) < 1 * np.std (delta))
         colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
         color_p = np.poly1d(colorparams)
 
         delta = deltamag - color_p(refcol)
-        cond = (refcol > -0.5) & (refcol < 3) & (np.abs (delta) < 0.5) & (np.abs (delta) < 1 * np.std (delta))
+        cond = (refcol > -0.5) & (refcol < 3) & (np.abs (delta) < 0.5) & (np.abs (delta) < 3 * np.std (delta[cond]))
+        colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
+        color_p = np.poly1d(colorparams)
+
+        delta = deltamag - color_p(refcol)
+        cond = (refcol > -0.5) & (refcol < 3) & (np.abs (delta) < 0.5) & (np.abs (delta) < 1 * np.std (delta[cond]))
         colorparams = np.polyfit(refcol[cond], deltamag[cond], 1)
         color_p = np.poly1d(colorparams)
 
         new_colorterm = colorparams[0]
         new_zeropoint = colorparams[1]
+        
         new_std = np.std (  (deltamag - color_p(refcol))[cond] )
         _logger.debug (f'Fit: zp = {new_zeropoint} color = {new_colorterm} rms = {new_std}')
         return colorparams, cond
@@ -360,8 +363,8 @@ class PhotCalib():
                 plt.plot(xp, color_p(xp), '--', color='blue', label=f"color term {colorterm:5.3f}" )
                 plt.legend()
 
-            plt.xlim([-0.5, 3.0])
-            plt.ylim([photzp - 0.75, photzp + 0.75])
+            plt.xlim([-0.5, 3.5])
+            plt.ylim([photzp - 1.75, photzp + 1.75])
             plt.xlabel("(g-i)$_{\\rm{SDSS}}$ Reference")
             plt.ylabel("Reference Mag - Instrumental Mag  %s" % ( retCatalog['instfilter']))
             plt.title(f"Color correction {outbasename}")
@@ -439,7 +442,7 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
         initialsize, len(rejects), len(inputlist)))
 
     
-    photzpStage = PhotCalib(args.refcat2_url)
+    photzpStage = PhotCalib(args.refcat2_url, use_sdss=args.sdss)
     for image in inputlist:
         if rewritetoarchivename:
             fn = lcofilename_to_archivepath(image['filename'], args.rootdir)
@@ -498,6 +501,8 @@ def parseCommandLine():
     cameragroup.add_argument('--crawldirectory', default=None, type=str,
                              help="process all reduced image in specific directoy")
 
+
+    parser.add_argument("--sdss", action='store_true', help="Use SDSS photometric catalog for reference")
     args = parser.parse_args()
     setup_logging(args.log_level)
 

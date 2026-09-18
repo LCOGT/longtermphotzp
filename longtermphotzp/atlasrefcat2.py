@@ -119,6 +119,7 @@ class atlas_refcat2:
 
             dtype=[np.float32] * 12
             table = Table(response.json(), dtype=dtype)
+            table = table[(table['rmagerr']<0.025) & (table['gmagerr']<0.025) & (table['imagerr']<0.025) & (table['zmagerr']<0.025)]
         except Exception as e:
             _logger.exception(f"While trying to read from refcat2: {e}")
             return None
