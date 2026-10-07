@@ -131,10 +131,14 @@ mirrorreplacmenet = {
                       datetime.datetime(2019, 10, 20),  # mirror wash
                       datetime.datetime(2020, 8, 22),  # mirror wash
                       datetime.datetime(2022, 7, 1),  # mirror wash
+                      datetime.datetime(2024, 7, 1),  # mirror wash
+                      datetime.datetime(2026, 9, 1),  # mirror wash, Sophia camera installation
                       ],
     'elp-domb-1m0a': [datetime.datetime(2019, 10, 20),  # mirror wash
                       datetime.datetime(2020, 8, 19),  # mirror wash
                       datetime.datetime(2022, 7, 1),  # mirror wash
+                      datetime.datetime(2024, 7, 1),  # mirror wash
+                      datetime.datetime(2026, 9, 1),  # mirror wash
                       ],
 
     'coj-clma-2m0a': [datetime.datetime(2016, 4, 1),
@@ -142,6 +146,7 @@ mirrorreplacmenet = {
                       datetime.datetime(2021, 2, 20),
                       datetime.datetime(2022, 10, 15),
                       datetime.datetime(2023, 10, 18), # Muscat 4 installation
+                      datetime.datetime(2025, 9, 15),
                       ],
 
     'coj-clma-0m4a': [datetime.datetime(2023, 10, 1),],
@@ -150,11 +155,16 @@ mirrorreplacmenet = {
 
     'coj-doma-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 6, 18),
-                      datetime.datetime(2020, 2, 20), ],
+                      datetime.datetime(2020, 2, 20), 
+                      datetime.datetime(2024, 1, 1),
+                      datetime.datetime(2026, 10, 3)],
+
     'coj-domb-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 6, 10),
                       datetime.datetime(2020, 2, 26),
-                      ],
+                      datetime.datetime(2024, 1, 1),
+                      datetime.datetime(2026, 10, 3)],
+                      
 
     'lsc-aqwa-0m4a': [datetime.datetime(2024, 3, 15),],
 
@@ -163,14 +173,18 @@ mirrorreplacmenet = {
     'lsc-doma-1m0a': [datetime.datetime(2016, 6, 1),
                       datetime.datetime(2016, 10, 15),
                       datetime.datetime(2018, 9, 14),
-                      datetime.datetime(2022, 11, 1),], # mirror wash only
+                      datetime.datetime(2022, 11, 1), # mirror wash only
+                    datetime.datetime(2024, 10, 10)], # mirror wash only
+
     'lsc-domb-1m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2018, 9, 14),
-                      datetime.datetime(2022, 11, 1),], # mirror wash only
+                      datetime.datetime(2022, 11, 1),
+                      datetime.datetime(2024, 10, 10)], # mirror wash only
     'lsc-domc-1m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2017, 8, 31),
                       datetime.datetime(2018, 9, 14),
-                      datetime.datetime(2022, 11, 1),], # mirror wash only
+                      datetime.datetime(2022, 11, 1),
+                      datetime.datetime(2024, 10, 10)], # mirror wash only
 
     'cpt-aqwa-0m4a': [datetime.datetime(2023, 5, 1),],
 
@@ -179,16 +193,22 @@ mirrorreplacmenet = {
                       datetime.datetime(2018, 10, 24),
                       datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
                       datetime.datetime(2023, 1, 15), # wet mirror wash
+                      datetime.datetime(2024, 10, 1),# wet mirror wash
+                      datetime.datetime(2026, 8, 15),# wet mirror wash
                       ],
     'cpt-domb-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 10, 24),
                       datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
                       datetime.datetime(2023, 1, 15), # wet mirror wash
+                      datetime.datetime(2024, 10, 1),# wet mirror wash
+                      datetime.datetime(2026, 8, 15),# wet mirror wash
                       ],
     'cpt-domc-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 10, 24),
                       datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
                       datetime.datetime(2023, 1, 15), # wet mirror wash
+                      datetime.datetime(2024, 10, 1),# wet mirror wash
+                      datetime.datetime(2026, 8, 15),# wet mirror wash
                       ],
 
     'tfn-aqwa-0m4a' : [datetime.datetime(2023, 11, 1),

@@ -57,6 +57,29 @@ class PhotCalib():
             pass
             # logging_tags = logs.image_config_to_tags(image, self.group_by_keywords)
 
+    def loadInstrumentalCatalog(self, imageobject, args=None):
+        """Load the image catalog and optionally redo its aperture photometry."""
+        try:
+            if args is not None and args.fromraw:
+                instCatalog = getnewtargetlist(imageobject['SCI'].data)
+            else:
+                instCatalog = imageobject['CAT'].data
+
+            if args is not None and args.aperturephot:
+                redoAperturePhotometry(
+                    instCatalog,
+                    imageobject['SCI'].data,
+                    args.aperturephot[0],
+                    args.aperturephot[1],
+                    args.aperturephot[2],
+                )
+        except Exception:
+            _logger.exception("No extension \'CAT\' available, skipping.")
+            return None
+
+        header = imageobject['SCI'].header
+        return header, instCatalog
+
     def generateCrossmatchedCatalog(self, imageobject, mintexp=60, args = None):
         """ Load the banzai-generated photometry catalog from  'CAT' extension, queries PS1 catalog for image FoV, and
         returns a cross-matched catalog.
@@ -121,19 +144,9 @@ class PhotCalib():
         referenceInformation = self.referencecatalog.FILTERMAPPING[retCatalog['instfilter']]
         referenceFilterName = referenceInformation['refMag']
 
-        # Load photometry catalog from image, and transform into RA/Dec coordinates
-        try:
-            if args is not None and args.fromraw:
-                instCatalog = getnewtargetlist(imageobject['SCI'].data)
-
-            else:
-                instCatalog = imageobject['CAT'].data
-            if (args is not None) and args.aperturephot:
-
-                redoAperturePhotometry (instCatalog, imageobject['SCI'].data, args.aperturephot[0],args.aperturephot[1],args.aperturephot[2])
-
-        except Exception:
-            _logger.exception("No extension \'CAT\' available, skipping.")
+        # Load photometry catalog from image, and optionally redo aperture photometry.
+        header, instCatalog = self.loadInstrumentalCatalog(imageobject, args)
+        if instCatalog is None:
             return None
 
         # Transform the image catalog to RA / Dec based on the WCS solution in the header.
@@ -171,7 +184,7 @@ class PhotCalib():
 
         # Measure the distance between matched pairs. Important to down-select viable pairs.
         distance = cReference.separation(cInstrument[idx]).arcsecond
-        print (instCatalog.dtype.names)
+
         # Define a reasonable condition on what is a good match on good photometry; S/N > 20
         condition = (distance < 5) & (instCatalog['FLUX'] > 0) & (refcatalog[referenceFilterName] > 0) & (
                 refcatalog[referenceFilterName] < 26)   &  (instCatalog['flux'] / instCatalog['fluxerr'] > 20)
@@ -247,7 +260,7 @@ class PhotCalib():
                 filename = str(row['filename'])
                 frameid =  int(row['frameid'])
             except Exception as e:
-                _logger.warning(f'Error occurred while processing image entry\n {imageentry}\n {filename}\ {frameid} \n error was {e}')
+                _logger.warning(f'Error occurred while processing image entry\n {imageentry} {filename} {frameid} \n error was {e}')
                 return
         else:
             return
