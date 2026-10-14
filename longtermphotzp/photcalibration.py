@@ -145,9 +145,10 @@ class PhotCalib():
         referenceFilterName = referenceInformation['refMag']
 
         # Load photometry catalog from image, and optionally redo aperture photometry.
-        header, instCatalog = self.loadInstrumentalCatalog(imageobject, args)
-        if instCatalog is None:
+        loaded = self.loadInstrumentalCatalog(imageobject, args)
+        if loaded is None:
             return None
+        header, instCatalog = loaded
 
         # Transform the image catalog to RA / Dec based on the WCS solution in the header.
         # TODO: rerun astrometry.net with a higher order distortion model
@@ -463,8 +464,12 @@ def process_imagelist(inputlist: astropy.table.Table, db, args, rewritetoarchive
             fn = image['filename']
         image = Table(np.asarray([fn, image['frameid']]), names=['filename', 'frameid'])
         _logger.info(f"processimagelist(): send of to analyze image: {image['filename'][0]} {image['frameid'][0]}")
-        photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir, mintexp=args.mintexp,
-                                 useaws=args.useaws, args=args)
+        try:
+            photzpStage.analyzeImage(image, outputdb=db, outputimageRootDir=args.outputimageRootDir,
+                                     mintexp=args.mintexp, useaws=args.useaws, args=args)
+        except Exception:
+            _logger.exception(f"Failed to analyze image {image['filename'][0]}, skipping.")
+            plt.close('all')
 
 
 def lcofilename_to_archivepath(filename, rootpath):
@@ -517,7 +522,7 @@ def parseCommandLine():
 
     parser.add_argument("--sdss", action='store_true', help="Use SDSS photometric catalog for reference")
     args = parser.parse_args()
-    setup_logging(args.log_level)
+    setup_logging(level=args.log_level)
 
 
     if args.outputimageRootDir is not None:

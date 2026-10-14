@@ -92,18 +92,23 @@ class photdbinterface:
 
         _logger.debug("addphotzp: %s" % str(photmeasurementObject))
 
-        existingEntry = self.exists(photmeasurementObject.name)
-        if existingEntry:
-            _logger.info(f"Updating exsitng data base entry: {photmeasurementObject} -> {existingEntry}")
-            existingEntry.zp = photmeasurementObject.zp
-            existingEntry.zpsig = photmeasurementObject.zpsig
-            existingEntry.colorterm = photmeasurementObject.colorterm
-        else:
-            _logger.info("Insert: %s" % str(photmeasurementObject))
-            self.session.add(photmeasurementObject)
+        try:
+            existingEntry = self.exists(photmeasurementObject.name)
+            if existingEntry:
+                _logger.info(f"Updating exsitng data base entry: {photmeasurementObject} -> {existingEntry}")
+                existingEntry.zp = photmeasurementObject.zp
+                existingEntry.zpsig = photmeasurementObject.zpsig
+                existingEntry.colorterm = photmeasurementObject.colorterm
+            else:
+                _logger.info("Insert: %s" % str(photmeasurementObject))
+                self.session.add(photmeasurementObject)
 
-        if commit:
-            self.session.commit()
+            if commit:
+                self.session.commit()
+        except Exception:
+            # A failed flush / commit poisons the session; roll back so subsequent images can still be stored.
+            self.session.rollback()
+            raise
 
     def exists(self, filename):
         """ Check if entry as identified by file name already exists in database

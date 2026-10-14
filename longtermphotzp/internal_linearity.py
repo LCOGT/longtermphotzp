@@ -104,7 +104,7 @@ def analyse_linearity(matchedCatalogs):
  
 
 def main():
-    setup_logging("DEBUG")
+    setup_logging(level="DEBUG")
 
     files = sys.argv[1:]
     results = matchCatlogs(files)
