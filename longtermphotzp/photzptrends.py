@@ -116,120 +116,164 @@ telescopecleaning = {
 # the new slope calculation
 mirrorreplacmenet = {
 
-    'ogg-clma-0m4b': [datetime.datetime(2024, 2, 1),],
+    'ogg-clma-0m4b': [datetime.datetime(2024, 2, 1),
+                      ],
 
-    'ogg-clma-0m4c': [datetime.datetime(2022, 7, 1),],
+    'ogg-clma-0m4c': [datetime.datetime(2022, 7, 1),
+                      ],
 
     'ogg-clma-2m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2017, 10, 20),
-                      datetime.datetime(2019, 6, 16),# this was a mirror wash only
-                      datetime.datetime(2020, 9, 27), # Transition to Muscat3
-                      datetime.datetime(2021, 3, 15), # Transition to Muscat3 ep01 -> ep05
+                      datetime.datetime(2019, 6, 16),  # this was a mirror wash only
+                      datetime.datetime(2020, 9, 27),  # Transition to Muscat3
+                      datetime.datetime(2021, 3, 15),  # Transition to Muscat3 ep01 -> ep05
+                      datetime.datetime(2025, 4, 17, 21),  # detected in zp data: zeropoint step +0.54 mag (rp, gp +0.75)
                       ],
 
-    'elp-aqwa-0m4a': [datetime.datetime(2023, 6, 1),],
+    'elp-aqwa-0m4a': [datetime.datetime(2019, 5, 19, 18),  # detected in zp data: zeropoint step +0.58 mag (rp)
+                      datetime.datetime(2020, 10, 24, 18),  # detected in zp data: zeropoint step +0.35 mag (rp)
+                      datetime.datetime(2022, 7, 15, 18),  # detected in zp data: zeropoint step +0.52 mag (rp)
+                      datetime.datetime(2023, 6, 1),
+                      ],
 
-    'elp-doma-1m0a': [datetime.datetime(2016, 4, 1),
+    'elp-doma-1m0a': [datetime.datetime(2016, 3, 30, 18),  # was 2016-04-01, date from zp data: camera change kb74->fl05 +0.77 mag (rp, gp +0.68)
                       datetime.datetime(2018, 4, 5),
                       datetime.datetime(2019, 5, 22),  # mirror wash
                       datetime.datetime(2019, 10, 20),  # mirror wash
-                      datetime.datetime(2020, 8, 22),  # mirror wash
+                      datetime.datetime(2020, 8, 20, 18),  # mirror wash; was 2020-08-22, date from zp data: zeropoint step +0.21 mag (rp, gp +0.24)
+                      datetime.datetime(2021, 10, 26, 18),  # detected in zp data: zeropoint step +0.11 mag (rp, gp +0.11)
+                      datetime.datetime(2022, 3, 31, 18),  # detected in zp data: zeropoint step +0.27 mag (rp, gp +0.27)
                       datetime.datetime(2022, 7, 1),  # mirror wash
-                      datetime.datetime(2024, 7, 1),  # mirror wash
+                      datetime.datetime(2024, 6, 26, 18),  # mirror wash; was 2024-07-01, date from zp data: zeropoint step +0.26 mag (rp, gp +0.29)
                       datetime.datetime(2026, 9, 1),  # mirror wash, Sophia camera installation
                       ],
-    'elp-domb-1m0a': [datetime.datetime(2019, 10, 20),  # mirror wash
+
+    'elp-domb-1m0a': [datetime.datetime(2019, 10, 16, 18),  # mirror wash; was 2019-10-20, date from zp data: zeropoint step +0.21 mag (rp, gp +0.19)
                       datetime.datetime(2020, 8, 19),  # mirror wash
+                      datetime.datetime(2022, 3, 30, 18),  # detected in zp data: zeropoint step +0.26 mag (rp)
                       datetime.datetime(2022, 7, 1),  # mirror wash
-                      datetime.datetime(2024, 7, 1),  # mirror wash
+                      datetime.datetime(2024, 6, 27, 18),  # mirror wash; was 2024-07-01, date from zp data: zeropoint step +0.36 mag (rp, gp +0.34)
                       datetime.datetime(2026, 9, 1),  # mirror wash
                       ],
 
     'coj-clma-2m0a': [datetime.datetime(2016, 4, 1),
-                      datetime.datetime(2018, 6, 20),
+                      datetime.datetime(2018, 6, 2, 1),  # was 2018-06-20, date from zp data: zeropoint step +2.23 mag (rp)
                       datetime.datetime(2021, 2, 20),
-                      datetime.datetime(2022, 10, 15),
-                      datetime.datetime(2023, 10, 18), # Muscat 4 installation
-                      datetime.datetime(2025, 9, 15),
+                      datetime.datetime(2022, 9, 27, 1),  # was 2022-10-15, date from zp data: zeropoint step +0.58 mag (rp)
+                      datetime.datetime(2023, 10, 18),  # Muscat 4 installation
+                      datetime.datetime(2025, 9, 13, 1),  # was 2025-09-15, date from zp data: zeropoint step +0.89 mag (rp, gp +1.05)
                       ],
 
-    'coj-clma-0m4a': [datetime.datetime(2023, 10, 1),],
+    'coj-clma-0m4a': [datetime.datetime(2017, 6, 30, 1),  # detected in zp data: zeropoint step +0.36 mag (rp, gp +0.40)
+                      datetime.datetime(2023, 10, 1),
+                      ],
 
-    'coj-clma-0m4b': [datetime.datetime(2023, 10, 1),],
+    'coj-clma-0m4b': [datetime.datetime(2023, 10, 1),
+                      ],
 
     'coj-doma-1m0a': [datetime.datetime(2016, 10, 1),
+                      datetime.datetime(2018, 5, 3, 1),  # detected in zp data: zeropoint step +0.21 mag (rp, gp +0.20)
                       datetime.datetime(2018, 6, 18),
-                      datetime.datetime(2020, 2, 20), 
-                      datetime.datetime(2024, 1, 1),
-                      datetime.datetime(2026, 10, 3)],
+                      datetime.datetime(2020, 2, 17, 1),  # was 2020-02-20, date from zp data: zeropoint step +0.36 mag (rp, gp +0.33)
+                      datetime.datetime(2021, 9, 11, 1),  # detected in zp data: zeropoint step +0.10 mag (rp, gp +0.14)
+                      datetime.datetime(2022, 2, 2, 1),  # detected in zp data: zeropoint step +0.16 mag (rp, gp +0.14)
+                      datetime.datetime(2024, 1, 14, 1),  # was 2024-01-01, date from zp data: zeropoint step +0.32 mag (rp, gp +0.45)
+                      datetime.datetime(2025, 5, 15, 1),  # detected in zp data: zeropoint step +0.11 mag (rp, gp +0.14)
+                      datetime.datetime(2026, 10, 3),
+                      ],
 
     'coj-domb-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 6, 10),
                       datetime.datetime(2020, 2, 26),
+                      datetime.datetime(2021, 9, 7, 1),  # detected in zp data: zeropoint step +0.17 mag (rp, gp +0.18)
+                      datetime.datetime(2022, 1, 24, 1),  # detected in zp data: zeropoint step +0.19 mag (rp, gp +0.19)
                       datetime.datetime(2024, 1, 1),
-                      datetime.datetime(2026, 10, 3)],
-                      
+                      datetime.datetime(2026, 9, 30, 1),  # was 2026-10-03, date from zp data: zeropoint step +0.40 mag (rp, gp +0.41)
+                      ],
 
-    'lsc-aqwa-0m4a': [datetime.datetime(2024, 3, 15),],
+    'lsc-aqwa-0m4a': [datetime.datetime(2022, 3, 2, 16),  # detected in zp data: zeropoint step +0.70 mag (rp, gp +0.76)
+                      datetime.datetime(2024, 3, 15),
+                      ],
 
-    'lsc-aqwb-0m4a': [datetime.datetime(2024, 3, 15),],
+    'lsc-aqwb-0m4a': [datetime.datetime(2018, 4, 14, 16),  # detected in zp data: zeropoint step +0.22 mag (rp)
+                      datetime.datetime(2022, 3, 2, 16),  # detected in zp data: zeropoint step +0.79 mag (rp, gp +0.83)
+                      datetime.datetime(2024, 3, 15),
+                      ],
 
     'lsc-doma-1m0a': [datetime.datetime(2016, 6, 1),
-                      datetime.datetime(2016, 10, 15),
-                      datetime.datetime(2018, 9, 14),
-                      datetime.datetime(2022, 11, 1), # mirror wash only
-                    datetime.datetime(2024, 10, 10)], # mirror wash only
+                      datetime.datetime(2016, 10, 20, 16),  # was 2016-10-15, date from zp data: camera change kb69->fl15 +0.65 mag (rp, gp +0.65)
+                      datetime.datetime(2018, 7, 25, 16),  # detected in zp data: zeropoint step +0.24 mag (rp, gp +0.24)
+                      datetime.datetime(2018, 9, 30, 16),  # was 2018-09-14, date from zp data: zeropoint step +0.63 mag (rp, gp +0.76)
+                      datetime.datetime(2022, 11, 1),  # mirror wash only
+                      datetime.datetime(2024, 10, 10),
+                      datetime.datetime(2025, 10, 20, 16),  # detected in zp data: zeropoint step +0.13 mag (rp, gp +0.12)
+                      ],  # mirror wash only
 
     'lsc-domb-1m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2018, 9, 14),
-                      datetime.datetime(2022, 11, 1),
-                      datetime.datetime(2024, 10, 10)], # mirror wash only
+                      datetime.datetime(2022, 11, 3, 16),  # was 2022-11-01, date from zp data: zeropoint step +0.17 mag (rp, gp +0.28)
+                      datetime.datetime(2024, 10, 10),
+                      datetime.datetime(2025, 10, 19, 16),  # detected in zp data: zeropoint step +0.09 mag (rp, gp +0.13)
+                      ],  # mirror wash only
+
     'lsc-domc-1m0a': [datetime.datetime(2016, 4, 1),
                       datetime.datetime(2017, 8, 31),
-                      datetime.datetime(2018, 9, 14),
-                      datetime.datetime(2022, 11, 1),
-                      datetime.datetime(2024, 10, 10)], # mirror wash only
+                      datetime.datetime(2018, 4, 4, 16),  # detected in zp data: zeropoint step +0.08 mag (rp, gp +0.06)
+                      datetime.datetime(2018, 9, 16, 16),  # was 2018-09-14, date from zp data: zeropoint step +0.33 mag (rp, gp +0.36)
+                      datetime.datetime(2022, 11, 2, 16),  # was 2022-11-01, date from zp data: zeropoint step +0.17 mag (rp, gp +0.33)
+                      datetime.datetime(2024, 10, 10),
+                      datetime.datetime(2025, 10, 14, 16),  # detected in zp data: zeropoint step +0.15 mag (rp, gp +0.20)
+                      ],  # mirror wash only
 
-    'cpt-aqwa-0m4a': [datetime.datetime(2023, 5, 1),],
+    'cpt-aqwa-0m4a': [datetime.datetime(2020, 11, 25, 10),  # detected in zp data: zeropoint step +0.27 mag (rp, gp +0.24)
+                      datetime.datetime(2023, 5, 1),
+                      ],
 
-    'cpt-doma-1m0a': [datetime.datetime(2016, 10, 1),
+    'cpt-doma-1m0a': [datetime.datetime(2016, 10, 4, 10),  # was 2016-10-01, date from zp data: zeropoint step +0.57 mag (rp, gp +0.54)
                       datetime.datetime(2016, 11, 1),
+                      datetime.datetime(2018, 9, 12, 10),  # detected in zp data: zeropoint step +0.08 mag (rp, gp +0.07)
                       datetime.datetime(2018, 10, 24),
                       datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
-                      datetime.datetime(2023, 1, 15), # wet mirror wash
-                      datetime.datetime(2024, 10, 1),# wet mirror wash
-                      datetime.datetime(2026, 8, 15),# wet mirror wash
+                      datetime.datetime(2023, 1, 12, 10),  # wet mirror wash; was 2023-01-15, date from zp data: zeropoint step +0.86 mag (rp, gp +0.93)
+                      datetime.datetime(2024, 10, 1),  # wet mirror wash
+                      datetime.datetime(2026, 8, 15),  # wet mirror wash
                       ],
-    'cpt-domb-1m0a': [datetime.datetime(2016, 10, 1),
+
+    'cpt-domb-1m0a': [datetime.datetime(2016, 10, 11, 10),  # was 2016-10-01, date from zp data: camera change kb76->fl14 +0.62 mag (rp)
                       datetime.datetime(2018, 10, 24),
                       datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
-                      datetime.datetime(2023, 1, 15), # wet mirror wash
-                      datetime.datetime(2024, 10, 1),# wet mirror wash
-                      datetime.datetime(2026, 8, 15),# wet mirror wash
+                      datetime.datetime(2023, 1, 14, 10),  # wet mirror wash; was 2023-01-15, date from zp data: zeropoint step +0.77 mag (rp)
+                      datetime.datetime(2024, 10, 10, 10),  # wet mirror wash; was 2024-10-01, date from zp data: zeropoint step +0.45 mag (rp, gp +0.54)
+                      datetime.datetime(2026, 8, 14, 10),  # wet mirror wash; was 2026-08-15, date from zp data: zeropoint step +0.34 mag (rp, gp +0.38)
                       ],
+
     'cpt-domc-1m0a': [datetime.datetime(2016, 10, 1),
                       datetime.datetime(2018, 10, 24),
-                      datetime.datetime(2019, 9, 22),  # mirror wash, no replacement
-                      datetime.datetime(2023, 1, 15), # wet mirror wash
-                      datetime.datetime(2024, 10, 1),# wet mirror wash
-                      datetime.datetime(2026, 8, 15),# wet mirror wash
+                      datetime.datetime(2019, 9, 20, 10),  # mirror wash, no replacement; was 2019-09-22, date from zp data: zeropoint step +0.27 mag (rp)
+                      datetime.datetime(2023, 1, 14, 10),  # wet mirror wash; was 2023-01-15, date from zp data: zeropoint step +1.00 mag (rp, gp +1.09)
+                      datetime.datetime(2024, 10, 1),  # wet mirror wash
+                      datetime.datetime(2026, 8, 14, 10),  # wet mirror wash; was 2026-08-15, date from zp data: zeropoint step +0.26 mag (rp, gp +0.38)
                       ],
 
-    'tfn-aqwa-0m4a' : [datetime.datetime(2023, 11, 1),
-                       ], # delta rho replacement
-    'tfn-aqwa-0m4b' : [datetime.datetime(2023, 11, 1),
-                       ], # delta rho replacement
-    'tfn-doma-1m0a' : [datetime.datetime(2021, 5, 1),
-                       datetime.datetime(2023, 11, 15),
-                       ], # delta rho replacement
-    'tfn-domb-1m0a' : [datetime.datetime(2021, 5, 1),
-                       datetime.datetime(2023, 11, 15),
-                       ], # delta rho replacement
+    'tfn-aqwa-0m4a': [datetime.datetime(2016, 10, 8, 12),  # detected in zp data: zeropoint step +0.23 mag (rp)
+                      datetime.datetime(2023, 11, 1),
+                      ],  # delta rho replacement
 
+    'tfn-aqwa-0m4b': [datetime.datetime(2023, 11, 1),
+                      ],  # delta rho replacement
 
+    'tfn-doma-1m0a': [datetime.datetime(2021, 5, 1),
+                      datetime.datetime(2023, 2, 11, 12),  # detected in zp data: zeropoint step +0.09 mag (rp, gp +0.11); marginal, in a 1 month data gap
+                      datetime.datetime(2023, 11, 10, 12),  # was 2023-11-15, date from zp data: zeropoint step +0.35 mag (rp, gp +0.29)
+                      datetime.datetime(2025, 6, 9, 12),  # detected in zp data: zeropoint step +0.24 mag (rp, gp +0.15)
+                      ],  # delta rho replacement
 
-
+    'tfn-domb-1m0a': [datetime.datetime(2021, 5, 1),
+                      datetime.datetime(2023, 11, 10, 12),  # was 2023-11-15, date from zp data: zeropoint step +0.36 mag (rp, gp +0.39)
+                      datetime.datetime(2025, 6, 8, 12),  # detected in zp data: zeropoint step +0.32 mag (rp)
+                      ],  # delta rho replacement
 }
+
 
 telescopereferencethroughput = {'up':{"1m0": 22.45, "2m0": 21.4,  '0m4':  17.50},
                                 'gp':{"1m0": 24.3,  "2m0": 25.4,  '0m4':  21.8},
