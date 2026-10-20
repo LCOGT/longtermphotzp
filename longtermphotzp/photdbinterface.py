@@ -196,6 +196,14 @@ class photdbinterface:
             dateselect = (t['dateobs'] < datetime.datetime(year=2019, month=3, day=12)) & (t['camera'] == 'fs01')
             t['zp'][dateselect] = t['zp'][dateselect] - 2.5 * math.log10(8.14 / 7.7)
 
+        # All 0.4m QHY cameras (sq*) had a gain misconfigured by a factor of 2 between 2026-04-08 and 2026-05-05,
+        # making the zeropoints 0.75 mag too bright. Window derived from the zeropoint data of all sq cameras.
+        sqcameras = np.char.startswith(np.asarray(t['camera']).astype(str), 'sq')
+        if sqcameras.any():
+            dateselect = (t['dateobs'] > datetime.datetime(year=2026, month=4, day=8, hour=12)) & (
+                    t['dateobs'] < datetime.datetime(year=2026, month=5, day=5, hour=21)) & sqcameras
+            t['zp'][dateselect] = t['zp'][dateselect] - 2.5 * math.log10(2.0)
+
         return t
 
     def readmirrormodel(self, telescopeid, filter):

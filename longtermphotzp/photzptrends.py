@@ -10,7 +10,7 @@ import datetime
 import sys
 import math
 import calendar
-import scipy.signal
+import scipy.ndimage
 import argparse
 import logging
 import boto3
@@ -46,6 +46,10 @@ telescopedict = {
     #  'sqa': ['doma-0m8a'],
     #  'bpl': ['doma-1m0a']
 }
+
+# Site longitudes (degrees east), used to split nights at local noon.
+sitelongitude = {'lsc': -70.8, 'coj': 149.1, 'ogg': -156.3, 'elp': -104.0, 'cpt': 20.8, 'tfn': -16.5,
+                 'sqa': -120.0, 'bpl': -119.9}
 
 # TODO: either migrate into separate file or find a better source, e.g., store in db, or query maintenance data base.
 
@@ -372,7 +376,7 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     # find the overall trend of zeropoint variations, save to output file.
     if len(dateselect[zpsigselect < photzpmaxnoise]) > 0:
         _x, _y = findUpperEnvelope(dateselect[zpsigselect < photzpmaxnoise], zp_air[zpsigselect < photzpmaxnoise],
-                                   ymax=ymax)
+                                   ymax=ymax, site=select_site)
         db = photdbinterface(context.database) if cacheddb is None else cacheddb
         db.storemirrormodel("%s-%s" % (select_site, select_telescope), select_filter, _x, _y)
         if cacheddb is None:
@@ -540,7 +544,7 @@ def plot_referencethoughput(start, end, select_filter, select_telescope):
         rect = Rectangle((start, goodvalue), end - start, -0.2, color='#A0FFA0A0')
         plt.axes().add_patch(rect)
 
-def findUpperEnvelope(dateobs, datum, ymax=24.2):
+def findUpperEnvelope(dateobs, datum, ymax=24.2, site=None):
     """
     Find the upper envelope of a photZP time line
 
@@ -556,6 +560,7 @@ def findUpperEnvelope(dateobs, datum, ymax=24.2):
     :param dateobs:
     :param datum:
     :param range:
+    :param site: site code; nights are split at local noon of the site. Defaults to 12 UTC if unknown.
     :return:
     """
 
@@ -569,31 +574,36 @@ def findUpperEnvelope(dateobs, datum, ymax=24.2):
     day_x = []
     day_y = []
 
-    # TODO: define  day / night boundary for the site.
-    startdate = datetime.datetime(year=x[0].year, month=x[0].month,
-                                  day=x[0].day, hour=12)
+    # Day / night boundary at local noon of the site, so a night is not split in two.
+    noon_utc = 12 - sitelongitude.get(site, 0) / 15.
+    startdate = datetime.datetime(year=x[0].year, month=x[0].month, day=x[0].day) + \
+                datetime.timedelta(hours=noon_utc)
+    if startdate > x[0]:
+        startdate = startdate - datetime.timedelta(days=1)
     enddate = x[len(x) - 1]
     while startdate < enddate:
         # Calculate the best throughput of a day
         todayzps = y[
             (x > startdate) & (x < startdate + datetime.timedelta(days=1)) & (
-                    y < ymax) & (y is not np.nan)]
+                    y < ymax) & np.isfinite(y)]
 
         if len(todayzps) > 3:  # require a minimum amount of data for a night
 
-            todayzps = np.sort(todayzps)[1:]
+            # reject the brightest measurement as outlier
+            todayzps = np.sort(todayzps)[:-1]
             maxzp = np.nanmax(todayzps)
             upperEnv = np.nanmean(todayzps[todayzps > (maxzp - stderror)])
 
-            if upperEnv is not np.nan:
+            if np.isfinite(upperEnv):
                 day_x.append(startdate)
                 day_y.append(upperEnv)
 
         startdate = startdate + datetime.timedelta(days=1)
 
     # filter the daily zero point variation. Work in progress.
+    # Pad with the edge values, not with zeros, so the most recent model points are not biased low.
     medianrange = 9
-    newday_y = scipy.signal.medfilt(day_y, medianrange)
+    newday_y = scipy.ndimage.median_filter(np.asarray(day_y), medianrange, mode='nearest')
 
     return np.asarray(day_x), newday_y
 
