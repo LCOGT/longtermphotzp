@@ -1,5 +1,42 @@
 # Changelog
 
+Version 8.3.0
+
+**Change in the photometry measurement (photcalibration).** Zeropoints from this version are not
+directly comparable with earlier ones at the level of a few hundredths of a magnitude (see below).
+
+* Stellar fluxes are now taken from BANZAI's fixed circular aperture `fluxaper6` (6" diameter) instead of
+  the adaptive Kron aperture `flux`. The Kron aperture shrinks for faint stars and measures them too faint:
+  on the test images the zeropoint residual drifted by -5 to -18 mmag per magnitude of stellar brightness.
+  With the fixed aperture this trend is reduced to 0 to -6 mmag/mag.
+* A fixed aperture misses a seeing- and focus-dependent fraction of the starlight (0 - 30 % on the test
+  images). Each image therefore gets an aperture correction: the median Kron / `fluxaper6` flux ratio of the
+  brightest quarter of the unsaturated, unflagged stars, where the Kron aperture collects nearly all the
+  light. The zeropoint stays on the total-flux scale and does not depend on seeing. The correction is shown
+  in the title of the zeropoint diagnostic plot.
+* Effect on the test images:
+  * zeropoints change by at most 0.035 mag,
+  * the star-to-star zeropoint scatter (`zpsig`) is about halved for most images,
+  * colour terms no longer absorb the magnitude-dependent bias of the Kron photometry
+    (e.g. elp 1m B: -0.093 -> -0.034).
+* Measurements in the database made with earlier versions used the Kron flux. Mixed old and new
+  measurements can differ by up to ~0.035 mag per image until older data are reprocessed.
+* Catalogs re-measured with `--fromraw` or `--aperturephot` keep using their own `FLUX` column, as before.
+
+Throughput trend model (photzptrends)
+* Fixed upper-envelope fit: the brightest instead of the faintest measurement of a night is rejected as
+  outlier; the median filter no longer pads with zeros, which biased the most recent model points low;
+  nights are split at local noon of the site instead of 12 UTC; NaN checks work.
+* Correct zeropoints of all 0.4m QHY (sq) cameras between 2026-04-08 and 2026-05-05, when their gain was
+  misconfigured by a factor of 2 (zeropoints were 0.75 mag too bright).
+* Mirror wash / maintenance dates refined from steps in the zeropoint data (27 dates), and 28 events
+  detected in the data added.
+
+Other changes since 8.2.1
+* Centralized logging configuration, decluttered logging.
+* Stricter error margins and fit error rejection; option to query the SDSS catalog directly.
+* Fix for crawldirectory table mismatch.
+
 Version 8.1.17
 * remove kb, fs cameras from crawler as they are no longer used at LCO
 
