@@ -34,6 +34,9 @@ import datetime
 
 _logger = logging.getLogger(__name__)
 
+# BANZAI catalog column used for the stellar photometry: fixed circular aperture of 6" diameter
+APERTURE_FLUX = 'fluxaper6'
+
 import warnings
 warnings.simplefilter("ignore")
 
@@ -186,18 +189,33 @@ class PhotCalib():
         # Measure the distance between matched pairs. Important to down-select viable pairs.
         distance = cReference.separation(cInstrument[idx]).arcsecond
 
+        # With a re-measured catalog (--fromraw, --aperturephot) the FLUX column already holds the photometry to use.
+        useBanzaiAperture = not (args is not None and (args.fromraw or args.aperturephot))
+
         # Define a reasonable condition on what is a good match on good photometry; S/N > 20
         condition = (distance < 5) & (instCatalog['FLUX'] > 0) & (refcatalog[referenceFilterName] > 0) & (
                 refcatalog[referenceFilterName] < 26)   &  (instCatalog['flux'] / instCatalog['fluxerr'] > 20)
 
-        # Calculate instrumental magnitude from PSF instrument photometry
-        instmag = -2.5 * np.log10(instCatalog['FLUX'][condition] / retCatalog['exptime'])
-
-        #instmagzero = -2.5 * np.log10(instCatalog['FLUX'][condition])
+        if useBanzaiAperture:
+            # Instrumental magnitude from a fixed aperture: the adaptive (Kron) aperture of 'flux' shrinks for faint
+            # stars and measures them too faint. The fixed aperture misses a seeing dependent fraction of the light,
+            # which is corrected per image with the Kron / aperture flux ratio of bright, unsaturated stars.
+            condition = condition & (instCatalog[APERTURE_FLUX] > 0)
+            apcor = self.apertureCorrection(instCatalog, condition, retCatalog['saturate'])
+            if apcor is None:
+                _logger.info("Not enough bright stars to determine an aperture correction. Skipping.")
+                return None
+            aperflux = instCatalog[APERTURE_FLUX][condition] * 10 ** (0.4 * apcor)
+        else:
+            apcor = 0.
+            aperflux = instCatalog['FLUX'][condition]
+        instmag = -2.5 * np.log10(aperflux / retCatalog['exptime'])
 
         # Calculate the magnitude difference between reference and inst catalog
+        retCatalog['apcor'] = apcor
+        retCatalog['fluxcolumn'] = APERTURE_FLUX if useBanzaiAperture else 'FLUX'
         retCatalog['instmag'] = instmag
-        retCatalog['instflux'] = instCatalog['FLUX'][condition]
+        retCatalog['instflux'] = aperflux
         retCatalog['refcol'] = (refcatalog['gmag'] - refcatalog['imag'])[condition]
         retCatalog['refcolerr'] = np.sqrt(refcatalog['gmagerr']**2 + refcatalog['imagerr']**2)[condition]
         retCatalog['refmag'] = refcatalog[referenceFilterName][condition]
@@ -211,6 +229,23 @@ class PhotCalib():
         retCatalog['peak'] = instCatalog['peak'][condition]
 
         return retCatalog
+
+    def apertureCorrection(self, instCatalog, condition, saturate, minstars=5):
+        """ Aperture correction [mag] from the fixed aperture to the Kron flux, measured on the brightest quarter of the
+        unsaturated, unflagged stars, where the Kron aperture captures (nearly) all of the light.
+        :return: correction to add to the aperture flux in magnitudes, or None if there are too few bright stars.
+        """
+        good = condition & (instCatalog['peak'] + instCatalog['background'] < 0.8 * saturate) & (instCatalog['flag'] == 0)
+        if good.sum() < 4 * minstars:
+            good = condition & (instCatalog['peak'] + instCatalog['background'] < 0.8 * saturate)
+        flux = instCatalog['flux'][good]
+        if len(flux) < minstars:
+            return None
+        bright = flux >= np.percentile(flux, 75) if len(flux) >= 4 * minstars else np.argsort(-flux)[:minstars]
+        ratio = instCatalog['flux'][good][bright] / instCatalog[APERTURE_FLUX][good][bright]
+        apcor = 2.5 * np.log10(np.median(ratio))
+        _logger.info(f"Aperture correction {APERTURE_FLUX} -> Kron: {apcor:+.3f} mag from {np.size(ratio)} stars")
+        return apcor
 
     def reject_outliers(self, data, m=2):
         """
@@ -332,7 +367,8 @@ class PhotCalib():
             plt.axhline(y=photzp, color='r', linestyle='-')
             plt.xlabel("Reference catalog mag")
             plt.ylabel("Reference Mag - Instrumental Mag (%s)" % (retCatalog['instfilter']))
-            plt.title("Photometric zeropoint %s %5.2f" % (outbasename, photzp))
+            plt.title("Photometric zeropoint %s %5.2f\n%s, aperture correction %+.3f mag" % (
+                outbasename, photzp, retCatalog['fluxcolumn'], retCatalog['apcor']))
             plt.savefig("%s/%s_%s_zp.png" % (outputimageRootDir, outbasename, retCatalog['instfilter']),
                         bbox_inches='tight')
             plt.close()
