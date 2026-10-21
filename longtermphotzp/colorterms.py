@@ -28,8 +28,8 @@ import matplotlib.ticker
 import numpy as np
 from astropy.table import Table
 
-from longtermphotzp.airmassterms import (EXCLUDED_CAMERA_PREFIXES, _to_datetime64, _to_float, instrument_groups,
-                                         night_keys, _style, COLOR_DATA, COLOR_FIT, COLOR_TEXT)
+from longtermphotzp.airmassterms import (EXCLUDED_CAMERA_PREFIXES, _to_datetime64, _to_float, camera_type_filter,
+                                         instrument_groups, night_keys, _style, COLOR_DATA, COLOR_FIT, COLOR_TEXT)
 from longtermphotzp.logging_config import setup_logging
 from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
 
@@ -39,8 +39,10 @@ _logger = logging.getLogger(__name__)
 DEFAULT_FILTERS = ['up', 'gp', 'rp', 'ip', 'zp', 'zs', 'Y', 'U', 'B', 'V', 'R', 'Rc', 'I']
 
 
-def read_colorterms(dburl, filters, cameras=None, sites=None, start=None, end=None):
+def read_colorterms(dburl, filters, cameras=None, sites=None, start=None, end=None, cameratypes=None):
     """ Read the columns needed for the color term analysis from the zeropoint database.
+
+    :param cameratypes: select all cameras of these types (name prefixes), e.g., ['ep', 'fa', 'sq'].
 
     :return: dict of numpy arrays (dateobs, site, telescope, camera, filter, airmass, colorterm, zpsig), or None if
              nothing matched.
@@ -51,6 +53,8 @@ def read_colorterms(dburl, filters, cameras=None, sites=None, start=None, end=No
         M.filter.in_(filters))
     if cameras:
         q = q.filter(M.camera.in_(cameras))
+    if cameratypes:
+        q = q.filter(camera_type_filter(M.camera, cameratypes))
     if sites:
         q = q.filter(M.site.in_(sites))
     # DATE-OBS is stored as an ISO-like string, so lexical comparison works for date limits.
@@ -294,6 +298,8 @@ def parseCommandLine():
     parser.add_argument('--outputdirectory', default='./colorterms', help='Directory for plots and tables')
     parser.add_argument('--filters', nargs='+', default=DEFAULT_FILTERS)
     parser.add_argument('--cameras', nargs='+', default=None, help='Restrict to these cameras')
+    parser.add_argument('--camera-types', dest='cameratypes', nargs='+', default=None,
+                        help='Restrict to all cameras of these types, e.g., ep fa sq')
     parser.add_argument('--sites', nargs='+', default=None, help='Restrict to these sites')
     parser.add_argument('--exclude-camera-prefixes', nargs='*', default=EXCLUDED_CAMERA_PREFIXES,
                         help=f'Skip cameras whose name starts with these prefixes. Default: {EXCLUDED_CAMERA_PREFIXES}')
@@ -319,7 +325,7 @@ def main():
     os.makedirs(args.outputdirectory, exist_ok=True)
 
     data = read_colorterms(args.database, args.filters, cameras=args.cameras, sites=args.sites, start=args.start,
-                           end=args.end)
+                           end=args.end, cameratypes=args.cameratypes)
     if data is None:
         _logger.error("No zeropoint records found for the selection.")
         return 1

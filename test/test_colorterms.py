@@ -49,3 +49,12 @@ def test_no_airmass_leverage_falls_back_to_mean():
     fit = fit_colorterm(colorterm, airmass, nights)
     assert fit['dcdx'] == 0.
     assert abs(fit['c'] - fit['c_mean']) < 1e-12
+
+
+def test_read_colorterms_selects_camera_types(tmpdir):
+    from test_airmassterms import _db_with_cameras
+    from longtermphotzp.colorterms import read_colorterms
+    url = _db_with_cameras(tmpdir)
+    data = read_colorterms(url, ['rp'], cameratypes=['ep'])
+    assert sorted(data['camera']) == ['ep04', 'ep06']
+    assert read_colorterms(url, ['rp'], cameratypes=['xx']) is None

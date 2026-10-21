@@ -38,3 +38,24 @@ def test_instrument_groups_combine_camera_type_and_telescope_class():
     groups = instrument_groups(np.array(['lsc', 'lsc', 'ogg']), np.array(['1m0a', '1m0a', '2m0a']),
                                np.array(['fa15', 'fa04', 'ep04']))
     assert list(groups) == ['lsc-1m0-fa', 'lsc-1m0-fa', 'ogg-2m0-ep']
+
+
+def _db_with_cameras(tmpdir):
+    from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
+    url = f"sqlite:///{tmpdir}/zp.db"
+    db = photdbinterface(url)
+    for ii, camera in enumerate(['ep04', 'ep06', 'fa15', 'sq30', 'kb26']):
+        db.addphotzp(PhotZPMeasurement(name=f'img{ii}', dateobs='2026-10-01 05:00:00', site='ogg', dome='clma',
+                                       telescope='2m0a', camera=camera, filter='rp', airmass=1.2, zp=23.,
+                                       colorterm=0.01, zpsig=0.02))
+    db.close()
+    return url
+
+
+def test_read_zeropoints_selects_camera_types(tmpdir):
+    from longtermphotzp.airmassterms import read_zeropoints
+    url = _db_with_cameras(tmpdir)
+    data = read_zeropoints(url, ['rp'], cameratypes=['ep', 'sq'])
+    assert sorted(data['camera']) == ['ep04', 'ep06', 'sq30']
+    assert sorted(read_zeropoints(url, ['rp'], cameratypes=['fa'])['camera']) == ['fa15']
+    assert len(read_zeropoints(url, ['rp'])['camera']) == 5

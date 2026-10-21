@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
 from astropy.table import Table
+from sqlalchemy import or_
 
 from longtermphotzp.logging_config import setup_logging
 from longtermphotzp.photdbinterface import photdbinterface, PhotZPMeasurement
@@ -74,8 +75,15 @@ def _to_datetime64(values):
         return out
 
 
-def read_zeropoints(dburl, filters, cameras=None, sites=None, start=None, end=None):
+def camera_type_filter(column, cameratypes):
+    """ SQL condition selecting all cameras whose name starts with one of the camera types, e.g., ['ep', 'sq']. """
+    return or_(*[column.like(f'{t}%') for t in cameratypes])
+
+
+def read_zeropoints(dburl, filters, cameras=None, sites=None, start=None, end=None, cameratypes=None):
     """ Read the columns needed for the airmass analysis from the zeropoint database.
+
+    :param cameratypes: select all cameras of these types (name prefixes), e.g., ['ep', 'fa', 'sq'].
 
     :return: dict of numpy arrays (dateobs, site, camera, filter, airmass, zp, zpsig), or None if nothing matched.
     """
@@ -85,6 +93,8 @@ def read_zeropoints(dburl, filters, cameras=None, sites=None, start=None, end=No
         M.filter.in_(filters))
     if cameras:
         q = q.filter(M.camera.in_(cameras))
+    if cameratypes:
+        q = q.filter(camera_type_filter(M.camera, cameratypes))
     if sites:
         q = q.filter(M.site.in_(sites))
     # DATE-OBS is stored as an ISO-like string, so lexical comparison works for date limits.
@@ -367,6 +377,8 @@ def parseCommandLine():
     parser.add_argument('--outputdirectory', default='./airmassterms', help='Directory for plots and tables')
     parser.add_argument('--filters', nargs='+', default=list(airmasscorrection.keys()))
     parser.add_argument('--cameras', nargs='+', default=None, help='Restrict to these cameras')
+    parser.add_argument('--camera-types', dest='cameratypes', nargs='+', default=None,
+                        help='Restrict to all cameras of these types, e.g., ep fa sq')
     parser.add_argument('--sites', nargs='+', default=None, help='Restrict to these sites')
     parser.add_argument('--exclude-camera-prefixes', nargs='*', default=EXCLUDED_CAMERA_PREFIXES,
                         help=f'Skip cameras whose name starts with these prefixes. Default: {EXCLUDED_CAMERA_PREFIXES}')
@@ -394,7 +406,7 @@ def main():
     os.makedirs(args.outputdirectory, exist_ok=True)
 
     data = read_zeropoints(args.database, args.filters, cameras=args.cameras, sites=args.sites, start=args.start,
-                           end=args.end)
+                           end=args.end, cameratypes=args.cameratypes)
     if data is None:
         _logger.error("No zeropoint records found for the selection.")
         return 1
