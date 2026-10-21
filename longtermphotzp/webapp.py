@@ -8,6 +8,7 @@ import collections
 import datetime
 import logging
 import os
+from importlib.metadata import PackageNotFoundError, version
 
 import boto3
 from botocore.exceptions import ClientError
@@ -15,6 +16,17 @@ from flask import Flask
 from flask import render_template
 
 app = Flask(__name__)
+
+
+def get_release_version():
+    ''' Version of the installed longtermphotzp package (from pyproject.toml), or None if it is not installed. '''
+    try:
+        return version('longtermphotzp')
+    except PackageNotFoundError:
+        return None
+
+
+RELEASE_VERSION = get_release_version()
 
 
 def get_last_update_time_from_object():
@@ -86,6 +98,7 @@ def indexhtml(filter=None):
         'timestamp': get_last_update_time_from_object(),
         'info': build_site_info_dict(filter),
         'filter': filter if filter in ['up', 'gp', 'rp', 'ip', 'zp', 'Y', 'U', 'B', 'V', 'R', 'I'] else 'rp',
+        'version': RELEASE_VERSION,
     }
     return render_template('index.html', **params)
 

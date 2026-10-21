@@ -8,10 +8,10 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
-    <title>LCO Zeropoint Plots</title>
+    <title>LCO Zeropoint Plots{% if version %} {{ version }}{% endif %}</title>
   </head>
   <body>
-    <h1>LCO Zeropoint Plots</h1>
+    <h1>LCO Zeropoint Plots{% if version %} <small class="text-muted">v{{ version }}</small>{% endif %}</h1>
 
     <div class="alert alert-primary" role="alert">
       Figures updated at {{ timestamp }} UTC  | <a href="/byfilter/up"> up </a> <a href="/byfilter/gp"> gp </a> <a href="/byfilter/rp"> rp </a> <a href="/byfilter/ip"> ip </a> <a href="/byfilter/zp"> zp </a>
