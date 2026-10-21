@@ -1,6 +1,6 @@
 # Changelog
 
-Unreleased
+Version 8.4.0
 * Site specific atmospheric extinction (airmass) terms for the throughput trend model, fitted from all fa (1m),
   sq (0.4m) and ep cameras of each site over Oct 2025 - Oct 2026. Sites / filters without a reliable fit fall back to the
   per-filter default.
@@ -10,6 +10,7 @@ Unreleased
   airmass 2.
 * New analysis scripts `airmassterms` and `colorterms` with camera type selection (`--camera-types ep fa sq`).
 * Do not fail when no color terms were measured (e.g. a telescope id without data).
+* The web page shows the release version next to its title.
 
 Version 8.3.0
 
