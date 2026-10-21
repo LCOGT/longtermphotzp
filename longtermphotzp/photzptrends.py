@@ -373,6 +373,8 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
     #    mystarttime = datetime.datetime(2014, 1, 1)
 
     if data is None:
+        _logger.warning(f"No photometry found for site {select_site} telescope {select_telescope} filter {select_filter}. "
+                        f"Telescope ids are given as enclosure-telescope, e.g., 'clma-2m0a'.")
         return
     # down-select data by viability and camera / filer combination
     selection = np.ones(len(data['name']), dtype=bool)
@@ -735,6 +737,9 @@ def fittrendtomirrormodel(dates, zps, start, end, order=1, plot=False):
 
 
 def plot_all_color_terms (context, colorterms, type='1m0'):
+    if len(colorterms) == 0:
+        _logger.info("No color terms were measured; not plotting a color term summary.")
+        return
     filter = next(iter(colorterms))
     myterms = colorterms[filter]
     data = list(myterms.items())
@@ -742,6 +747,9 @@ def plot_all_color_terms (context, colorterms, type='1m0'):
 
 
     good = ['1m0' in x for x in data[0]]
+    if not any(good):
+        _logger.info("No 1m0 color terms were measured; not plotting a color term summary.")
+        return
     xTicks = data[0] [good]
     y =  (data[1].astype(float))[good]
     x = np.arange(len(xTicks)) +1

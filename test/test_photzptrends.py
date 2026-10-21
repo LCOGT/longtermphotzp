@@ -44,3 +44,12 @@ def test_nan_values_are_ignored():
     zps[3] = np.nan
     _, model = findUpperEnvelope(dates, zps, ymax=25, site='lsc')
     assert np.all(np.isfinite(model))
+
+
+def test_color_term_summary_without_color_terms(tmpdir):
+    from types import SimpleNamespace
+    from longtermphotzp.photzptrends import plot_all_color_terms
+    context = SimpleNamespace(filter='rp', imagedbPrefix=str(tmpdir))
+    plot_all_color_terms(context, {})
+    plot_all_color_terms(context, {'rp': {'ogg-clma-2m0a': 0.05}})
+    assert len(tmpdir.listdir()) == 0
