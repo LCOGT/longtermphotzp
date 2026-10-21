@@ -53,3 +53,12 @@ def test_color_term_summary_without_color_terms(tmpdir):
     plot_all_color_terms(context, {})
     plot_all_color_terms(context, {'rp': {'ogg-clma-2m0a': 0.05}})
     assert len(tmpdir.listdir()) == 0
+
+
+def test_site_airmass_correction_with_fallback():
+    from longtermphotzp.photzptrends import getairmasscorrection, siteairmasscorrection, airmasscorrection
+    assert getairmasscorrection('lsc', 'gp') == siteairmasscorrection['lsc']['gp']
+    assert getairmasscorrection('ogg', 'B') == airmasscorrection['B']  # no site value: default
+    assert getairmasscorrection('xyz', 'rp') == airmasscorrection['rp']  # unknown site: default
+    assert getairmasscorrection('tfn', 'zp') == siteairmasscorrection['tfn']['zs']  # zp shares the zs value
+    assert getairmasscorrection('lsc', 'Rc') == airmasscorrection['Rc']

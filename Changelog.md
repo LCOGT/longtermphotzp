@@ -1,5 +1,16 @@
 # Changelog
 
+Unreleased
+* Site specific atmospheric extinction (airmass) terms for the throughput trend model, fitted from all fa (1m),
+  sq (0.4m) and ep cameras of each site over Oct 2025 - Oct 2026. Sites / filters without a reliable fit fall back to the
+  per-filter default.
+* Per-filter default extinction updated to the median over sites: B 0.23 -> 0.266, gp 0.14 -> 0.185,
+  V 0.12 -> 0.134, rp 0.08 -> 0.084, ip 0.06 -> 0.054, zs and zp 0.04 -> 0.025 mag/airmass.
+  Airmass-corrected zeropoints and stored throughput models change accordingly; for gp by up to ~0.06 mag at
+  airmass 2.
+* New analysis scripts `airmassterms` and `colorterms` with camera type selection (`--camera-types ep fa sq`).
+* Do not fail when no color terms were measured (e.g. a telescope id without data).
+
 Version 8.3.0
 
 **Change in the photometry measurement (photcalibration).** Zeropoints from this version are not

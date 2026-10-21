@@ -25,7 +25,37 @@ np.set_printoptions(legacy="1.25")
 
 _logger = logging.getLogger(__name__)
 
-airmasscorrection = {'up': 0.59, 'gp': 0.14, 'rp': 0.08, 'ip': 0.06, 'zp': 0.04, 'zs': 0.04, 'Y':0.03, 'U': 0.54, 'B': 0.23, 'V':0.12, 'R':0.09, 'Rc':0.09, 'I': 0.04}
+# Atmospheric extinction [mag / airmass] per filter, used where no site specific value is known.
+# B, gp, V, rp, ip, zs: median over sites of the fits of all fa (1m), sq (0.4m) and ep cameras, Oct 2025 - Oct 2026
+# (longtermphotzp.airmassterms); zp shares the zs value, as zp and zs data are analyzed together. Other filters: earlier
+# estimates.
+airmasscorrection = {'up': 0.59, 'gp': 0.185, 'rp': 0.084, 'ip': 0.054, 'zp': 0.025, 'zs': 0.025, 'Y': 0.03, 'U': 0.54,
+                     'B': 0.266, 'V': 0.134, 'R': 0.09, 'Rc': 0.09, 'I': 0.04}
+
+# Site specific extinction [mag / airmass], fitted from all fa (1m), sq (0.4m) and ep cameras of a site together (one
+# free zeropoint per camera and night), Oct 2025 - Oct 2026. Only values with >= 20 nights and an uncertainty <= 0.01 are
+# listed; everything else falls back to airmasscorrection.
+siteairmasscorrection = {
+    'coj': {'B': 0.293, 'gp': 0.206, 'V': 0.145, 'rp': 0.087, 'ip': 0.062, 'zs': 0.025},
+    'cpt': {'B': 0.284, 'gp': 0.188, 'V': 0.144, 'rp': 0.083, 'ip': 0.062, 'zs': 0.023},
+    'elp': {'B': 0.266, 'gp': 0.199, 'V': 0.147, 'rp': 0.104, 'ip': 0.055, 'zs': 0.045},
+    'lsc': {'B': 0.246, 'gp': 0.177, 'V': 0.124, 'rp': 0.082, 'ip': 0.045, 'zs': 0.025},
+    'ogg': {'gp': 0.161, 'V': 0.123, 'rp': 0.080, 'ip': 0.045, 'zs': 0.011},
+    'tfn': {'B': 0.236, 'gp': 0.182, 'V': 0.122, 'rp': 0.085, 'ip': 0.054, 'zs': 0.038},
+}
+
+# Filters that share the extinction value of another filter.
+airmassfilteralias = {'zp': 'zs', 'Rc': 'R'}
+
+
+def getairmasscorrection(site, filter):
+    """ Atmospheric extinction [mag / airmass] for a site and filter, falling back to the default of the filter if
+    there is no site specific value. Correct a zeropoint to airmass 1 with zp + k * (airmass - 1). """
+    sitevalues = siteairmasscorrection.get(site, {})
+    for f in (filter, airmassfilteralias.get(filter)):
+        if f in sitevalues:
+            return sitevalues[f]
+    return airmasscorrection[filter]
 
 # TODO: make this a parameter.
 starttime = datetime.datetime(2016, 1, 1)
@@ -417,7 +447,9 @@ def plotlongtermtrend(select_site, select_telescope, select_filter, context, ins
             ymax = telescopereferencethroughput[select_filter][select_telescope[-4:-1]] +1
 
     # Calculate air-mass corrected photometric zeropoint; corrected to airmass of 1
-    zp_air = zpselect + airmasscorrection[select_filter] * airmasselect - airmasscorrection[select_filter]
+    extinction = getairmasscorrection(select_site, select_filter)
+    _logger.info(f"Extinction correction for {select_site} {select_filter}: {extinction:.3f} mag/airmass")
+    zp_air = zpselect + extinction * (airmasselect - 1)
 
     # find the overall trend of zeropoint variations, save to output file.
     if len(dateselect[zpsigselect < photzpmaxnoise]) > 0:
