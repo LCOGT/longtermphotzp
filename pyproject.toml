@@ -52,6 +52,8 @@ dev = [
 photcalibration = "longtermphotzp.photcalibration:photzpmain"
 longtermphotzp = "longtermphotzp.photzptrends:longtermphotzp"
 internal_linearity = "longtermphotzp.internal_linearity:main"
+airmassterms = "longtermphotzp.airmassterms:main"
+colorterms = "longtermphotzp.colorterms:main"
 
 [tool.setuptools]
 zip-safe = false
